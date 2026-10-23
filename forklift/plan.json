@@ -1,0 +1,179 @@
+{
+ "name": "shared-tool-tightening",
+ "firstActionName": "provision",
+ "actions": [
+  {
+   "name": "provision",
+   "nextActionName": "use",
+   "firstStepNames": [
+    "reserve",
+    "program"
+   ],
+   "steps": [
+    {
+     "name": "reserve",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "reserve-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "res",
+      "dep": ""
+     },
+     "quantity": 1,
+     "nextStepNames": [
+      "move"
+     ]
+    },
+    {
+     "name": "program",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "get-program",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "prog",
+      "dep": ""
+     },
+     "quantity": 1,
+     "nextStepNames": [
+      "configure"
+     ]
+    },
+    {
+     "name": "move",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "transport-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "move",
+      "dep": "res"
+     },
+     "quantity": 1,
+     "nextStepNames": [
+      "configure"
+     ]
+    },
+    {
+     "name": "configure",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "configure-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "cfg",
+      "dep": "prog,res"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    }
+   ]
+  },
+  {
+   "name": "use",
+   "nextActionName": "return",
+   "firstStepNames": [
+    "tighten"
+   ],
+   "steps": [
+    {
+     "name": "tighten",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "tighten-fasteners",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "tight",
+      "dep": "cfg,res"
+     },
+     "quantity": 1,
+     "nextStepNames": [
+      "evaluate",
+      "record"
+     ]
+    },
+    {
+     "name": "evaluate",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "evaluate-tightening",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "chk",
+      "dep": "tight,prog"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    },
+    {
+     "name": "record",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "record-tightening",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "rec",
+      "dep": "tight"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    }
+   ]
+  },
+  {
+   "name": "return",
+   "firstStepNames": [
+    "back"
+   ],
+   "steps": [
+    {
+     "name": "back",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "transport-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "ret",
+      "dep": "res"
+     },
+     "quantity": 1,
+     "nextStepNames": [
+      "release"
+     ]
+    },
+    {
+     "name": "release",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "release-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "rel",
+      "dep": "res"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    }
+   ]
+  }
+ ]
+}

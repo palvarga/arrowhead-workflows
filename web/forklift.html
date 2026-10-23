@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Arrowhead Workflow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: control-room HMI. Plant floor + tool-holding timeline on the left, the three line Sessions on the right, scheduler (you) and event log below. */
+:root{
+  --bg:#eceee9; --panel:#f8f9f5; --ink:#1c2225; --muted:#5b6569; --line:#c7cdc8;
+  --safety:#d99c00; --safety-ink:#1c2225; --steel:#2c6c8c; --ok:#2e7b4e; --bad:#bf3a2e; --idle:#dfe3de;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181a; --panel:#1c2225; --ink:#e4e8e5; --muted:#97a2a5; --line:#323b3e;
+  --safety:#f0b51e; --safety-ink:#14181a; --steel:#5ea7c8; --ok:#4fb67b; --bad:#e8675b; --idle:#262e31; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181a; --panel:#1c2225; --ink:#e4e8e5; --muted:#97a2a5; --line:#323b3e;
+  --safety:#f0b51e; --safety-ink:#14181a; --steel:#5ea7c8; --ok:#4fb67b; --bad:#e8675b; --idle:#262e31; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body)}
+.wrap{max-width:1320px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:3px solid var(--ink);padding-bottom:10px}
+h1{font:700 clamp(28px,4vw,40px)/1 var(--f-display);letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+h2{font:700 18px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.05em;margin:0}
+.lbl{font:500 11px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font:500 13px/1 var(--f-body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 11px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--steel);outline-offset:2px}
+button.primary{background:var(--safety);color:var(--safety-ink);border-color:var(--safety);font-weight:600}
+button[disabled]{opacity:.45;cursor:not-allowed}
+.toggle{display:flex;gap:6px;align-items:center;font-size:13px}
+.floor{border:1px solid var(--line);border-radius:3px;overflow-x:auto;background:
+  repeating-linear-gradient(-45deg,var(--safety) 0 10px,var(--ink) 10px 20px) top/100% 6px no-repeat,var(--bg)}
+.floor svg{display:block;width:100%;min-width:520px;height:auto}
+.sessions{display:grid;gap:10px}
+.sess{border:1px solid var(--line);border-left:6px solid var(--idle);border-radius:3px;padding:10px;display:grid;gap:6px;min-width:0}
+.sess.run{border-left-color:var(--safety)} .sess.done{border-left-color:var(--ok)} .sess.fail{border-left-color:var(--bad)}
+.sess-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between}
+.sess-head b{font:700 20px/1 var(--f-display);letter-spacing:.03em}
+.pill{font:500 11px/1 var(--f-mono);padding:4px 7px;border-radius:2px;background:var(--idle);color:var(--ink);letter-spacing:.05em;text-transform:uppercase}
+.pill.run{background:var(--safety);color:var(--safety-ink)} .pill.done{background:var(--ok);color:var(--bg)} .pill.fail{background:var(--bad);color:var(--bg)}
+.dag{overflow-x:auto} .dag svg{display:block;min-width:420px;width:100%;height:auto}
+.ctx{font:12px/1.45 var(--f-mono);color:var(--muted);overflow-wrap:anywhere}
+.moves{display:grid;gap:6px}
+.moves .row button{font-family:var(--f-mono);font-size:12px;padding:7px 9px}
+.moves button.fail{border-color:var(--bad);color:var(--bad)}
+.log{max-height:360px;overflow:auto;font:12px/1.45 var(--f-mono);border-top:1px solid var(--line)}
+.log div{display:grid;grid-template-columns:3.2em 2.6em 9.5em minmax(0,1fr);gap:8px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.log .ah{grid-column:3/-1;color:var(--muted)}
+.log .r-fail{color:var(--bad)}
+.monitor{display:flex;flex-wrap:wrap;gap:8px}
+.mon{border:1px solid var(--line);border-radius:3px;padding:8px 10px;min-width:0;flex:1 1 180px}
+.mon .v{font:600 15px/1.2 var(--f-mono)}
+.mon.ok .v{color:var(--ok)} .mon.bad .v{color:var(--bad)} .mon.warn .v{color:var(--safety)}
+.gantt{overflow-x:auto} .gantt svg{display:block;width:100%;min-width:520px;height:auto}
+.lc{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--bg)}
+.lc svg{display:block;width:100%;min-width:760px;height:auto}
+.lccap{font:12px/1.45 var(--f-mono);color:var(--muted);overflow-wrap:anywhere;min-height:1.45em}
+.lccap b{color:var(--ink);font-weight:500}
+p.note{margin:0;color:var(--muted);font-size:13px;max-width:70ch}
+@keyframes pulse{50%{opacity:.45}}
+.pulse{animation:pulse 1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Arrowhead Workflow</h1>
+  <div class="row">
+    <label class="lbl" for="scen">Scenario</label>
+    <select id="scen">
+      <option value="t11">L2 holds the tool, L1 requests it</option>
+      <option value="all3">Rush: L1, L2, L3 request together</option>
+      <option value="t10">Single Session of L2</option>
+      <option value="fail">Failure: AGV route blocked during L2</option>
+    </select>
+    <button id="reset" class="primary">Load scenario</button>
+  </div>
+</header>
+
+<div class="grid">
+  <section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>Plant floor</h2><span class="lbl" id="toolpos">tool in crib</span></div>
+    <div class="floor" id="floor"></div>
+    <div class="row" style="justify-content:space-between"><h2>Tool holding vs. tool use</h2><span class="lbl">x: global transition index</span></div>
+    <div class="gantt" id="gantt"></div>
+    <p class="note">Thick band: Session holds the reservation (ReserveTool returned … ReleaseTool processed). Dark ticks: a Step of U = {move, cfg, tight, ret} is running. Proposition 1 says ticks of different lines never overlap in time.</p>
+    <div class="monitor" id="monitor"></div>
+  </section>
+
+  <section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>Workflow Sessions</h2>
+      <div class="row">
+        <button id="addL1">L1 needs tool</button><button id="addL2">L2 needs tool</button><button id="addL3">L3 needs tool</button>
+      </div>
+    </div>
+    <p class="note">Every Step runs through its Executor, as in Arrowhead 4.6.2. Dashed Steps need the AGV Executor w<sub>agv</sub>.</p>
+    <div class="sessions" id="sessions"></div>
+  </section>
+</div>
+
+<section class="panel">
+  <div class="row" style="justify-content:space-between"><h2>Local Cloud LC<sub>i</sub></h2><span class="lbl">core systems · executors · application systems</span></div>
+  <div class="lc" id="lc"></div>
+  <div class="lccap" id="lccap"></div>
+  <p class="note">Filled: systems talking in the last transition, with the calls as arrows. Pulsing outline: an Executor working on a running Step and the provider it consumes in the background. Red: the call failed or the system is offline.</p>
+</section>
+
+<div class="grid">
+  <section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>You are the scheduler</h2>
+      <div class="row">
+        <button id="step">Fire random</button>
+        <button id="auto" class="primary">Auto-run</button>
+        <label class="toggle"><span class="lbl">speed</span><input id="speed" type="range" min="60" max="900" value="320" aria-label="Auto-run delay"></label>
+      </div>
+    </div>
+    <p class="note">Every button is one applicable rule instance in the current state. Parallel Steps interleave in whatever order you pick; a failure-free Session always takes exactly 3|S| + 2|A| = 33 transitions.</p>
+    <div class="moves" id="moves"></div>
+    <h2 style="margin-top:6px">Local Cloud LC<sub>i</sub> — disturbances</h2>
+    <div class="row">
+      <label class="toggle"><input type="checkbox" id="fRoute"> AGV route blocked (consume = fail)</label>
+      <label class="toggle"><input type="checkbox" id="fExec"> Executor w<sub>agv</sub> offline (asg = ∅)</label>
+      <label class="toggle"><input type="checkbox" id="fNr"> Nutrunner controller unregistered (O<sub>i</sub> = ⊥)</label>
+      <label class="toggle"><input type="checkbox" id="fTorque"> Torque drift on bolt 5</label>
+      <label class="toggle"><input type="checkbox" id="fLease"> Crib grants leases (a failed holder's reservation expires)</label>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>Run log</h2><button id="copy">Copy trace JSON</button></div>
+    <div class="log" id="log" aria-live="polite"></div>
+  </section>
+</div>
+</div>
+
+<script>
+(()=>{
+// ---------- Recipe W (Section 8) ----------
+const ACTIONS=['prov','use','ret'];
+const NEXT_A={prov:'use',use:'ret'}; const PREV_A={use:'prov',ret:'use'};
+const STEPS={
+ res:{a:'prov',theta:'ReserveTool',svc:'reserve-tool',prov:'toolcrib',ex:'exreserve',eta:null,pre:[],dep:[]},
+ prog:{a:'prov',theta:'GetProgram',svc:'get-program',prov:'mes',ex:'exprogram',eta:null,pre:[],dep:[]},
+ move:{a:'prov',theta:'TransportTool',svc:'transport-tool',prov:'agvfleet',ex:'agvexecutor',eta:'e_agv',pre:['res'],dep:['res']},
+ cfg:{a:'prov',theta:'ConfigureTool',svc:'configure-tool',prov:'nutrunner',ex:'exconfigure',eta:null,pre:['move','prog'],dep:['prog']},
+ tight:{a:'use',theta:'TightenFasteners',svc:'tighten-fasteners',prov:'nutrunner',ex:'extighten',eta:null,pre:[],dep:['cfg']},
+ chk:{a:'use',theta:'EvaluateTightening',svc:'evaluate-tightening',prov:'qms',ex:'exevaluate',eta:null,pre:['tight'],dep:['tight','prog']},
+ rec:{a:'use',theta:'RecordTightening',svc:'record-tightening',prov:'qms',ex:'exrecord',eta:null,pre:['tight'],dep:['tight']},
+ ret:{a:'ret',theta:'TransportTool',svc:'transport-tool',prov:'agvfleet',ex:'agvexecutor',eta:'e_agv',pre:[],dep:[]},
+ rel:{a:'ret',theta:'ReleaseTool',svc:'release-tool',prov:'toolcrib',ex:'exrelease',eta:null,pre:['ret'],dep:['res']},
+};
+const SIDS=Object.keys(STEPS); const U=['move','cfg','tight','ret'];
+const BOUND=3*SIDS.length+2*ACTIONS.length; // 33
+const RANK={inactive:0,enabled:1,running:2,completed:3};
+
+// ---------- Environment (Local Cloud + plant) ----------
+let env, sessions, log, gidx, nextSid, autoTimer=null, seed=7, last=null;
+const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff};
+function freshEnv(){return {holder:null,queue:[],toolAt:'crib',agv:{at:'crib',to:null,sid:null},route:false,execOnline:true,nrOnline:true,drift:false,lease:false,recId:1000}}
+
+function newSession(line){
+  const s={sid:nextSid++,line,rho:{tool:'NR7',line,stn:'st'+line,variant:'v'+(line===1?'F25':line===2?'F30':'F35'),crib:'crib'},
+    M:{},MA:{prov:'active',use:'inactive',ret:'inactive'},beta:{},eps:{},xi:{},status:'running',n:0,
+    hold:[],uses:[],startG:gidx};
+  SIDS.forEach(k=>{s.M[k]='inactive';s.beta[k]=null});
+  sessions.push(s);
+  addLog(s,'—','Session created','z0: MA(α_prov)=active, all Steps inactive, ρ=('+s.rho.tool+', '+line+', '+s.rho.stn+', '+s.rho.variant+', crib)',
+   'linecontroller'+line+' → Orchestrator: choreographer-start-session, session-context → POST /choreographer/session/start {name:"shared-tool-tightening"} → POST ρ to session-context');
+  const lc='line'+line;
+  setLast(s,'Session created',[[lc,'orchestrator','orchestrate start-session, session-context'],['orchestrator','serviceregistry','query'],['orchestrator','authorization','check'],[lc,'choreographer','POST /session/start'],[lc,'sessionctx','POST ρ']]);
+  render();
+}
+
+// ---------- κ_s : input composition ----------
+function kappa(s,k){const r=s.xi,p=s.rho;switch(k){
+ case'res':return[p.tool,p.line];case'prog':return p.variant;case'move':return[p.tool,p.crib,p.stn,r.res];
+ case'cfg':return[p.tool,r.prog];case'tight':return[p.tool,r.cfg];case'chk':return[r.tight,r.prog];
+ case'rec':return[p.line,p.variant,p.tool,r.tight];case'ret':return[p.tool,p.stn,p.crib];case'rel':return[p.tool,r.res];}}
+const providerUp=k=>!(STEPS[k].prov==='nutrunner'&&!env.nrOnline);
+
+// ---------- applicable rule instances ----------
+function applicable(s){
+  const out=[]; if(s.status!=='running')return out;
+  if(ACTIONS.every(a=>s.MA[a]==='completed')){out.push({rule:'Z-CLOSE',lab:'close'});return out}
+  for(const a of ACTIONS){
+    if(s.MA[a]==='inactive'&&PREV_A[a]&&s.MA[PREV_A[a]]==='completed')out.push({rule:'A-START',a,lab:'start('+a+')'});
+    if(s.MA[a]==='active'&&SIDS.filter(k=>STEPS[k].a===a).every(k=>s.M[k]==='completed'))out.push({rule:'A-FINISH',a,lab:'finish('+a+')'});
+  }
+  for(const k of SIDS){const st=STEPS[k],m=s.M[k];
+    if(m==='inactive'&&s.MA[st.a]==='active'&&st.pre.every(p=>s.M[p]==='completed'))out.push({rule:'S-ENABLE',k,lab:'enable('+k+')'});
+    if(m==='enabled'){
+      const asg=st.eta?(env.execOnline?['w_agv']:[]):['CH'];
+      if(asg.length&&providerUp(k))out.push({rule:'S-BIND',k,lab:'bind('+k+')'});
+      else out.push({rule:'S-FAILBIND',k,lab:'fail('+k+')',fail:true});
+    }
+    if(m==='running'){
+      if(k==='res'){ if(env.holder===null&&env.queue[0]===s.sid)out.push({rule:'S-DONE',k,lab:'done(res)'}); }
+      else if((k==='move'||k==='ret')&&env.route)out.push({rule:'S-FAILINVOKE',k,lab:'fail('+k+')',fail:true});
+      else out.push({rule:'S-DONE',k,lab:'done('+k+')'});
+    }
+  }
+  return out;
+}
+
+// ---------- fire one rule instance ----------
+function fire(s,t){
+  gidx++; s.n++; const k=t.k, st=k&&STEPS[k]; let eff='',ah='';
+  switch(t.rule){
+   case'A-START':s.MA[t.a]='active';eff='MA('+t.a+'): inactive→active';ah='Choreographer starts next Action ("nextActionName")';break;
+   case'A-FINISH':s.MA[t.a]='completed';eff='MA('+t.a+'): active→completed';ah='all session steps of the Action DONE';break;
+   case'Z-CLOSE':s.status='completed';eff='status=completed after '+s.n+' transitions'+(s.n===BOUND?'  ✓ = 3|S|+2|A|':'  ✗ expected '+BOUND);
+     ah='Choreographer → POST notifyAddress {status:"DONE"} (ChoreographerNotificationDTO)';break;
+   case'S-ENABLE':s.M[k]='enabled';eff='M('+k+')=enabled; pre('+k+')={'+st.pre.join(',')+'} completed';ah='session step WAITING→ready';break;
+   case'S-BIND':{s.eps[k]=st.ex;s.beta[k]='π:'+st.prov+'/'+st.svc;s.M[k]='running';
+     eff='c_z('+k+')='+st.ex+(st.eta?' = w_agv (η='+st.eta+')':'')+'; β('+k+')='+st.prov;
+     ah='POST '+st.ex+'/service-info → Orchestrator {requester:"'+st.ex+'", service:"'+st.svc+'"} + dependency session-context'+(U.includes(k)?', renew-tool-lease':'')+' → POST '+st.ex+'/start';
+     if(k==='res'){env.queue.push(s.sid); if(env.holder!==null&&env.holder!==s.sid)eff+='; ReserveTool pending (tool held by L'+lineOf(env.holder)+')';}
+     if(k==='move'){env.agv={at:'crib',to:'st'+s.line,sid:s.sid};env.toolAt='agv';}
+     if(k==='ret'){env.agv={at:'st'+s.line,to:'crib',sid:s.sid};env.toolAt='agv';}
+     if(U.includes(k))s.uses.push([gidx,null,k]);
+     break;}
+   case'S-DONE':{const d=consume(s,k);s.xi[k]=d;s.M[k]='completed';eff='ξ('+k+')='+fmt(d);
+     ah=st.ex+' reads ρ, ξ|dep from session-context → consumes '+st.prov+' ('+st.svc+') → writes ξ('+k+') → POST /choreographer/executor/notify-step-done {status:"SUCCESS"}';
+     if(U.includes(k)){const u=s.uses.find(x=>x[2]===k&&x[1]===null);if(u)u[1]=gidx}break;}
+   case'S-FAILBIND':s.status='failed';eff=(st.eta&&!env.execOnline)?'asg(z,'+k+')=∅ → premise vacuous, status=failed':'O_i(…)=⊥ for '+st.svc+' → status=failed';
+     ah='orchestration response empty → session ABORTED';break;
+   case'S-FAILINVOKE':s.status='failed';eff='consume(π,'+k+')=fail → status=failed; ξ(res) still holds '+(s.xi.res||'—');
+     ah=st.ex+' → '+st.prov+' fails → notify-step-done {status:"FATAL_ERROR"} → session ABORTED';
+     if(U.includes(k)){const u=s.uses.find(x=>x[2]===k&&x[1]===null);if(u)u[1]=gidx}break;
+  }
+  addLog(s,t.rule,t.lab,eff,ah,t.fail);
+  setLast(s,t.lab,flowsFor(s,t));
+  render();
+}
+function flowsFor(s,t){const k=t.k,st=k&&STEPS[k],C='choreographer',O='orchestrator';
+  switch(t.rule){
+   case'S-BIND':return[[C,st.ex,'service-info · /start'],[C,O,'orchestrate '+st.svc+' + deps for '+st.ex],[O,'serviceregistry','query'],[O,'authorization','check '+st.ex]];
+   case'S-DONE':return[[st.ex,'sessionctx','read ρ, ξ|dep · write ξ('+k+')'],...(U.includes(k)?[[st.ex,'toolcrib','renew lease']]:[]),[st.ex,st.prov,k==='res'?'reserve-tool → granted':st.svc],[st.ex,C,'notify-step-done SUCCESS']];
+   case'S-FAILBIND':return(st.eta&&!env.execOnline)?[[C,st.ex,'no Executor for '+st.svc,1]]:[[C,O,'orchestrate '+st.svc,1],[O,'serviceregistry','no provider (⊥)',1]];
+   case'S-FAILINVOKE':return[[st.ex,st.prov,st.svc+' fails',1],[st.ex,C,'FATAL_ERROR',1]];
+   case'Z-CLOSE':return[[C,'line'+s.line,'notify DONE']];
+   default:return[[C,C,t.lab]];}}
+function setLast(s,lab,flows){last={g:gidx,line:s.line,lab,flows}}
+function leaseExpire(){const h=sessions.find(x=>x.sid===env.holder);if(!h)return;gidx++;
+  const iv=h.hold.find(x=>x[1]===null);if(iv)iv[1]=gidx;env.holder=null;env.toolAt='crib';env.agv={at:'crib',to:null,sid:null};
+  addLog(h,'LEASE','lease expires','crib revokes token '+(h.xi.res||'')+'; tool recovered to the crib by an operator','toolcrib lease timer; next queued ReserveTool can be granted');
+  setLast(h,'lease expires',[['toolcrib','toolcrib','lease expired']]);render()}
+const lineOf=sid=>(sessions.find(x=>x.sid===sid)||{}).line;
+function consume(s,k){const inp=kappa(s,k);switch(k){
+ case'res':env.holder=s.sid;env.queue.shift();s.hold.push([gidx,null]);return'r'+s.line;
+ case'prog':return{n:8,T:210,tol:0.05};
+ case'move':env.agv={at:'st'+s.line,to:null,sid:null};env.toolAt='st'+s.line;return'arrived '+inp[2];
+ case'cfg':return'program loaded ('+inp[1].n+'×'+inp[1].T+' N·m ±'+inp[1].tol*100+'%)';
+ case'tight':return Array.from({length:8},(_,j)=>+(210*(1+(env.drift&&j===4?0.072:(rnd()-0.5)*0.06))).toFixed(1));
+ case'chk':{const[R,P]=inp;return R.every(T=>Math.abs(T-P.T)<=P.tol*P.T)?'OK':'NOK'}
+ case'rec':return'stored #'+(env.recId++);
+ case'ret':env.agv={at:'crib',to:null,sid:null};env.toolAt='crib';return'tool back in crib';
+ case'rel':env.holder=null;const h=s.hold.find(x=>x[1]===null);if(h)h[1]=gidx;return'released '+inp[1];}}
+const fmt=d=>Array.isArray(d)?'('+d.join(', ')+') N·m':typeof d==='object'?'('+d.n+', '+d.T+' N·m, '+d.tol*100+'%)':d;
+
+// ---------- trace / log ----------
+function addLog(s,rule,lab,eff,ah,fail){log.unshift({g:gidx,line:s.line,sid:s.sid,n:s.n,rule,lab,eff,ah,fail:!!fail})}
+
+// ---------- rendering ----------
+const $=id=>document.getElementById(id);
+const COL={inactive:'var(--idle)',enabled:'var(--panel)',running:'var(--safety)',completed:'var(--steel)'};
+const POS={res:[8,8],prog:[8,46],move:[62,8],cfg:[116,27],tight:[194,27],chk:[248,8],rec:[248,46],ret:[326,27],rel:[380,27]};
+const BOX={prov:[2,2,166,74],use:[188,2,112,74],ret:[320,2,112,74]};
+function dag(s){
+  let g='<svg viewBox="0 0 436 80" role="img" aria-label="Recipe markings of Session L'+s.line+'">';
+  for(const a of ACTIONS){const[x,y,w,h]=BOX[a];const c=s.MA[a]==='completed'?'var(--steel)':s.MA[a]==='active'?'var(--safety)':'var(--line)';
+    g+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="none" stroke="${c}" stroke-width="${s.MA[a]==='active'?2:1}" stroke-dasharray="${s.MA[a]==='inactive'?'3 3':'0'}"/><text x="${x+4}" y="${y+h-3}" font-size="8" fill="var(--muted)" font-family="IBM Plex Mono,monospace">α_${a}</text>`;}
+  g+=`<path d="M168 39H186M300 39H318" stroke="var(--muted)" stroke-width="2.5" fill="none"/>`;
+  for(const k of SIDS)for(const p of STEPS[k].pre){const[a,b]=POS[p],[c,d]=POS[k];g+=`<line x1="${a+44}" y1="${b+10}" x2="${c}" y2="${d+10}" stroke="var(--muted)" stroke-width="1"/>`}
+  for(const k of SIDS){const[x,y]=POS[k],m=s.M[k];const fail=s.status==='failed'&&m==='running'||(s.status==='failed'&&m==='enabled');
+    const fill=fail?'var(--bad)':COL[m];const tc=(m==='running'||m==='completed'||fail)?'var(--bg)':'var(--ink)';
+    g+=`<g class="${m==='running'&&!fail?'pulse':''}"><rect x="${x}" y="${y}" width="44" height="20" rx="2" fill="${fill}" stroke="${m==='enabled'?'var(--safety)':'var(--line)'}" stroke-width="${m==='enabled'?2:1}" ${STEPS[k].eta?'stroke-dasharray="4 2"':''}/><text x="${x+22}" y="${y+14}" text-anchor="middle" font-size="10" font-family="IBM Plex Mono,monospace" fill="${tc}">${k}</text></g>`}
+  return g+'</svg>';
+}
+function render(){
+  // sessions
+  $('sessions').innerHTML=sessions.length?sessions.map(s=>{
+    const cls=s.status==='running'?'run':s.status==='completed'?'done':'fail';
+    const waiting=s.M.res==='running'&&env.holder!==s.sid;
+    const xi=SIDS.filter(k=>s.xi[k]!==undefined).map(k=>k+'='+fmt(s.xi[k])).join(' · ')||'ξ empty';
+    return `<div class="sess ${cls}"><div class="sess-head"><b>Line L${s.line}</b><span class="mono">${s.n} / ${BOUND} transitions</span>
+      <span class="pill ${cls}">${s.status}${waiting&&s.status==='running'?' · waiting for tool':''}</span></div>
+      <div class="dag">${dag(s)}</div><div class="ctx">${xi}</div></div>`}).join(''):'<p class="note">No Session yet. Ask for the tool from a line.</p>';
+  // moves
+  const groups=sessions.filter(s=>s.status==='running').map(s=>({s,ts:applicable(s)}));
+  $('moves').innerHTML=groups.length?groups.map(({s,ts},gi)=>`<div class="row"><span class="lbl" style="min-width:2.4em">L${s.line}</span>${
+    ts.length?ts.map((t,i)=>`<button data-g="${gi}" data-i="${i}" class="${t.fail?'fail':''}" title="${t.rule}">${t.lab}</button>`).join(''):'<span class="note">no rule applicable — ReserveTool call pending</span>'}</div>`).join(''):'<p class="note">No running Session.</p>';
+  const hs=sessions.find(x=>x.sid===env.holder);
+  if(env.lease&&hs&&hs.status==='failed')$('moves').insertAdjacentHTML('beforeend',`<div class="row"><span class="lbl" style="min-width:2.4em">crib</span><button id="leaseBtn">lease expires (L${hs.line})</button></div>`);
+  $('moves').querySelectorAll('button').forEach(b=>b.onclick=b.id==='leaseBtn'?leaseExpire:()=>{const g=groups[+b.dataset.g];fire(g.s,g.ts[+b.dataset.i])});
+  floor(); gantt(); monitor(); localCloud();
+  $('log').innerHTML=log.slice(0,300).map(e=>`<div class="${e.fail?'r-fail':''}"><span>#${e.g}</span><span>L${e.line}</span><span>${e.rule}</span><span>${e.lab} — ${e.eff}</span><span class="ah">↳ ${e.ah}</span></div>`).join('');
+  $('toolpos').textContent='tool '+(env.toolAt==='crib'?'in crib':env.toolAt==='agv'?'on AGV':'at '+env.toolAt)+' · reserved by '+(env.holder===null?'nobody':'L'+lineOf(env.holder))+(env.queue.length&&env.holder!==env.queue[0]?' · queue '+env.queue.map(x=>'L'+lineOf(x)).join(','):'');
+}
+function floor(){
+  const W=640,H=230,crib={x:70,y:118},st={st1:{x:520,y:50},st2:{x:520,y:118},st3:{x:520,y:186}};
+  const at=p=>p==='crib'?crib:st[p];
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Plant floor with tool crib, AGV lane and three assembly stations">`;
+  g+=`<path d="M${crib.x+40} ${crib.y}H330V50H${st.st1.x-40}M330 118H${st.st2.x-40}M330 118V186H${st.st3.x-40}" fill="none" stroke="var(--line)" stroke-width="14" stroke-linejoin="round"/>`;
+  g+=`<path d="M${crib.x+40} ${crib.y}H330V50H${st.st1.x-40}M330 118H${st.st2.x-40}M330 118V186H${st.st3.x-40}" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="6 6"/>`;
+  if(env.route)g+=`<g><rect x="300" y="104" width="60" height="28" fill="var(--bad)" rx="2"/><text x="330" y="122" text-anchor="middle" font-size="11" fill="var(--bg)" font-family="IBM Plex Mono,monospace">BLOCKED</text></g>`;
+  g+=`<rect x="${crib.x-48}" y="${crib.y-36}" width="88" height="72" rx="3" fill="var(--panel)" stroke="var(--ink)"/><text x="${crib.x-4}" y="${crib.y-18}" text-anchor="middle" font-size="12" font-weight="700" font-family="Barlow Condensed,Arial Narrow,sans-serif" fill="var(--ink)">TOOL CRIB</text><text x="${crib.x-4}" y="${crib.y+28}" text-anchor="middle" font-size="9" font-family="IBM Plex Mono,monospace" fill="var(--muted)">AS_crib</text>`;
+  for(let i=1;i<=3;i++){const p=st['st'+i];const s=sessions.find(x=>x.line===i&&x.status==='running');
+    const busy=s&&(s.M.tight==='running'||s.M.cfg==='running');
+    g+=`<rect x="${p.x-40}" y="${p.y-26}" width="100" height="52" rx="3" fill="var(--panel)" stroke="${s?'var(--safety)':'var(--ink)'}" stroke-width="${s?2:1}"/><text x="${p.x+10}" y="${p.y-9}" text-anchor="middle" font-size="12" font-weight="700" font-family="Barlow Condensed,Arial Narrow,sans-serif" fill="var(--ink)">LINE L${i} · st${i}</text>`;
+    g+=`<text x="${p.x+10}" y="${p.y+19}" text-anchor="middle" font-size="9" font-family="IBM Plex Mono,monospace" fill="${busy?'var(--safety)':'var(--muted)'}">${busy?(s.M.tight==='running'?'tightening…':'configuring…'):(s?'Session active':'idle')}</text>`}
+  // AGV
+  let ap; if(env.agv.to){const a=at(env.agv.at),b=at(env.agv.to);ap={x:330,y:(a.y+b.y)/2|0}}else ap=at(env.agv.at);
+  const ax=env.agv.at==='crib'&&!env.agv.to?crib.x+60:(env.agv.to?ap.x:ap.x-62);
+  g+=`<g class="${env.agv.to?'pulse':''}"><rect x="${ax-16}" y="${ap.y-11}" width="32" height="22" rx="4" fill="var(--steel)"/><text x="${ax}" y="${ap.y+4}" text-anchor="middle" font-size="9" fill="var(--bg)" font-family="IBM Plex Mono,monospace">AGV</text></g>`;
+  // tool
+  let tp=env.toolAt==='crib'?{x:crib.x-4,y:crib.y+6}:env.toolAt==='agv'?{x:ax,y:ap.y-18}:{x:at(env.toolAt).x-20,y:at(env.toolAt).y+6};
+  g+=`<g><rect x="${tp.x-15}" y="${tp.y-8}" width="30" height="16" rx="2" fill="var(--safety)" stroke="var(--ink)"/><text x="${tp.x}" y="${tp.y+4}" text-anchor="middle" font-size="9" font-weight="600" fill="var(--safety-ink)" font-family="IBM Plex Mono,monospace">NR7</text></g>`;
+  $('floor').innerHTML=g+'</svg>';
+}
+function gantt(){
+  const G=Math.max(gidx,40),W=640,L=36,R=10,x=v=>L+(W-L-R)*v/G,rows=[1,2,3];
+  let g=`<svg viewBox="0 0 ${W} 112" role="img" aria-label="Tool holding intervals per line">`;
+  for(let t=0;t<=G;t+=10)g+=`<line x1="${x(t)}" x2="${x(t)}" y1="6" y2="94" stroke="var(--line)"/><text x="${x(t)}" y="106" text-anchor="middle" font-size="9" font-family="IBM Plex Mono,monospace" fill="var(--muted)">${t}</text>`;
+  rows.forEach((ln,i)=>{const y=12+i*28;g+=`<text x="4" y="${y+12}" font-size="10" font-family="IBM Plex Mono,monospace" fill="var(--ink)">L${ln}</text>`;
+    sessions.filter(s=>s.line===ln).forEach(s=>{
+      const end=s.status==='running'?gidx:s.status==='completed'?null:gidx;
+      if(s.M.res==='running'&&env.holder!==s.sid)g+=`<rect x="${x(s.startG)}" y="${y+6}" width="${Math.max(1,x(gidx)-x(s.startG))}" height="4" fill="var(--line)"/>`;
+      s.hold.forEach(([a,b])=>{const bb=b??gidx;g+=`<rect x="${x(a)}" y="${y}" width="${Math.max(2,x(bb)-x(a))}" height="16" fill="var(--safety)" opacity="${s.status==='failed'?0.55:0.85}" rx="1"/>`;
+        if(b===null&&s.status==='failed')g+=`<text x="${x(bb)+3}" y="${y+12}" font-size="9" fill="var(--bad)" font-family="IBM Plex Mono,monospace">never released</text>`});
+      s.uses.forEach(([a,b])=>{const bb=b??gidx;g+=`<rect x="${x(a)}" y="${y+5}" width="${Math.max(2,x(bb)-x(a))}" height="6" fill="var(--ink)"/>`});
+    })});
+  $('gantt').innerHTML=g+'</svg>';
+}
+const LC=(()=>{const n={},put=(id,x,y,w,h,lab,sub,kind)=>n[id]={x,y,w,h,lab,sub,kind};
+  put('serviceregistry',90,14,150,44,'Service Registry','core','core');put('authorization',280,14,150,44,'Authorization','core','core');
+  put('orchestrator',470,14,150,44,'Orchestrator','core','core');put('choreographer',700,14,190,44,'Choreographer','core · supporting','core');
+  ['exreserve','exrelease','exprogram','agvexecutor','exconfigure','extighten','exevaluate','exrecord'].forEach((e,i)=>put(e,20+i*122,138,106,42,e,'executor','ex'));
+  const app=[['line1','linecontroller1','L1'],['line2','linecontroller2','L2'],['line3','linecontroller3','L3'],['sessionctx','sessionctx','session-context'],['toolcrib','toolcrib','reserve · renew · release'],['mes','mes','get-program'],['agvfleet','agvfleet','transport-tool'],['nutrunner','nutrunner','configure · tighten'],['qms','qms','evaluate · record']];
+  app.forEach(([id,lab,sub],i)=>put(id,14+i*109,262,98,46,lab,sub,'app'));return n})();
+function localCloud(){
+  const busy=new Map();
+  sessions.filter(s=>s.status==='running').forEach(s=>SIDS.forEach(k=>{if(s.M[k]==='running'){const st=STEPS[k];
+    for(const id of [st.ex,st.prov]){if(!busy.has(id))busy.set(id,[]);busy.get(id).push('L'+s.line+'·'+k)}}}));
+  const act=new Set(),bad=new Set();(last?last.flows:[]).forEach(([a,b,,f])=>{act.add(a);act.add(b);if(f){bad.add(b)}});
+  const off=id=>(id==='agvexecutor'&&!env.execOnline)||(id==='nutrunner'&&!env.nrOnline);
+  let g=`<svg viewBox="0 0 1000 322" role="img" aria-label="Arrowhead Local Cloud with core systems, executors and application systems">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--steel)"/></marker>
+  <marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--bad)"/></marker></defs>`;
+  g+=`<text x="10" y="80" font-size="9" fill="var(--muted)" font-family="IBM Plex Mono,monospace" letter-spacing=".08em">CORE SYSTEMS</text><text x="10" y="128" font-size="9" fill="var(--muted)" font-family="IBM Plex Mono,monospace" letter-spacing=".08em">CHOREOGRAPHER EXECUTORS</text><text x="10" y="252" font-size="9" fill="var(--muted)" font-family="IBM Plex Mono,monospace" letter-spacing=".08em">APPLICATION SYSTEMS</text>`;
+  g+=`<line x1="10" y1="96" x2="990" y2="96" stroke="var(--line)" stroke-dasharray="2 4"/><line x1="10" y1="222" x2="990" y2="222" stroke="var(--line)" stroke-dasharray="2 4"/>`;
+  for(const[id,b]of Object.entries(LC)){
+    const on=act.has(id),bz=busy.has(id),ko=bad.has(id)||off(id);
+    const fill=on?(ko?'var(--bad)':'var(--safety)'):'var(--panel)',tc=on?'var(--bg)':'var(--ink)';
+    const stroke=ko?'var(--bad)':bz?'var(--safety)':'var(--ink)';
+    const sub=off(id)?'offline':bz?busy.get(id).join(' '):(id==='toolcrib'&&env.holder!==null?'held by L'+lineOf(env.holder):b.sub);
+    g+=`<g class="${bz&&!on?'pulse':''}"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="3" fill="${fill}" stroke="${stroke}" stroke-width="${bz||on||ko?2:1}" ${off(id)?'stroke-dasharray="4 3"':''}/>
+      <text x="${b.x+b.w/2}" y="${b.y+(b.kind==='ex'?18:20)}" text-anchor="middle" font-size="${b.kind==='core'?14:11}" font-weight="${b.kind==='core'?700:500}" font-family="${b.kind==='core'?'Barlow Condensed,Arial Narrow,sans-serif':'IBM Plex Mono,monospace'}" fill="${on&&!ko?'var(--safety-ink)':tc}">${b.lab}</text>
+      <text x="${b.x+b.w/2}" y="${b.y+b.h-8}" text-anchor="middle" font-size="8.5" font-family="IBM Plex Mono,monospace" fill="${on&&!ko?'var(--safety-ink)':on?'var(--bg)':bz?'var(--ink)':'var(--muted)'}">${sub.length>22?sub.slice(0,21)+'…':sub}</text></g>`}
+  (last?last.flows:[]).forEach(([a,b,lab,f])=>{if(a===b)return;const A=LC[a],B=LC[b];let x1,y1,x2,y2;
+    if(Math.abs(A.y-B.y)<5){const r=A.x<B.x;x1=r?A.x+A.w:A.x;x2=r?B.x:B.x+B.w;y1=A.y+A.h/2+(r?-6:6);y2=y1}
+    else{const down=A.y<B.y,off=down?-7:7;x1=A.x+A.w/2+off;y1=down?A.y+A.h:A.y;x2=B.x+B.w/2+off;y2=down?B.y:B.y+B.h}
+    const c=f?'var(--bad)':'var(--steel)',mx=(x1+x2)/2,my=(y1+y2)/2+(Math.abs(y1-y2)<5?-6:0);
+    g+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="2" marker-end="url(#${f?'ahb':'ah'})"/>
+      <text x="${mx}" y="${my}" text-anchor="middle" font-size="9.5" font-family="IBM Plex Mono,monospace" fill="${c}" stroke="var(--bg)" stroke-width="3" paint-order="stroke">${lab}</text>`});
+  $('lc').innerHTML=g+'</svg>';
+  $('lccap').innerHTML=last?`<b>#${last.g} · L${last.line} · ${last.lab}</b> — ${last.flows.filter(f=>f[0]!==f[1]).map(f=>f[0]+' → '+f[1]+': '+f[2]).join(' | ')||'internal to the Choreographer'}`:'';
+}
+function propOne(){ // running intervals of U-Steps of different Sessions must be disjoint
+  const iv=[];sessions.forEach(s=>s.uses.forEach(([a,b])=>iv.push({sid:s.sid,a,b:b??Infinity})));
+  for(let i=0;i<iv.length;i++)for(let j=i+1;j<iv.length;j++)if(iv[i].sid!==iv[j].sid&&iv[i].a<iv[j].b&&iv[j].a<iv[i].b)return false;return true}
+function monitor(){
+  const p1=propOne(), runs=sessions.filter(s=>s.status==='running');
+  const stuck=runs.length&&runs.every(s=>applicable(s).length===0);
+  const closed=sessions.filter(s=>s.status==='completed'), bad=closed.filter(s=>s.n!==BOUND);
+  const lemma=sessions.every(s=>SIDS.every(k=>s.M[k]==='inactive'||STEPS[k].dep.every(p=>s.xi[p]!==undefined||!(['enabled','running'].includes(s.M[k])))));
+  $('monitor').innerHTML=[
+    ['Proposition 1 · exclusive tool use',p1?'holds':'VIOLATED',p1?'ok':'bad'],
+    ['Lemma 2 · inputs defined',lemma?'holds':'VIOLATED',lemma?'ok':'bad'],
+    ['Theorem 1 · completed runs = 33',closed.length?(bad.length?bad.length+' off':closed.length+' × 33'):'no run closed yet',closed.length?(bad.length?'bad':'ok'):'warn'],
+    ['Progress (Theorem 2 premise)',stuck?'no rule applicable':'a rule applies',stuck?'bad':'ok'],
+  ].map(([l,v,c])=>`<div class="mon ${c}"><div class="lbl">${l}</div><div class="v">${v}</div></div>`).join('')+
+  (stuck?`<p class="note" style="flex-basis:100%">Every running Session waits on a ReserveTool call that never returns, because the holder failed before ReleaseTool. Theorem 2 assumes each invocation eventually yields d′ or fail; the pending semantics of (A1) falls outside that assumption. Switch on crib leases to free the tool.</p>`:'');
+}
+
+// ---------- scheduler ----------
+function fireRandom(){const all=[];sessions.filter(s=>s.status==='running').forEach(s=>applicable(s).forEach(t=>{all.push([s,t])}));
+  const hs=sessions.find(x=>x.sid===env.holder);
+  if(env.lease&&hs&&hs.status==='failed'){if(!all.length||rnd()<0.25){leaseExpire();return true}}
+  if(!all.length){stopAuto();return false}const[s,t]=all[Math.floor(rnd()*all.length)];fire(s,t);return true}
+function stopAuto(){clearTimeout(autoTimer);autoTimer=null;$('auto').textContent='Auto-run'}
+$('auto').onclick=()=>{if(autoTimer){stopAuto();return}$('auto').textContent='Pause';const tick=()=>{if(!fireRandom())return;autoTimer=setTimeout(tick,+$('speed').value)};autoTimer=1;tick()};
+$('step').onclick=()=>fireRandom();
+[1,2,3].forEach(l=>$('addL'+l).onclick=()=>{if(sessions.some(s=>s.line===l&&s.status==='running'))return;newSession(l)});
+const bindToggle=(id,key)=>$(id).onchange=e=>{env[key]=key==='execOnline'||key==='nrOnline'?!e.target.checked:e.target.checked;render()};
+bindToggle('fRoute','route');bindToggle('fExec','execOnline');bindToggle('fNr','nrOnline');bindToggle('fTorque','drift');bindToggle('fLease','lease');
+$('copy').onclick=async()=>{const txt=JSON.stringify(log.slice().reverse(),null,1);try{await navigator.clipboard.writeText(txt);$('copy').textContent='Copied'}catch{$('copy').textContent='Copy blocked'}setTimeout(()=>$('copy').textContent='Copy trace JSON',1400)};
+
+// ---------- scenarios ----------
+function load(sc){
+  stopAuto(); env=freshEnv(); sessions=[]; log=[]; gidx=0; nextSid=1; seed=7; last=null;
+  ['fRoute','fExec','fNr','fTorque','fLease'].forEach(id=>$(id).checked=false);
+  const run=(s,labs)=>labs.forEach(l=>{const t=applicable(s).find(x=>x.lab===l);if(t)fire(s,t)});
+  if(sc==='t10'){newSession(2)}
+  if(sc==='all3'){newSession(1);newSession(2);newSession(3)}
+  if(sc==='t11'){const s2=(newSession(2),sessions[0]);run(s2,['enable(res)','enable(prog)','bind(res)','done(res)','enable(move)','bind(move)']);
+    const s1=(newSession(1),sessions[1]);run(s1,['enable(res)','bind(res)'])}
+  if(sc==='fail'){const s2=(newSession(2),sessions[0]);run(s2,['enable(res)','enable(prog)','bind(res)','done(res)','enable(move)','bind(move)']);
+    newSession(1);newSession(3);env.route=true;$('fRoute').checked=true}
+  render();
+}
+$('reset').onclick=()=>load($('scen').value);
+load('t11');
+})();
+</script>
+
+</body>
+</html>

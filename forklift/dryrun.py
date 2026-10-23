@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Offline dry run: a minimal stand-in for the 4.6.2 Choreographer and Orchestrator that executes plan.json
+against plant.py with the transition rules of Sec. 5.9, over real HTTP and with the real executor contract:
+POST /service-info -> dependencies, orchestration with the Executor as requester (main service and
+dependencies), POST /start with preconditionOrchestrationResults, notify-step-done back.
+No Arrowhead core systems needed; use it to check the kit first.
+
+  python3 dryrun.py          # L2, then L1 and L3 while L2 holds NR7
+  python3 dryrun.py --fail   # AGV route blocked during L2's delivery; the lease expires, L1 and L3 finish
+"""
+import argparse, json, queue, threading, time, pathlib, sys
+HERE = pathlib.Path(__file__).parent; sys.path.insert(0, str(HERE))
+import plant                                                            # noqa: E402
+
+PORT = 18457
+PLAN = json.loads((HERE / "plan.json").read_text())
+SVC_PROVIDER = {s: (n, p) for n, (p, ss) in plant.PROVIDERS.items() for s in ss}
+SVC_EXECUTOR = {s: (n, p) for n, (p, s, _) in plant.EXECUTORS.items()}
+AUTH = {(n, s) for n, (_, svc, deps) in plant.EXECUTORS.items() for s in [svc, "session-context"] + deps}
+INBOX, NEXT_ID, LOCK = {}, [1000], threading.Lock()
+
+def orchestrate(requester, svc):                                        # O_i: plan pi, or None for bottom
+    if svc not in SVC_PROVIDER or (requester, svc) not in AUTH: return None
+    n, p = SVC_PROVIDER[svc]
+    if n == "nutrunner" and getattr(plant, "NR_OFFLINE", False): return None
+    return {"provider": {"systemName": n, "address": "127.0.0.1", "port": p}, "serviceUri": "/" + svc,
+            "service": {"serviceDefinition": svc}, "interfaces": [{"interfaceName": plant.IFACE}]}
+
+def session(line, sid, out):
+    acts = PLAN["actions"]; A = [x["name"] for x in acts]
+    step = {s["name"]: dict(s, action=x["name"]) for x in acts for s in x["steps"]}
+    pre = {n: [m for m, s in step.items() if n in s["nextStepNames"]] for n in step}
+    M = {n: "inactive" for n in step}; MA = {a: "inactive" for a in A}; MA[A[0]] = "active"
+    n_tr, status, by_ssid = 0, "running", {}
+    def tr(label):
+        nonlocal n_tr; n_tr += 1; out.append((time.time(), line, n_tr, label))
+    INBOX[sid] = queue.Queue()
+    while status == "running":
+        fired = True
+        while fired and status == "running":
+            fired = False
+            if all(v == "completed" for v in MA.values()): status = "completed"; tr("close"); break
+            for i, a in enumerate(A):
+                if MA[a] == "inactive" and i and MA[A[i-1]] == "completed": MA[a] = "active"; tr(f"start({a})"); fired = True
+                if MA[a] == "active" and all(M[n] == "completed" for n in step if step[n]["action"] == a):
+                    MA[a] = "completed"; tr(f"finish({a})"); fired = True
+            for n, s in step.items():
+                if M[n] == "inactive" and MA[s["action"]] == "active" and all(M[p] == "completed" for p in pre[n]):
+                    M[n] = "enabled"; tr(f"enable({n})"); fired = True
+                elif M[n] == "enabled":
+                    svc = s["serviceRequirement"]["serviceDefinitionRequirement"]
+                    ex, port = SVC_EXECUTOR[svc]
+                    info = plant.post(f"http://127.0.0.1:{port}/service-info", {"serviceDefinition": svc, "minVersion": 1, "maxVersion": 1}, 5)
+                    deps = [orchestrate(ex, d["serviceDefinitionRequirement"]) for d in info["dependencies"]]
+                    pi = orchestrate(ex, svc)
+                    if pi is None or None in deps: status = "failed"; tr(f"fail({n}) S-FAILBIND"); break
+                    with LOCK: NEXT_ID[0] += 1; ssid = NEXT_ID[0]
+                    by_ssid[ssid] = n; M[n] = "running"
+                    tr(f"bind({n}) -> {pi['provider']['systemName']} via {ex} [+{', '.join(d['service']['serviceDefinition'] for d in deps)}]")
+                    plant.post(f"http://127.0.0.1:{port}/start", {"sessionId": sid, "sessionStepId": ssid, "quantity": 1,
+                               "staticParameters": s["staticParameters"], "mainOrchestrationResult": pi,
+                               "preconditionOrchestrationResults": deps}, timeout=5)
+                    fired = True
+        if status != "running": break
+        msg = INBOX[sid].get()                                          # notify-step-done
+        n = by_ssid[msg["sessionStepId"]]
+        if msg["status"] == "SUCCESS": M[n] = "completed"; tr(f"done({n})")
+        else: status = "failed"; tr(f"fail({n}) S-FAILINVOKE: {msg.get('message')}")
+    out.append((time.time(), line, n_tr, f"== L{line} session {sid} {status} after {n_tr} transitions"))
+
+def chor_dispatch(method, path, q, body):
+    if path == "/choreographer/executor/notify-step-done": INBOX[body["sessionId"]].put(body); return 200, None
+    return 404, {"error": path}
+
+def line_controller_start(line, sid, out, th):
+    """Client start: the Session begins asynchronously (JMS in 4.6.2); rho is bound a moment later."""
+    t = threading.Thread(target=session, args=(line, sid, out), daemon=True); t.start(); th.append(t)
+    time.sleep(0.2)
+    plant.post(f"http://127.0.0.1:9300/session-context/{sid}/rho",
+               {"tool": "NR7", "line": line, "stn": f"st{line}", "variant": {1: "F25", 2: "F30", 3: "F35"}[line], "crib": "crib"})
+
+def main():
+    ap = argparse.ArgumentParser(); ap.add_argument("--fail", action="store_true"); a = ap.parse_args()
+    plant.TRACE_PATH = str(HERE / "trace_dryrun.jsonl"); open(plant.TRACE_PATH, "w").close()
+    plant.PLANT["agv_seconds"] = 0.4
+    plant.start_all(f"http://127.0.0.1:{PORT}", lease_s=1.5)
+    plant.serve(PORT, chor_dispatch)
+    out, th = [], []
+    for k, line in enumerate([2, 1, 3]):
+        line_controller_start(line, 10 + line, out, th)
+        if a.fail and k == 0:
+            plant.PLANT["agv_blocked"] = True
+            threading.Timer(0.8, lambda: plant.PLANT.update(agv_blocked=False)).start()   # route cleared later
+    for t in th: t.join(timeout=30)
+    t0 = out[0][0] if out else 0
+    for t, line, n, lab in sorted(out):
+        print(f"{t - t0:6.2f}s  L{line}  #{n:<2}  {lab}")
+    print("crib:", {"holder": plant.CRIB.holder, "queue": plant.CRIB.queue})
+    for ln in open(plant.TRACE_PATH):
+        e = json.loads(ln)
+        if e["ev"].startswith("crib-"): print("trace:", ln.strip())
+
+if __name__ == "__main__":
+    main()

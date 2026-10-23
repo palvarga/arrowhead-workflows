@@ -1,0 +1,18 @@
+{
+ "name": "temperature-control",
+ "firstActionName": "control",
+ "actions": [
+  {
+   "name": "control",
+   "firstStepNames": ["read"],
+   "steps": [
+    {"name": "read", "serviceRequirement": {"serviceDefinitionRequirement": "read-temperature", "interfaceRequirements": ["HTTP-INSECURE-JSON"]},
+     "staticParameters": {"step": "read", "dep": ""}, "quantity": 1, "nextStepNames": ["evaluate"]},
+    {"name": "evaluate", "serviceRequirement": {"serviceDefinitionRequirement": "evaluate-temperature", "interfaceRequirements": ["HTTP-INSECURE-JSON"]},
+     "staticParameters": {"step": "eval", "dep": "read"}, "quantity": 1, "nextStepNames": ["switch"]},
+    {"name": "switch", "serviceRequirement": {"serviceDefinitionRequirement": "switch-heating", "interfaceRequirements": ["HTTP-INSECURE-JSON"]},
+     "staticParameters": {"step": "act", "dep": "eval"}, "quantity": 1, "nextStepNames": []}
+   ]
+  }
+ ]
+}
