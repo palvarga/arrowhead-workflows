@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arrowhead Workflow</title>
+<style>
+  :root { --bg:#f7f8fa; --fg:#1b2430; --muted:#5b6675; --card:#fff; --line:#d9dee5; --accent:#1d5fd1; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12161c; --fg:#e8ecf1; --muted:#9aa5b4; --card:#1a2028; --line:#2c3541; --accent:#6ea0ff; }
+  }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:48px 16px; }
+  h1 { font-size:1.8rem; margin:0 0 8px; }
+  p { color:var(--muted); margin:0 0 24px; }
+  a.card { display:block; background:var(--card); border:1px solid var(--line); border-radius:10px;
+           padding:16px 20px; margin-bottom:12px; text-decoration:none; color:inherit; }
+  a.card:hover { border-color:var(--accent); }
+  a.card b { display:block; color:var(--accent); margin-bottom:4px; }
+  a.card span { color:var(--muted); font-size:.95rem; }
+  footer { margin-top:32px; font-size:.9rem; color:var(--muted); }
+  footer a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Arrowhead Workflow</h1>
+  <p>Interactive simulations of the two worked examples from <i>Arrowhead Workflow Choreography: a Formal Definition of Recipes and their Execution Model</i>, running on the Eclipse Arrowhead 4.6.2 executor model.</p>
+  <a class="card" href="temperature-control"><b>Temperature control</b><span>Simple demonstration (Sec. 7): read, evaluate, switch, one Workflow Session per control period.</span></a>
+  <a class="card" href="forklift"><b>Shared tool delivery in a forklift assembly plant</b><span>Worked example (Sec. 8): three concurrent line Sessions sharing one nutrunner through a leased tool crib.</span></a>
+  <footer>Source and runnable kits: <a href="https://github.com/palvarga/arrowhead-workflows">github.com/palvarga/arrowhead-workflows</a></footer>
+</main>
+</body>
+</html>

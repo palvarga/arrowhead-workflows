@@ -17,6 +17,8 @@ providers with the Executor as requester.
 
 ## The web pages
 
+The `web/` folder is a static site (`web/index.html` links both pages). On Vercel, import this repository; `vercel.json` sets `web` as the output directory and no build step is needed.
+
 Open either HTML file in a browser; no server or build step is needed. In each page you act as the scheduler: every button
 is a rule instance (A-START, S-ENABLE, S-BIND, S-DONE, A-FINISH, Z-CLOSE, S-FAILBIND, S-FAILINVOKE) that applies in the
 current Workflow Session state. The pages show
