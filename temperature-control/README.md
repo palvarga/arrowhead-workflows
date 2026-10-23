@@ -1,6 +1,6 @@
 # Arrowhead Workflow: temperature-control example on Eclipse Arrowhead 4.6.2
 
-Runs the simple demonstration of Sec. 7: one Action, the Steps read → evaluate → switch, threshold ρ_thr = 23 °C.
+Runs the simple demonstration one Action, the Steps read → evaluate → switch, threshold ρ_thr = 23 °C.
 One control period is one Workflow Session, started by the application system `controlclock`.
 
 | File | Role |
