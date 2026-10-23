@@ -69,7 +69,5 @@ python3 setup_and_run.py block on --plant-host <plant-ip>                       
 ```
 
 Monitoring: `GET /choreographer/mgmt/session`, `/mgmt/session/steps`, `/mgmt/worklog`; plant side `trace.jsonl`.
-Untested against live core systems: the dry run uses a stand-in. Points to watch on the first live run: whether
-`/serviceregistry/query` is open to the setup script in your mode, and the interface name the core services register
-(`HTTP-INSECURE-JSON` in insecure mode).
+
 
