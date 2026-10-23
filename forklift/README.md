@@ -1,7 +1,7 @@
 # Arrowhead Workflow: shared-tool forklift example on Eclipse Arrowhead 4.6.2
 
-Runs the worked example of Sec. 8 ("Shared Tool Delivery in a Forklift Assembly Plant") on the Workflow
-Choreographer of `eclipse-arrowhead/core-java-spring` release **4.6.2** (19 Mar 2024, latest). Endpoint paths and
+"Shared Tool Delivery in a Forklift Assembly Plant") on the Workflow
+Choreographer of `eclipse-arrowhead/core-java-spring` release **4.6.2**. Endpoint paths and
 DTO fields were checked against the 4.6.2 sources (`CommonConstants.java`, `CoreSystemService.java`,
 `Choreographer*DTO.java`, `ChoreographerService.java`, `ChoreographerDriver.java`, `ChoreographerPlanController.java`).
 
@@ -73,11 +73,3 @@ Untested against live core systems: the dry run uses a stand-in. Points to watch
 `/serviceregistry/query` is open to the setup script in your mode, and the interface name the core services register
 (`HTTP-INSECURE-JSON` in insecure mode).
 
-## 3. Remaining differences from the model
-
-1. The model's case "η(s) undefined ⇒ CH_i consumes" does not exist in 4.6.2; c_z(s) is always an Executor.
-2. ρ is not part of the session-start DTO; it is bound through `session-context` right after the start.
-3. 4.6.2 has partial recovery (`ERROR` → another Executor; `FATAL_ERROR` → abort and `POST <executor>/abort` to active Steps).
-   No compensating Step runs; the lease is what frees the tool.
-4. With the lease, the waiting of ReserveTool is bounded, which is the assumption Theorem 2 needs. Proposition 1 then holds
-   under the extra condition that no single tool Step outlasts the lease.
