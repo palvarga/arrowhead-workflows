@@ -1,0 +1,32 @@
+[
+  {
+    "id": "I-tool",
+    "text": "Line 2 needs the variant fasteners tightened with the shared nutrunner. Return the tool afterwards so that the other lines are not blocked.",
+    "ladder_level": "5-6",
+    "expected": "accept",
+    "reference_plan": "../forklift/plan.json",
+    "paper": "Section 9 (main example)"
+  },
+  {
+    "id": "I-tool-L3",
+    "text": "Line 3 has a variant that needs the shared nutrunner for its fasteners; bring the tool back to the crib when done.",
+    "ladder_level": "5-6",
+    "expected": "accept",
+    "reference_plan": "../forklift/plan.json",
+    "paper": "variant of the main example"
+  },
+  {
+    "id": "I-noqc",
+    "text": "Line 2 needs the variant fasteners tightened with the shared nutrunner. Skip the quality check to save time.",
+    "ladder_level": "5-6",
+    "expected": "clarify",
+    "paper": "Table 9, D6"
+  },
+  {
+    "id": "I-wrench",
+    "text": "Tighten the line 2 fasteners with the manual torque wrench.",
+    "ladder_level": "1",
+    "expected": "reject",
+    "paper": "Table 9, D7"
+  }
+]

@@ -14,6 +14,8 @@ providers with the Executor as requester.
 | `web/forklift.html` | Interactive simulation of the shared-tool delivery example in a forklift assembly plant (Sec. 8) |
 | `temperature-control/` | Plan, plant, Executors, setup script and offline dry run for Sec. 7 |
 | `forklift/` | Plan, plant, Executors, tool lease, setup script and offline dry run for Sec. 8 |
+| `web/intent.html` | Intent to Recipe: runs of the intent pipeline on the forklift example, round by round |
+| `intent/` | Intent-to-Recipe pipeline for the forklift example (Translator, Validator, Compiler), Worked Example II of the intent paper |
 
 ## The web pages
 
@@ -39,3 +41,12 @@ Results of the dry runs:
 - temperature control: 11 transitions per period; with a broken switch, S-FAILINVOKE after 9 transitions and the next period starts normally;
 - forklift: three concurrent line Sessions, 33 transitions each, the tool granted in request order; with the AGV route blocked,
   the failed Session's tool lease expires and the other lines complete.
+
+## Intent to Recipe
+
+`intent/` is the runnable companion of Worked Example II of *Intent-based Workflow Choreography* (P. Varga, under
+review at *Sensors*). An Intent Translator (stored drafts, or Claude through the Anthropic API) turns an operator's
+intent for the forklift example into a draft Recipe; a deterministic Validator applies checks I1–I2 and V1–V8; an
+accepted Recipe is compiled to a Choreographer plan, compared with `forklift/plan.json`, and executed with
+`forklift/dryrun.py --plan`. With the stored drafts, defects D1–D5 are caught, the Recipe is accepted in round 2,
+the compiled plan is identical to the hand-authored one, and the kit runs 3 × 33 transitions. See `intent/README.md`.

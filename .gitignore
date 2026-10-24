@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 trace*.jsonl
 ids.json
+
+intent/out/

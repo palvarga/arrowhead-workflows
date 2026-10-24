@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intent to Recipe</title>
+<style>
+  :root { --bg:#f7f8fa; --fg:#1b2430; --muted:#5b6675; --card:#fff; --line:#d9dee5; --accent:#1d5fd1;
+          --ok:#1e7b3a; --okbg:#e3f3e7; --rev:#8a5a00; --revbg:#fff2cf; --cla:#6b3fa0; --clabg:#efe6fa;
+          --rej:#b3261e; --rejbg:#fbe3e1; --code:#eef1f5; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12161c; --fg:#e8ecf1; --muted:#9aa5b4; --card:#1a2028; --line:#2c3541; --accent:#6ea0ff;
+            --ok:#7fd69a; --okbg:#173022; --rev:#f2c463; --revbg:#33290f; --cla:#c9a6f5; --clabg:#2a1f3a;
+            --rej:#ff8f86; --rejbg:#3a1a18; --code:#222a35; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:1.6rem; margin:0 0 6px; }
+  h2 { font-size:1.15rem; margin:0; }
+  p.lead { color:var(--muted); margin:0 0 20px; }
+  a { color:var(--accent); }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 20px; }
+  .bar label { color:var(--muted); font-size:.9rem; }
+  select, button { font:inherit; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
+  button.on { border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:.85rem; color:var(--muted); margin:0 0 20px; }
+  .flow span.box { border:1px solid var(--line); background:var(--card); border-radius:6px; padding:3px 8px; color:var(--fg); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:16px; }
+  .head { display:flex; flex-wrap:wrap; gap:8px; align-items:baseline; justify-content:space-between; }
+  .quote { font-style:italic; margin:8px 0; }
+  .meta { color:var(--muted); font-size:.85rem; }
+  .badge { display:inline-block; padding:1px 8px; border-radius:999px; font-size:.8rem; font-weight:600; text-transform:uppercase; }
+  .accept { color:var(--ok); background:var(--okbg); } .revise { color:var(--rev); background:var(--revbg); }
+  .clarify { color:var(--cla); background:var(--clabg); } .reject { color:var(--rej); background:var(--rejbg); }
+  details { border-top:1px solid var(--line); padding-top:8px; margin-top:10px; }
+  summary { cursor:pointer; display:flex; gap:8px; align-items:center; list-style:none; }
+  summary::-webkit-details-marker { display:none; }
+  summary::before { content:"▸"; color:var(--muted); }
+  details[open] > summary::before { content:"▾"; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:8px; }
+  @media (max-width:720px) { .cols { grid-template-columns:1fr; } }
+  .act { border:1px dashed var(--line); border-radius:8px; padding:6px 8px; margin-bottom:6px; }
+  .act b { font-size:.85rem; }
+  .step { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.8rem; padding:1px 0; overflow-wrap:anywhere; }
+  .step .x { color:var(--accent); }
+  .step .bad { color:var(--rej); font-weight:600; }
+  table { border-collapse:collapse; width:100%; font-size:.85rem; }
+  td, th { text-align:left; padding:3px 6px; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; }
+  .cols > div { min-width:0; }
+  code { overflow-wrap:anywhere; }
+  td.c { white-space:nowrap; font-weight:600; }
+  .note { color:var(--muted); font-size:.85rem; margin-top:6px; }
+  pre { background:var(--code); border-radius:6px; padding:8px; font-size:.78rem; overflow-x:auto; margin:6px 0 0; }
+  .empty { color:var(--muted); }
+  footer { margin-top:28px; font-size:.9rem; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Intent to Recipe: shared-tool tightening</h1>
+  <p class="lead">Runs of the Intent-to-Recipe pipeline on the forklift example (intent paper, Section 9).
+    A Translator proposes an interpreted intent and a draft Recipe; the deterministic Recipe Validator applies
+    checks I1–I2 and V1–V8; accepted Recipes are compiled to a Choreographer plan, compared with the hand-authored
+    <code>forklift/plan.json</code>, and executed in the kit. See <a href="forklift">the forklift simulation</a> for the execution itself.</p>
+  <div class="flow"><span class="box">intent text</span>→<span class="box">Translator</span>→<span class="box">draft Recipe</span>→<span class="box">Validator I1–I2, V1–V8</span>→<span class="box">accept / revise / clarify / reject</span>→<span class="box">Compiler → plan.json</span>→<span class="box">kit dry run</span></div>
+  <div class="bar"><label for="run">Run</label><select id="run"></select><span class="meta" id="runmeta"></span></div>
+  <div id="list"></div>
+  <footer>Source: <a href="https://github.com/palvarga/arrowhead-workflows/tree/main/intent">intent/</a> in
+    github.com/palvarga/arrowhead-workflows · <a href="./">all examples</a></footer>
+</main>
+<script src="intent-data.js"></script>
+<script>
+const RUNS = window.INTENT_RUNS || {};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const badge = v => `<span class="badge ${esc(v)}">${esc(v)}</span>`;
+
+function recipeHtml(r, bad) {
+  if (!r) return '<div class="empty">no Recipe proposed</div>';
+  return (r.actions || []).map(a => `<div class="act"><b>${esc(a.name)}</b>${a.next ? ` <span class="meta">→ ${esc(a.next)}</span>` : ""}` +
+    (a.steps || []).map(s => {
+      const p = s.params && Object.keys(s.params).length ? " " + esc(JSON.stringify(s.params)) : "";
+      const ex = s.executor ? ` <span class="x">via ${esc(s.executor)}</span>` : "";
+      const dep = s.dep && s.dep.length ? ` dep[${esc(s.dep.join(","))}]` : "";
+      const nx = s.next && s.next.length ? ` → ${esc(s.next.join(","))}` : "";
+      const cls = bad.some(m => m.includes(s.name) || m.includes(s.service)) ? "bad" : "";
+      return `<div class="step"><span class="${cls}">${esc(s.name)}: ${esc(s.service)}</span>${p}${ex}${dep}${nx}</div>`;
+    }).join("") + `</div>`).join("");
+}
+
+function interpHtml(i) {
+  if (!i) return '<div class="empty">no interpretation</div>';
+  const rows = [["name", i.name], ["scope", JSON.stringify(i.scope)], ["goal", i.goal],
+    ["constraints", (i.constraints || []).join("; ")], ["preference", i.preference], ["horizon", i.horizon],
+    ["requested", (i.requested_capabilities || []).join(", ")], ["omit", (i.omit_services || []).join(", ")]]
+    .filter(r => r[1]);
+  return `<table>${rows.map(r => `<tr><td class="c">${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</table>`;
+}
+
+function render() {
+  const key = document.getElementById("run").value, run = RUNS[key];
+  const list = document.getElementById("list");
+  if (!run) { list.innerHTML = '<div class="card empty">No runs exported yet. Run <code>python3 intent/pipeline.py --all --run --export-web</code>.</div>'; return; }
+  document.getElementById("runmeta").textContent =
+    `${run.translator}${run.model ? " · " + run.model : ""} · ${run.timestamp}${run.no_lease ? " · without lease semantics" : ""}`;
+  list.innerHTML = run.results.map(res => {
+    const it = res.intent;
+    const rounds = res.trace.map((t, k) => {
+      const bad = t.findings.filter(f => !f.ok);
+      const badMsgs = bad.map(f => f.message);
+      return `<details ${k === res.trace.length - 1 ? "open" : ""}><summary>Round ${t.round} ${badge(t.verdict)}
+        <span class="meta">${esc(t.source)}</span></summary>
+        ${t.note ? `<div class="note">${esc(t.note)}</div>` : ""}
+        <div class="cols"><div><div class="meta">Interpreted intent</div>${interpHtml(t.interpretation)}</div>
+        <div><div class="meta">Draft Recipe</div>${recipeHtml(t.recipe, badMsgs)}</div></div>
+        <div class="meta" style="margin-top:8px">Validator findings</div>
+        <table>${t.findings.map(f => `<tr><td class="c">${esc(f.check)}</td><td>${f.ok ? '<span class="badge accept">ok</span>' : badge(f.severity)}</td><td>${esc(f.message)}${f.fact ? ` <span class="meta">(${esc(f.fact)})</span>` : ""}</td></tr>`).join("")}</table>
+      </details>`;
+    }).join("");
+    const idt = res.identical_to_reference === true ? "compiled plan identical to the hand-authored forklift/plan.json"
+              : res.identical_to_reference === false ? "compiled plan differs from forklift/plan.json: " + (res.reference_diffs || []).slice(0, 4).join("; ") : "";
+    const dry = (res.dryrun || []).length ? `<pre>${esc(res.dryrun.join("\n"))}</pre>` : "";
+    return `<div class="card"><div class="head"><h2>${esc(it.id)}</h2><div>expected ${badge(it.expected)} · result ${badge(res.verdict)} · ${res.rounds} round(s)</div></div>
+      <div class="quote">“${esc(it.text)}”</div>
+      <div class="meta">Ladder level ${esc(it.ladder_level)} · ${esc(it.paper || "")}</div>
+      ${idt ? `<div class="note">${esc(idt)}</div>` : ""}${dry}${rounds}</div>`;
+  }).join("");
+}
+
+const sel = document.getElementById("run");
+const keys = Object.keys(RUNS);
+sel.innerHTML = keys.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join("") || "<option>none</option>";
+sel.addEventListener("change", render);
+render();
+</script>
+</body>
+</html>

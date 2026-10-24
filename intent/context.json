@@ -1,0 +1,176 @@
+{
+  "_comment": "Ctx_i of the shared-tool forklift example (intent paper, Section 9, Table 7). K_AH: what Arrowhead knows; K_eng: engineering facts E1-E6; K_runtime/K_user: the current request (E7). The validator reads the machine-readable fields; the 'text' fields are given to the Translator.",
+  "local_cloud": "forklift-plant",
+  "K_AH": {
+    "services": {
+      "reserve-tool": {
+        "provider": "toolcrib",
+        "text": "Reserve the shared tool for a line. Input: tool id, line. Result: reservation token (lease)."
+      },
+      "release-tool": {
+        "provider": "toolcrib",
+        "text": "Release a reservation. Input: tool id, reservation token."
+      },
+      "get-program": {
+        "provider": "mes",
+        "text": "Tightening program of a forklift variant. Input: variant. Result: (bolt count, target torque N*m, relative tolerance)."
+      },
+      "transport-tool": {
+        "provider": "agvfleet",
+        "text": "AGV mission moving a tool. Input: tool id, from, to, reservation token. Long-running."
+      },
+      "configure-tool": {
+        "provider": "nutrunner",
+        "text": "Load a tightening program into the nutrunner. Input: tool id, program."
+      },
+      "tighten-fasteners": {
+        "provider": "nutrunner",
+        "text": "Tighten all fasteners according to the loaded program. Result: measured torques."
+      },
+      "evaluate-tightening": {
+        "provider": "qms",
+        "text": "Evaluate measured torques against a program. Input: torques, program. Result: OK or NOK."
+      },
+      "record-tightening": {
+        "provider": "qms",
+        "text": "Record a tightening result for traceability. Input: line, variant, tool id, torques."
+      }
+    },
+    "executors": {
+      "agvexecutor": {
+        "text": "Workflow Executor w_agv supervising long-running AGV missions."
+      }
+    },
+    "authorization": {
+      "_comment": "consumer -> services it may consume (E2). 'choreographer' is CH_i acting as consumer of non-delegated Steps.",
+      "choreographer": [
+        "reserve-tool",
+        "release-tool",
+        "get-program",
+        "configure-tool",
+        "tighten-fasteners",
+        "evaluate-tightening",
+        "record-tightening"
+      ],
+      "agvexecutor": [
+        "transport-tool"
+      ]
+    }
+  },
+  "K_eng": {
+    "facts": [
+      {
+        "id": "E1",
+        "text": "reserve-tool grants the tool to at most one requester; a request for a held tool stays pending until release-tool has been processed."
+      },
+      {
+        "id": "E2",
+        "text": "Only the Executor agvexecutor is authorized to consume transport-tool; Steps requiring it must set executor = agvexecutor."
+      },
+      {
+        "id": "E3",
+        "text": "The tool must be at the station (transport-tool to 'station' completed) before configure-tool or tighten-fasteners is invoked."
+      },
+      {
+        "id": "E4",
+        "text": "Tightening programs are defined per variant by the MES and obtained only through get-program. Target torque and tolerance must never appear as literals in a Recipe; Steps using the program depend on the get-program Step."
+      },
+      {
+        "id": "E5",
+        "text": "Quality policy: every tightening must be evaluated against its program and recorded for traceability."
+      },
+      {
+        "id": "E6",
+        "text": "Reservations are leases. A lease that is neither renewed nor released expires. Every tool-using Step renews the lease with the reservation token before the physical use and therefore depends on the reserve-tool Step."
+      }
+    ],
+    "physical_precondition": {
+      "fact": "E3",
+      "transport_to": "station",
+      "before_services": [
+        "configure-tool",
+        "tighten-fasteners"
+      ]
+    },
+    "program_provenance": {
+      "fact": "E4",
+      "source_service": "get-program",
+      "consumer_services": [
+        "configure-tool",
+        "evaluate-tightening"
+      ],
+      "forbidden_literal_params": [
+        "target_torque",
+        "torque",
+        "tolerance",
+        "bolt_count",
+        "program"
+      ]
+    },
+    "quality_policy": {
+      "fact": "E5",
+      "mandatory_services": [
+        "tighten-fasteners",
+        "evaluate-tightening",
+        "record-tightening"
+      ],
+      "after_service": "tighten-fasteners"
+    },
+    "exclusive_resource": {
+      "fact": "E1",
+      "resource": "NR7",
+      "acquire_service": "reserve-tool",
+      "release_service": "release-tool",
+      "tool_using_services": [
+        "transport-tool",
+        "configure-tool",
+        "tighten-fasteners"
+      ],
+      "return_transport_to": "crib"
+    },
+    "lease": {
+      "fact": "E6",
+      "declared": true,
+      "renewing_services": [
+        "transport-tool",
+        "configure-tool",
+        "tighten-fasteners"
+      ]
+    }
+  },
+  "K_runtime": {
+    "_comment": "E7: current request and plant state.",
+    "tool_location": {
+      "NR7": "crib"
+    },
+    "lines": {
+      "1": {
+        "station": "st1",
+        "variant": "F25"
+      },
+      "2": {
+        "station": "st2",
+        "variant": "F30"
+      },
+      "3": {
+        "station": "st3",
+        "variant": "F35"
+      }
+    }
+  },
+  "kit": {
+    "_comment": "Mapping to the runnable kit in ../forklift (Arrowhead 4.6.2): the plant's input composition kappa_s is keyed by these step ids; every service definition has its own Executor in the kit.",
+    "step_id": {
+      "reserve-tool": "res",
+      "get-program": "prog",
+      "transport-tool@station": "move",
+      "configure-tool": "cfg",
+      "tighten-fasteners": "tight",
+      "evaluate-tightening": "chk",
+      "record-tightening": "rec",
+      "transport-tool@crib": "ret",
+      "release-tool": "rel"
+    },
+    "interface": "HTTP-INSECURE-JSON"
+  }
+}

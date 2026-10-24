@@ -1,0 +1,27 @@
+{
+  "interpretation": {
+    "name": "SharedToolTightening",
+    "scope": {
+      "line": 2,
+      "station": "st2",
+      "tool": "NR7",
+      "variant": "F30"
+    },
+    "goal": "Fasteners at st2 tightened with the manual torque wrench.",
+    "constraints": [
+      "C1 tool used only while held",
+      "C2 torque and tolerance from the MES program",
+      "C3 tool returned to the crib and reservation released",
+      "C4 result evaluated and recorded"
+    ],
+    "preference": "hold the tool no longer than necessary",
+    "priority": "normal",
+    "horizon": "one tightening job (one Session)",
+    "requested_capabilities": [
+      "manual-torque-wrench"
+    ],
+    "omit_services": []
+  },
+  "recipe": null,
+  "note": "stored interpretation; no capability can be grounded (D7)"
+}

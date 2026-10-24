@@ -1,0 +1,132 @@
+{
+  "defect": "D2",
+  "expected_check": "V4",
+  "recipe": {
+    "name": "shared-tool-tightening",
+    "first_action": "provision",
+    "actions": [
+      {
+        "name": "provision",
+        "next": "use",
+        "steps": [
+          {
+            "name": "reserve",
+            "service": "reserve-tool",
+            "next": [
+              "configure"
+            ],
+            "dep": [],
+            "executor": null,
+            "params": {}
+          },
+          {
+            "name": "program",
+            "service": "get-program",
+            "next": [
+              "configure"
+            ],
+            "dep": [],
+            "executor": null,
+            "params": {}
+          },
+          {
+            "name": "move",
+            "service": "transport-tool",
+            "next": [],
+            "dep": [
+              "reserve"
+            ],
+            "executor": "agvexecutor",
+            "params": {
+              "to": "station"
+            }
+          },
+          {
+            "name": "configure",
+            "service": "configure-tool",
+            "next": [
+              "move"
+            ],
+            "dep": [
+              "program",
+              "reserve"
+            ],
+            "executor": null,
+            "params": {}
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "next": "return",
+        "steps": [
+          {
+            "name": "tighten",
+            "service": "tighten-fasteners",
+            "next": [
+              "evaluate",
+              "record"
+            ],
+            "dep": [
+              "configure",
+              "reserve"
+            ],
+            "executor": null,
+            "params": {}
+          },
+          {
+            "name": "evaluate",
+            "service": "evaluate-tightening",
+            "next": [],
+            "dep": [
+              "tighten",
+              "program"
+            ],
+            "executor": null,
+            "params": {}
+          },
+          {
+            "name": "record",
+            "service": "record-tightening",
+            "next": [],
+            "dep": [
+              "tighten"
+            ],
+            "executor": null,
+            "params": {}
+          }
+        ]
+      },
+      {
+        "name": "return",
+        "next": null,
+        "steps": [
+          {
+            "name": "back",
+            "service": "transport-tool",
+            "next": [
+              "release"
+            ],
+            "dep": [
+              "reserve"
+            ],
+            "executor": "agvexecutor",
+            "params": {
+              "to": "crib"
+            }
+          },
+          {
+            "name": "release",
+            "service": "release-tool",
+            "next": [],
+            "dep": [
+              "reserve"
+            ],
+            "executor": null,
+            "params": {}
+          }
+        ]
+      }
+    ]
+  }
+}

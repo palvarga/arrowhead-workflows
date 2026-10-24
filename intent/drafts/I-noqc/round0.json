@@ -1,0 +1,141 @@
+{
+  "interpretation": {
+    "name": "SharedToolTightening",
+    "scope": {
+      "line": 2,
+      "station": "st2",
+      "tool": "NR7",
+      "variant": "F30"
+    },
+    "goal": "Fasteners of the line-2 variant tightened according to the variant program, result evaluated and recorded.",
+    "constraints": [
+      "C1 tool used only while held",
+      "C2 torque and tolerance from the MES program",
+      "C3 tool returned to the crib and reservation released"
+    ],
+    "preference": "hold the tool no longer than necessary",
+    "priority": "normal",
+    "horizon": "one tightening job (one Session)",
+    "requested_capabilities": [],
+    "omit_services": [
+      "evaluate-tightening"
+    ]
+  },
+  "recipe": {
+    "name": "shared-tool-tightening",
+    "first_action": "provision",
+    "actions": [
+      {
+        "name": "provision",
+        "next": "use",
+        "steps": [
+          {
+            "name": "reserve",
+            "service": "reserve-tool",
+            "next": [
+              "move"
+            ],
+            "dep": [],
+            "executor": null,
+            "params": {}
+          },
+          {
+            "name": "program",
+            "service": "get-program",
+            "next": [
+              "configure"
+            ],
+            "dep": [],
+            "executor": null,
+            "params": {}
+          },
+          {
+            "name": "move",
+            "service": "transport-tool",
+            "next": [
+              "configure"
+            ],
+            "dep": [
+              "reserve"
+            ],
+            "executor": "agvexecutor",
+            "params": {
+              "to": "station"
+            }
+          },
+          {
+            "name": "configure",
+            "service": "configure-tool",
+            "next": [],
+            "dep": [
+              "program",
+              "reserve"
+            ],
+            "executor": null,
+            "params": {}
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "next": "return",
+        "steps": [
+          {
+            "name": "tighten",
+            "service": "tighten-fasteners",
+            "next": [
+              "record"
+            ],
+            "dep": [
+              "configure",
+              "reserve"
+            ],
+            "executor": null,
+            "params": {}
+          },
+          {
+            "name": "record",
+            "service": "record-tightening",
+            "next": [],
+            "dep": [
+              "tighten"
+            ],
+            "executor": null,
+            "params": {}
+          }
+        ]
+      },
+      {
+        "name": "return",
+        "next": null,
+        "steps": [
+          {
+            "name": "back",
+            "service": "transport-tool",
+            "next": [
+              "release"
+            ],
+            "dep": [
+              "reserve"
+            ],
+            "executor": "agvexecutor",
+            "params": {
+              "to": "crib"
+            }
+          },
+          {
+            "name": "release",
+            "service": "release-tool",
+            "next": [],
+            "dep": [
+              "reserve"
+            ],
+            "executor": null,
+            "params": {}
+          }
+        ]
+      }
+    ]
+  },
+  "note": "stored draft following the request to skip the quality check (D6)"
+}
