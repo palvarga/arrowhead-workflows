@@ -68,7 +68,7 @@ class ClaudeTranslator:
     def _call(self, messages):
         body = {"model": self.model, "max_tokens": self.max_tokens, "system": self.system, "messages": messages}
         req = urllib.request.Request(API_URL, data=json.dumps(body).encode(), method="POST", headers={
-            "x-api-key": self.api_key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+            "authorization": f"Bearer {self.api_key}", "anthropic-version": "2023-06-01", "content-type": "application/json"})
         for attempt in range(3):
             try:
                 with urllib.request.urlopen(req, timeout=self.timeout) as r:
