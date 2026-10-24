@@ -22,6 +22,8 @@
   a { color:var(--accent); }
   .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 20px; }
   .bar label { color:var(--muted); font-size:.9rem; }
+  select { max-width:100%; }
+  .bar .meta { overflow-wrap:anywhere; min-width:0; }
   select, button { font:inherit; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
   button.on { border-color:var(--accent); color:var(--accent); font-weight:600; }
   .flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:.85rem; color:var(--muted); margin:0 0 20px; }
@@ -34,7 +36,8 @@
   .accept { color:var(--ok); background:var(--okbg); } .revise { color:var(--rev); background:var(--revbg); }
   .clarify { color:var(--cla); background:var(--clabg); } .reject { color:var(--rej); background:var(--rejbg); }
   details { border-top:1px solid var(--line); padding-top:8px; margin-top:10px; }
-  summary { cursor:pointer; display:flex; gap:8px; align-items:center; list-style:none; }
+  summary { cursor:pointer; display:flex; flex-wrap:wrap; gap:8px; align-items:center; list-style:none; }
+  summary .meta { overflow-wrap:anywhere; min-width:0; }
   summary::-webkit-details-marker { display:none; }
   summary::before { content:"▸"; color:var(--muted); }
   details[open] > summary::before { content:"▾"; }
@@ -61,10 +64,11 @@
   <h1>Intent to Recipe: shared-tool tightening</h1>
   <p class="lead">Runs of the Intent-to-Recipe pipeline on the forklift example (intent paper, Section 9).
     A Translator proposes an interpreted intent and a draft Recipe; the deterministic Recipe Validator applies
-    checks I1–I2 and V1–V8; accepted Recipes are compiled to a Choreographer plan, compared with the hand-authored
+    checks I1–I2 and V1–V9; accepted Recipes are compiled to a Choreographer plan, compared with the hand-authored
     <code>forklift/plan.json</code>, and executed in the kit. See <a href="forklift">the forklift simulation</a> for the execution itself.</p>
-  <div class="flow"><span class="box">intent text</span>→<span class="box">Translator</span>→<span class="box">draft Recipe</span>→<span class="box">Validator I1–I2, V1–V8</span>→<span class="box">accept / revise / clarify / reject</span>→<span class="box">Compiler → plan.json</span>→<span class="box">kit dry run</span></div>
+  <div class="flow"><span class="box">intent text</span>→<span class="box">Translator</span>→<span class="box">draft Recipe</span>→<span class="box">Validator I1–I2, V1–V9</span>→<span class="box">accept / revise / clarify / reject</span>→<span class="box">Compiler → plan.json</span>→<span class="box">kit dry run</span></div>
   <div class="bar"><label for="run">Run</label><select id="run"></select><span class="meta" id="runmeta"></span></div>
+  <div class="card note" id="runnote" hidden></div>
   <div id="list"></div>
   <footer>Source: <a href="https://github.com/palvarga/arrowhead-workflows/tree/main/intent">intent/</a> in
     github.com/palvarga/arrowhead-workflows · <a href="./">all examples</a></footer>
@@ -103,6 +107,7 @@ function render() {
   if (!run) { list.innerHTML = '<div class="card empty">No runs exported yet. Run <code>python3 intent/pipeline.py --all --run --export-web</code>.</div>'; return; }
   document.getElementById("runmeta").textContent =
     `${run.translator}${run.model ? " · " + run.model : ""} · ${run.timestamp}${run.no_lease ? " · without lease semantics" : ""}`;
+  const rn = document.getElementById("runnote"); rn.hidden = !run.note; rn.textContent = run.note || "";
   list.innerHTML = run.results.map(res => {
     const it = res.intent;
     const rounds = res.trace.map((t, k) => {
@@ -118,9 +123,10 @@ function render() {
       </details>`;
     }).join("");
     const idt = res.identical_to_reference === true ? "compiled plan identical to the hand-authored forklift/plan.json"
-              : res.identical_to_reference === false ? "compiled plan differs from forklift/plan.json: " + (res.reference_diffs || []).slice(0, 4).join("; ") : "";
+              : res.identical_to_reference === false ? `compiled plan differs structurally from forklift/plan.json (${(res.reference_diffs || []).length} differences, e.g. ${(res.reference_diffs || []).slice(0, 2).join("; ")}); correctness is judged by validation and kit execution` : "";
     const dry = (res.dryrun || []).length ? `<pre>${esc(res.dryrun.join("\n"))}</pre>` : "";
-    return `<div class="card"><div class="head"><h2>${esc(it.id)}</h2><div>expected ${badge(it.expected)} · result ${badge(res.verdict)} · ${res.rounds} round(s)</div></div>
+    const ex = res.execution ? ` · kit ${res.execution === "completed" ? '<span class="badge accept">' : '<span class="badge reject">'}${esc(res.execution)} ${res.sessions ? res.sessions.completed + "/" + (res.sessions.completed + res.sessions.failed) : ""}</span>` : "";
+    return `<div class="card"><div class="head"><h2>${esc(it.id)}</h2><div>expected ${badge(it.expected)} · result ${badge(res.verdict)} · ${res.rounds} round(s)${ex}</div></div>
       <div class="quote">“${esc(it.text)}”</div>
       <div class="meta">Ladder level ${esc(it.ladder_level)} · ${esc(it.paper || "")}</div>
       ${idt ? `<div class="note">${esc(idt)}</div>` : ""}${dry}${rounds}</div>`;

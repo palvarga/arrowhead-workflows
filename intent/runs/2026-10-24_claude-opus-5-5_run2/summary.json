@@ -1,0 +1,811 @@
+{
+ "translator": "claude",
+ "model": "claude-opus-5-5",
+ "timestamp": "2026-10-24T11:57:18+00:00",
+ "no_lease": false,
+ "results": [
+  {
+   "intent": {
+    "id": "I-tool",
+    "text": "Line 2 needs the variant fasteners tightened with the shared nutrunner. Return the tool afterwards so that the other lines are not blocked.",
+    "ladder_level": "5-6",
+    "expected": "accept",
+    "reference_plan": "../forklift/plan.json",
+    "paper": "Section 9 (main example)"
+   },
+   "verdict": "accept",
+   "rounds": 1,
+   "trace": [
+    {
+     "round": 0,
+     "source": "claude-opus-5-5, response id msg_011CgM27aMQMkBkHhG9r6pfR",
+     "note": null,
+     "interpretation": {
+      "name": "TightenVariantFastenersWithSharedTool",
+      "scope": {
+       "line": 2,
+       "station": "st2",
+       "tool": "NR7",
+       "variant": "F30"
+      },
+      "goal": "Tighten the F30 variant fasteners at station st2 of line 2 with the shared nutrunner NR7, then return and release the tool so other lines are not blocked.",
+      "constraints": [
+       "Reserve NR7 for line 2 before any use; tool-using Steps renew the lease with the reservation token (E1, E6).",
+       "Only agvexecutor may run transport-tool (E2).",
+       "NR7 must be at the station before configure-tool or tighten-fasteners (E3).",
+       "The tightening program comes only from get-program at run time; no torque, tolerance or bolt-count literals (E4).",
+       "Evaluate every tightening against its program and record it for traceability (E5).",
+       "After tightening, move NR7 back to the crib and release the reservation (operator request)."
+      ],
+      "preference": "Free the shared tool as soon as possible so the other lines are not blocked.",
+      "priority": "normal",
+      "horizon": "Current request for line 2 only; ends when NR7 has been returned to the crib and released.",
+      "requested_capabilities": [],
+      "omit_services": []
+     },
+     "recipe": {
+      "name": "line2-f30-tightening-with-shared-nr7",
+      "first_action": "PrepareTool",
+      "actions": [
+       {
+        "name": "PrepareTool",
+        "next": "Tighten",
+        "steps": [
+         {
+          "name": "reserve-nr7",
+          "service": "reserve-tool",
+          "next": [
+           "transport-nr7-to-station"
+          ],
+          "dep": [],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "transport-nr7-to-station",
+          "service": "transport-tool",
+          "next": [],
+          "dep": [
+           "reserve-nr7"
+          ],
+          "executor": "agvexecutor",
+          "params": {
+           "to": "station"
+          }
+         },
+         {
+          "name": "get-f30-program",
+          "service": "get-program",
+          "next": [],
+          "dep": [],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       },
+       {
+        "name": "Tighten",
+        "next": "ReturnTool",
+        "steps": [
+         {
+          "name": "configure-nr7",
+          "service": "configure-tool",
+          "next": [
+           "tighten-f30-fasteners"
+          ],
+          "dep": [
+           "get-f30-program",
+           "reserve-nr7"
+          ],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "tighten-f30-fasteners",
+          "service": "tighten-fasteners",
+          "next": [
+           "evaluate-f30-tightening",
+           "record-f30-tightening"
+          ],
+          "dep": [
+           "configure-nr7",
+           "reserve-nr7"
+          ],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "evaluate-f30-tightening",
+          "service": "evaluate-tightening",
+          "next": [],
+          "dep": [
+           "tighten-f30-fasteners",
+           "get-f30-program"
+          ],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "record-f30-tightening",
+          "service": "record-tightening",
+          "next": [],
+          "dep": [
+           "tighten-f30-fasteners"
+          ],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       },
+       {
+        "name": "ReturnTool",
+        "next": null,
+        "steps": [
+         {
+          "name": "transport-nr7-to-crib",
+          "service": "transport-tool",
+          "next": [
+           "release-nr7"
+          ],
+          "dep": [
+           "reserve-nr7"
+          ],
+          "executor": "agvexecutor",
+          "params": {
+           "to": "crib"
+          }
+         },
+         {
+          "name": "release-nr7",
+          "service": "release-tool",
+          "next": [],
+          "dep": [
+           "reserve-nr7"
+          ],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       }
+      ]
+     },
+     "verdict": "accept",
+     "findings": [
+      {
+       "check": "I1",
+       "ok": true,
+       "message": "all requested capabilities are grounded in sigma_i"
+      },
+      {
+       "check": "I2",
+       "ok": true,
+       "message": "no conflict with mandatory policies",
+       "fact": "E5"
+      },
+      {
+       "check": "V1",
+       "ok": true,
+       "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+      },
+      {
+       "check": "V2",
+       "ok": true,
+       "message": "all 9 Steps use services of sigma_i"
+      },
+      {
+       "check": "V3",
+       "ok": true,
+       "message": "dry-run orchestration succeeds for every Step",
+       "fact": "E2"
+      },
+      {
+       "check": "V4",
+       "ok": true,
+       "message": "tool reaches the station before it is configured or used",
+       "fact": "E3"
+      },
+      {
+       "check": "V5",
+       "ok": true,
+       "message": "program parameters come only from get-program",
+       "fact": "E4"
+      },
+      {
+       "check": "V6",
+       "ok": true,
+       "message": "tightening, evaluation and recording covered in order",
+       "fact": "E5"
+      },
+      {
+       "check": "V7",
+       "ok": true,
+       "message": "every tool use lies between reserve and release; tool returned",
+       "fact": "E1"
+      },
+      {
+       "check": "V8",
+       "ok": true,
+       "message": "lease declared; every tool-using Step depends on the reservation",
+       "fact": "E6"
+      },
+      {
+       "check": "V9",
+       "ok": true,
+       "message": "every Step depends on the Steps whose results its input needs",
+       "fact": "interface"
+      }
+     ]
+    }
+   ],
+   "reference_diffs": [
+    "/actions[0]/firstStepNames[0]: 'reserve-nr7' != 'reserve'",
+    "/actions[0]/firstStepNames[1]: 'get-f30-program' != 'program'",
+    "/actions[0]/name: 'PrepareTool' != 'provision'",
+    "/actions[0]/nextActionName: 'Tighten' != 'use'",
+    "/actions[0]/steps: length 3 != 4",
+    "/actions[1]/firstStepNames[0]: 'configure-nr7' != 'tighten'",
+    "/actions[1]/name: 'Tighten' != 'use'",
+    "/actions[1]/nextActionName: 'ReturnTool' != 'return'",
+    "/actions[1]/steps: length 4 != 3",
+    "/actions[2]/firstStepNames[0]: 'transport-nr7-to-crib' != 'back'",
+    "/actions[2]/name: 'ReturnTool' != 'return'",
+    "/actions[2]/steps[0]/name: 'transport-nr7-to-crib' != 'back'",
+    "/actions[2]/steps[0]/nextStepNames[0]: 'release-nr7' != 'release'",
+    "/actions[2]/steps[1]/name: 'release-nr7' != 'release'",
+    "/firstActionName: 'PrepareTool' != 'provision'",
+    "/name: 'line2-f30-tightening-with-shared-nr7' != 'shared-tool-tightening'"
+   ],
+   "dryrun": [
+    "  1.41s  L2  #33  == L2 session 12 completed after 33 transitions",
+    "  2.51s  L1  #33  == L1 session 11 completed after 33 transitions",
+    "  3.83s  L3  #33  == L3 session 13 completed after 33 transitions"
+   ],
+   "execution": "completed",
+   "sessions": {
+    "completed": 3,
+    "failed": 0
+   },
+   "identical_to_reference": false
+  },
+  {
+   "intent": {
+    "id": "I-tool-L3",
+    "text": "Line 3 has a variant that needs the shared nutrunner for its fasteners; bring the tool back to the crib when done.",
+    "ladder_level": "5-6",
+    "expected": "accept",
+    "reference_plan": "../forklift/plan.json",
+    "paper": "variant of the main example"
+   },
+   "verdict": "accept",
+   "rounds": 1,
+   "trace": [
+    {
+     "round": 0,
+     "source": "claude-opus-5-5, response id msg_011CgM28wp1i4me2b6yVRojq",
+     "note": null,
+     "interpretation": {
+      "name": "TightenLine3FastenersWithSharedNutrunner",
+      "scope": {
+       "line": 3,
+       "station": "st3",
+       "tool": "NR7",
+       "variant": "F35"
+      },
+      "goal": "Bring the shared nutrunner NR7 from the crib to station st3, tighten the F35 fasteners using the program from get-program, evaluate and record the result, then return NR7 to the crib and release it.",
+      "constraints": [
+       "Reserve NR7 before any use and release it at the end (E1, E6)",
+       "Every tool-using Step depends on the reserve-tool Step for lease renewal (E6)",
+       "transport-tool Steps are executed by agvexecutor (E2)",
+       "NR7 must be at st3 before configure-tool or tighten-fasteners (E3)",
+       "Use the tightening program only from get-program; no torque or tolerance literals (E4)",
+       "Evaluate the tightening against its program and record it for traceability (E5)",
+       "Return NR7 to the crib after tightening is done (operator intent)"
+      ],
+      "preference": "",
+      "priority": "normal",
+      "horizon": "Current request; ends when NR7 is back in the crib and released",
+      "requested_capabilities": [],
+      "omit_services": []
+     },
+     "recipe": {
+      "name": "line3-f35-tightening-nr7",
+      "first_action": "Prepare",
+      "actions": [
+       {
+        "name": "Prepare",
+        "next": "Tighten",
+        "steps": [
+         {
+          "name": "reserve",
+          "service": "reserve-tool",
+          "next": [
+           "transport_to_station"
+          ],
+          "dep": [],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "transport_to_station",
+          "service": "transport-tool",
+          "next": [],
+          "dep": [
+           "reserve"
+          ],
+          "executor": "agvexecutor",
+          "params": {
+           "to": "station"
+          }
+         },
+         {
+          "name": "program",
+          "service": "get-program",
+          "next": [],
+          "dep": [],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       },
+       {
+        "name": "Tighten",
+        "next": "Finish",
+        "steps": [
+         {
+          "name": "configure",
+          "service": "configure-tool",
+          "next": [
+           "tighten"
+          ],
+          "dep": [
+           "program",
+           "reserve"
+          ],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "tighten",
+          "service": "tighten-fasteners",
+          "next": [],
+          "dep": [
+           "configure",
+           "reserve"
+          ],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       },
+       {
+        "name": "Finish",
+        "next": null,
+        "steps": [
+         {
+          "name": "evaluate",
+          "service": "evaluate-tightening",
+          "next": [],
+          "dep": [
+           "tighten",
+           "program"
+          ],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "record",
+          "service": "record-tightening",
+          "next": [],
+          "dep": [
+           "tighten"
+          ],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "transport_to_crib",
+          "service": "transport-tool",
+          "next": [
+           "release"
+          ],
+          "dep": [
+           "reserve"
+          ],
+          "executor": "agvexecutor",
+          "params": {
+           "to": "crib"
+          }
+         },
+         {
+          "name": "release",
+          "service": "release-tool",
+          "next": [],
+          "dep": [
+           "reserve"
+          ],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       }
+      ]
+     },
+     "verdict": "accept",
+     "findings": [
+      {
+       "check": "I1",
+       "ok": true,
+       "message": "all requested capabilities are grounded in sigma_i"
+      },
+      {
+       "check": "I2",
+       "ok": true,
+       "message": "no conflict with mandatory policies",
+       "fact": "E5"
+      },
+      {
+       "check": "V1",
+       "ok": true,
+       "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+      },
+      {
+       "check": "V2",
+       "ok": true,
+       "message": "all 9 Steps use services of sigma_i"
+      },
+      {
+       "check": "V3",
+       "ok": true,
+       "message": "dry-run orchestration succeeds for every Step",
+       "fact": "E2"
+      },
+      {
+       "check": "V4",
+       "ok": true,
+       "message": "tool reaches the station before it is configured or used",
+       "fact": "E3"
+      },
+      {
+       "check": "V5",
+       "ok": true,
+       "message": "program parameters come only from get-program",
+       "fact": "E4"
+      },
+      {
+       "check": "V6",
+       "ok": true,
+       "message": "tightening, evaluation and recording covered in order",
+       "fact": "E5"
+      },
+      {
+       "check": "V7",
+       "ok": true,
+       "message": "every tool use lies between reserve and release; tool returned",
+       "fact": "E1"
+      },
+      {
+       "check": "V8",
+       "ok": true,
+       "message": "lease declared; every tool-using Step depends on the reservation",
+       "fact": "E6"
+      },
+      {
+       "check": "V9",
+       "ok": true,
+       "message": "every Step depends on the Steps whose results its input needs",
+       "fact": "interface"
+      }
+     ]
+    }
+   ],
+   "reference_diffs": [
+    "/actions[0]/name: 'Prepare' != 'provision'",
+    "/actions[0]/nextActionName: 'Tighten' != 'use'",
+    "/actions[0]/steps: length 3 != 4",
+    "/actions[1]/firstStepNames[0]: 'configure' != 'tighten'",
+    "/actions[1]/name: 'Tighten' != 'use'",
+    "/actions[1]/nextActionName: 'Finish' != 'return'",
+    "/actions[1]/steps: length 2 != 3",
+    "/actions[2]/firstStepNames: length 3 != 1",
+    "/actions[2]/name: 'Finish' != 'return'",
+    "/actions[2]/steps: length 4 != 2",
+    "/firstActionName: 'Prepare' != 'provision'",
+    "/name: 'line3-f35-tightening-nr7' != 'shared-tool-tightening'"
+   ],
+   "dryrun": [
+    "  1.37s  L2  #33  == L2 session 12 completed after 33 transitions",
+    "  2.54s  L1  #33  == L1 session 11 completed after 33 transitions",
+    "  3.80s  L3  #33  == L3 session 13 completed after 33 transitions"
+   ],
+   "execution": "completed",
+   "sessions": {
+    "completed": 3,
+    "failed": 0
+   },
+   "identical_to_reference": false
+  },
+  {
+   "intent": {
+    "id": "I-noqc",
+    "text": "Line 2 needs the variant fasteners tightened with the shared nutrunner. Skip the quality check to save time.",
+    "ladder_level": "5-6",
+    "expected": "clarify",
+    "paper": "Table 9, D6"
+   },
+   "verdict": "clarify",
+   "rounds": 1,
+   "trace": [
+    {
+     "round": 0,
+     "source": "claude-opus-5-5, response id msg_011CgM2ACXLTDf7jAxKAh8H8",
+     "note": null,
+     "interpretation": {
+      "name": "TightenVariantFastenersLine2",
+      "scope": {
+       "line": 2,
+       "station": "st2",
+       "tool": "NR7",
+       "variant": "F30"
+      },
+      "goal": "Tighten the F30 variant fasteners at station st2 of line 2 using the shared nutrunner NR7.",
+      "constraints": [
+       "Reserve NR7 before use and release it only after it has been returned to the crib (E1, E6)",
+       "NR7 must be transported from the crib to station st2 before configure-tool or tighten-fasteners (E3, E7)",
+       "transport-tool Steps must be delegated to agvexecutor (E2)",
+       "The tightening program must be obtained from get-program; no torque or tolerance literals in the Recipe (E4)",
+       "Every tool-using Step depends on the reserve-tool Step (E6)",
+       "The tightening result must be recorded for traceability (E5)"
+      ],
+      "preference": "Save time; the operator asked to skip the quality check, which conflicts with E5 and is left for the Recipe Validator to decide.",
+      "priority": "normal",
+      "horizon": "Current request only (single tightening job on line 2)",
+      "requested_capabilities": [],
+      "omit_services": [
+       "evaluate-tightening"
+      ]
+     },
+     "recipe": {
+      "name": "tighten-f30-line2-nr7",
+      "first_action": "PrepareTool",
+      "actions": [
+       {
+        "name": "PrepareTool",
+        "next": "Tighten",
+        "steps": [
+         {
+          "name": "reserve-nr7",
+          "service": "reserve-tool",
+          "next": [
+           "transport-nr7-to-station"
+          ],
+          "dep": [],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "transport-nr7-to-station",
+          "service": "transport-tool",
+          "next": [],
+          "dep": [
+           "reserve-nr7"
+          ],
+          "executor": "agvexecutor",
+          "params": {
+           "to": "station"
+          }
+         },
+         {
+          "name": "get-program-f30",
+          "service": "get-program",
+          "next": [],
+          "dep": [],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       },
+       {
+        "name": "Tighten",
+        "next": "ReturnTool",
+        "steps": [
+         {
+          "name": "configure-nr7",
+          "service": "configure-tool",
+          "next": [
+           "tighten-f30"
+          ],
+          "dep": [
+           "get-program-f30",
+           "reserve-nr7"
+          ],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "tighten-f30",
+          "service": "tighten-fasteners",
+          "next": [
+           "record-f30"
+          ],
+          "dep": [
+           "configure-nr7",
+           "reserve-nr7"
+          ],
+          "executor": null,
+          "params": {}
+         },
+         {
+          "name": "record-f30",
+          "service": "record-tightening",
+          "next": [],
+          "dep": [
+           "tighten-f30"
+          ],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       },
+       {
+        "name": "ReturnTool",
+        "next": null,
+        "steps": [
+         {
+          "name": "transport-nr7-to-crib",
+          "service": "transport-tool",
+          "next": [
+           "release-nr7"
+          ],
+          "dep": [
+           "reserve-nr7"
+          ],
+          "executor": "agvexecutor",
+          "params": {
+           "to": "crib"
+          }
+         },
+         {
+          "name": "release-nr7",
+          "service": "release-tool",
+          "next": [],
+          "dep": [
+           "reserve-nr7"
+          ],
+          "executor": null,
+          "params": {}
+         }
+        ]
+       }
+      ]
+     },
+     "verdict": "clarify",
+     "findings": [
+      {
+       "check": "I1",
+       "ok": true,
+       "message": "all requested capabilities are grounded in sigma_i"
+      },
+      {
+       "check": "I2",
+       "ok": false,
+       "message": "intent asks to omit ['evaluate-tightening'], which the quality policy mandates; operator clarification needed",
+       "severity": "clarify",
+       "fact": "E5"
+      },
+      {
+       "check": "V1",
+       "ok": true,
+       "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+      },
+      {
+       "check": "V2",
+       "ok": true,
+       "message": "all 8 Steps use services of sigma_i"
+      },
+      {
+       "check": "V3",
+       "ok": true,
+       "message": "dry-run orchestration succeeds for every Step",
+       "fact": "E2"
+      },
+      {
+       "check": "V4",
+       "ok": true,
+       "message": "tool reaches the station before it is configured or used",
+       "fact": "E3"
+      },
+      {
+       "check": "V5",
+       "ok": true,
+       "message": "program parameters come only from get-program",
+       "fact": "E4"
+      },
+      {
+       "check": "V6",
+       "ok": false,
+       "message": "no Step requires evaluate-tightening",
+       "severity": "revise",
+       "fact": "E5"
+      },
+      {
+       "check": "V7",
+       "ok": true,
+       "message": "every tool use lies between reserve and release; tool returned",
+       "fact": "E1"
+      },
+      {
+       "check": "V8",
+       "ok": true,
+       "message": "lease declared; every tool-using Step depends on the reservation",
+       "fact": "E6"
+      },
+      {
+       "check": "V9",
+       "ok": true,
+       "message": "every Step depends on the Steps whose results its input needs",
+       "fact": "interface"
+      }
+     ]
+    }
+   ],
+   "identical_to_reference": null
+  },
+  {
+   "intent": {
+    "id": "I-wrench",
+    "text": "Tighten the line 2 fasteners with the manual torque wrench.",
+    "ladder_level": "1",
+    "expected": "reject",
+    "paper": "Table 9, D7"
+   },
+   "verdict": "reject",
+   "rounds": 1,
+   "trace": [
+    {
+     "round": 0,
+     "source": "claude-opus-5-5, response id msg_011CgM2BBQt2ghubL3vbd7qE",
+     "note": null,
+     "interpretation": {
+      "name": "TightenLine2FastenersWithManualTorqueWrench",
+      "scope": {
+       "line": 2,
+       "station": "st2",
+       "tool": "manual-torque-wrench",
+       "variant": "F30"
+      },
+      "goal": "Tighten the fasteners of the F30 variant at station st2 on line 2 using a manual torque wrench.",
+      "constraints": [
+       "Tightening must use a manual torque wrench, as the operator explicitly requested",
+       "The tightening program (bolt count, target torque, tolerance) for variant F30 must be obtained at run time via get-program and never given as literals",
+       "Every tightening must be evaluated against its program and recorded for traceability (E5)"
+      ],
+      "preference": "",
+      "priority": "normal",
+      "horizon": "current request for line 2",
+      "requested_capabilities": [
+       "manual torque wrench tightening (no listed service reserves, configures or drives a manual torque wrench; the listed tightening services cover only the shared nutrunner such as NR7)"
+      ],
+      "omit_services": []
+     },
+     "recipe": null,
+     "verdict": "reject",
+     "findings": [
+      {
+       "check": "I1",
+       "ok": false,
+       "message": "requested capabilities not exposed by the Local Cloud: ['manual torque wrench tightening (no listed service reserves, configures or drives a manual torque wrench; the listed tightening services cover only the shared nutrunner such as NR7)']",
+       "severity": "reject"
+      },
+      {
+       "check": "I2",
+       "ok": true,
+       "message": "no conflict with mandatory policies",
+       "fact": "E5"
+      }
+     ]
+    }
+   ],
+   "identical_to_reference": null
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+{
+ "intent": {
+  "id": "I-wrench",
+  "text": "Tighten the line 2 fasteners with the manual torque wrench.",
+  "ladder_level": "1",
+  "expected": "reject",
+  "paper": "Table 9, D7"
+ },
+ "verdict": "reject",
+ "rounds": 1,
+ "trace": [
+  {
+   "round": 0,
+   "source": "claude-opus-5-5, response id msg_011CgM1XUyFnATRduJX7YduX",
+   "note": null,
+   "interpretation": {
+    "name": "TightenLine2FastenersManualWrench",
+    "scope": {
+     "line": 2,
+     "station": "st2",
+     "tool": "manual-torque-wrench",
+     "variant": "F30"
+    },
+    "goal": "Tighten the fasteners of the F30 variant at station st2 on line 2 using a manual torque wrench.",
+    "constraints": [
+     "Tightening must be performed with the manual torque wrench, as the operator explicitly requested",
+     "Tightening program (bolt count, target torque, tolerance) must be obtained via get-program for variant F30 and never written as literals (E4)",
+     "Every tightening must be evaluated against its program and recorded for traceability (E5)"
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "current request (immediate, single execution)",
+    "requested_capabilities": [
+     "manual torque wrench tightening: no listed service covers manual torque wrench use; tighten-fasteners and configure-tool address the nutrunner (shared tool NR7) only"
+    ],
+    "omit_services": []
+   },
+   "recipe": null,
+   "verdict": "reject",
+   "findings": [
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "requested capabilities not exposed by the Local Cloud: ['manual torque wrench tightening: no listed service covers manual torque wrench use; tighten-fasteners and configure-tool address the nutrunner (shared tool NR7) only']",
+     "severity": "reject"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    }
+   ]
+  }
+ ],
+ "identical_to_reference": null
+}

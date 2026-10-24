@@ -1,0 +1,172 @@
+{"ev": "ctx-rho", "sessionId": 12, "rho": {"tool": "NR7", "line": 2, "stn": "st2", "variant": "F30", "crib": "crib"}, "t": 1792843014.11}
+{"ev": "invoke", "sessionId": 12, "step": "prog", "executor": "exprogram", "provider": "mes", "uri": "http://127.0.0.1:9102/get-program", "t": 1792843014.113}
+{"ev": "invoke", "sessionId": 12, "step": "res", "executor": "exreserve", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/reserve-tool", "t": 1792843014.114}
+{"ev": "crib-grant", "line": 2, "token": "r2.1", "lease_s": 1.5, "t": 1792843014.124}
+{"ev": "done", "sessionId": 12, "step": "prog", "result": [8, 210, 0.05], "t": 1792843014.132}
+{"ev": "done", "sessionId": 12, "step": "res", "result": "r2.1", "t": 1792843014.134}
+{"ev": "invoke", "sessionId": 12, "step": "move", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792843014.179}
+{"ev": "ctx-rho", "sessionId": 11, "rho": {"tool": "NR7", "line": 1, "stn": "st1", "variant": "F25", "crib": "crib"}, "t": 1792843014.322}
+{"ev": "invoke", "sessionId": 11, "step": "res", "executor": "exreserve", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/reserve-tool", "t": 1792843014.325}
+{"ev": "invoke", "sessionId": 11, "step": "prog", "executor": "exprogram", "provider": "mes", "uri": "http://127.0.0.1:9102/get-program", "t": 1792843014.325}
+{"ev": "waiting", "sessionId": 11, "step": "res", "position": 1, "t": 1792843014.332}
+{"ev": "done", "sessionId": 11, "step": "prog", "result": [8, 210, 0.05], "t": 1792843014.341}
+{"ev": "ctx-rho", "sessionId": 13, "rho": {"tool": "NR7", "line": 3, "stn": "st3", "variant": "F35", "crib": "crib"}, "t": 1792843014.529}
+{"ev": "invoke", "sessionId": 13, "step": "prog", "executor": "exprogram", "provider": "mes", "uri": "http://127.0.0.1:9102/get-program", "t": 1792843014.532}
+{"ev": "invoke", "sessionId": 13, "step": "res", "executor": "exreserve", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/reserve-tool", "t": 1792843014.532}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 2, "t": 1792843014.539}
+{"ev": "done", "sessionId": 13, "step": "prog", "result": [6, 180, 0.05], "t": 1792843014.541}
+{"ev": "done", "sessionId": 12, "step": "move", "result": "NR7 arrived at st2", "t": 1792843014.593}
+{"ev": "invoke", "sessionId": 12, "step": "cfg", "executor": "exconfigure", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/configure-tool", "t": 1792843014.643}
+{"ev": "done", "sessionId": 12, "step": "cfg", "result": "program loaded (8 x 210 N*m +-5%)", "t": 1792843014.66}
+{"ev": "invoke", "sessionId": 12, "step": "tight", "executor": "extighten", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/tighten-fasteners", "t": 1792843014.696}
+{"ev": "done", "sessionId": 12, "step": "tight", "result": [215.4, 205.6, 204.6, 210.2, 211.5, 210.2, 209.7, 211.7], "t": 1792843014.708}
+{"ev": "invoke", "sessionId": 12, "step": "chk", "executor": "exevaluate", "provider": "qms", "uri": "http://127.0.0.1:9105/evaluate-tightening", "t": 1792843014.777}
+{"ev": "done", "sessionId": 12, "step": "chk", "result": "OK", "t": 1792843014.796}
+{"ev": "invoke", "sessionId": 12, "step": "rec", "executor": "exrecord", "provider": "qms", "uri": "http://127.0.0.1:9105/record-tightening", "t": 1792843014.796}
+{"ev": "done", "sessionId": 12, "step": "rec", "result": "stored #1001", "t": 1792843014.812}
+{"ev": "invoke", "sessionId": 12, "step": "ret", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792843014.814}
+{"ev": "waiting", "sessionId": 11, "step": "res", "position": 1, "t": 1792843014.841}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 2, "t": 1792843015.045}
+{"ev": "done", "sessionId": 12, "step": "ret", "result": "NR7 arrived at crib", "t": 1792843015.228}
+{"ev": "invoke", "sessionId": 12, "step": "rel", "executor": "exrelease", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/release-tool", "t": 1792843015.256}
+{"ev": "crib-grant", "line": 1, "token": "r1.2", "lease_s": 1.5, "t": 1792843015.262}
+{"ev": "done", "sessionId": 12, "step": "rel", "result": "released r2.1", "t": 1792843015.27}
+{"ev": "done", "sessionId": 11, "step": "res", "result": "r1.2", "t": 1792843015.355}
+{"ev": "invoke", "sessionId": 11, "step": "move", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792843015.385}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 1, "t": 1792843015.553}
+{"ev": "done", "sessionId": 11, "step": "move", "result": "NR7 arrived at st1", "t": 1792843015.8}
+{"ev": "invoke", "sessionId": 11, "step": "cfg", "executor": "exconfigure", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/configure-tool", "t": 1792843015.825}
+{"ev": "done", "sessionId": 11, "step": "cfg", "result": "program loaded (8 x 210 N*m +-5%)", "t": 1792843015.835}
+{"ev": "invoke", "sessionId": 11, "step": "tight", "executor": "extighten", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/tighten-fasteners", "t": 1792843015.858}
+{"ev": "done", "sessionId": 11, "step": "tight", "result": [215.3, 215.0, 213.6, 205.1, 204.5, 214.2, 212.9, 205.1], "t": 1792843015.868}
+{"ev": "invoke", "sessionId": 11, "step": "chk", "executor": "exevaluate", "provider": "qms", "uri": "http://127.0.0.1:9105/evaluate-tightening", "t": 1792843015.907}
+{"ev": "invoke", "sessionId": 11, "step": "rec", "executor": "exrecord", "provider": "qms", "uri": "http://127.0.0.1:9105/record-tightening", "t": 1792843015.917}
+{"ev": "done", "sessionId": 11, "step": "chk", "result": "OK", "t": 1792843015.918}
+{"ev": "done", "sessionId": 11, "step": "rec", "result": "stored #1002", "t": 1792843015.93}
+{"ev": "invoke", "sessionId": 11, "step": "ret", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792843015.934}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 1, "t": 1792843016.06}
+{"ev": "done", "sessionId": 11, "step": "ret", "result": "NR7 arrived at crib", "t": 1792843016.348}
+{"ev": "invoke", "sessionId": 11, "step": "rel", "executor": "exrelease", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/release-tool", "t": 1792843016.419}
+{"ev": "crib-grant", "line": 3, "token": "r3.3", "lease_s": 1.5, "t": 1792843016.425}
+{"ev": "done", "sessionId": 11, "step": "rel", "result": "released r1.2", "t": 1792843016.436}
+{"ev": "done", "sessionId": 13, "step": "res", "result": "r3.3", "t": 1792843016.577}
+{"ev": "invoke", "sessionId": 13, "step": "move", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792843016.614}
+{"ev": "done", "sessionId": 13, "step": "move", "result": "NR7 arrived at st3", "t": 1792843017.031}
+{"ev": "invoke", "sessionId": 13, "step": "cfg", "executor": "exconfigure", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/configure-tool", "t": 1792843017.097}
+{"ev": "done", "sessionId": 13, "step": "cfg", "result": "program loaded (6 x 180 N*m +-5%)", "t": 1792843017.108}
+{"ev": "invoke", "sessionId": 13, "step": "tight", "executor": "extighten", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/tighten-fasteners", "t": 1792843017.137}
+{"ev": "done", "sessionId": 13, "step": "tight", "result": [185.3, 177.0, 179.4, 176.4, 175.9, 180.0], "t": 1792843017.146}
+{"ev": "invoke", "sessionId": 13, "step": "chk", "executor": "exevaluate", "provider": "qms", "uri": "http://127.0.0.1:9105/evaluate-tightening", "t": 1792843017.172}
+{"ev": "invoke", "sessionId": 13, "step": "rec", "executor": "exrecord", "provider": "qms", "uri": "http://127.0.0.1:9105/record-tightening", "t": 1792843017.187}
+{"ev": "done", "sessionId": 13, "step": "chk", "result": "OK", "t": 1792843017.189}
+{"ev": "done", "sessionId": 13, "step": "rec", "result": "stored #1003", "t": 1792843017.201}
+{"ev": "invoke", "sessionId": 13, "step": "ret", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792843017.205}
+{"ev": "done", "sessionId": 13, "step": "ret", "result": "NR7 arrived at crib", "t": 1792843017.617}
+{"ev": "invoke", "sessionId": 13, "step": "rel", "executor": "exrelease", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/release-tool", "t": 1792843017.688}
+{"ev": "done", "sessionId": 13, "step": "rel", "result": "released r3.3", "t": 1792843017.697}
+  0.00s  L2  #1   enable(reserve)
+  0.00s  L2  #2   enable(program)
+  0.02s  L2  #3   bind(reserve) -> toolcrib via exreserve [+session-context]
+  0.03s  L2  #4   bind(program) -> mes via exprogram [+session-context]
+  0.21s  L1  #1   enable(reserve)
+  0.21s  L1  #2   enable(program)
+  0.22s  L1  #3   bind(reserve) -> toolcrib via exreserve [+session-context]
+  0.23s  L1  #4   bind(program) -> mes via exprogram [+session-context]
+  0.23s  L2  #5   done(program)
+  0.24s  L2  #6   done(reserve)
+  0.24s  L2  #7   enable(transport_to_station)
+  0.24s  L2  #8   bind(transport_to_station) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  0.42s  L3  #1   enable(reserve)
+  0.42s  L3  #2   enable(program)
+  0.43s  L3  #3   bind(reserve) -> toolcrib via exreserve [+session-context]
+  0.44s  L1  #5   done(program)
+  0.45s  L3  #4   bind(program) -> mes via exprogram [+session-context]
+  0.64s  L3  #5   done(program)
+  0.70s  L2  #9   done(transport_to_station)
+  0.70s  L2  #10  finish(Prepare)
+  0.70s  L2  #11  start(Tighten)
+  0.70s  L2  #12  enable(configure)
+  0.70s  L2  #13  bind(configure) -> nutrunner via exconfigure [+session-context, renew-tool-lease]
+  0.76s  L2  #14  done(configure)
+  0.76s  L2  #15  enable(tighten)
+  0.77s  L2  #16  bind(tighten) -> nutrunner via extighten [+session-context, renew-tool-lease]
+  0.83s  L2  #17  done(tighten)
+  0.83s  L2  #18  finish(Tighten)
+  0.83s  L2  #19  start(Finish)
+  0.83s  L2  #20  enable(evaluate)
+  0.83s  L2  #21  enable(record)
+  0.83s  L2  #22  enable(transport_to_crib)
+  0.85s  L2  #23  bind(evaluate) -> qms via exevaluate [+session-context]
+  0.87s  L2  #24  bind(record) -> qms via exrecord [+session-context]
+  0.89s  L2  #25  bind(transport_to_crib) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  0.90s  L2  #26  done(evaluate)
+  0.92s  L2  #27  done(record)
+  1.33s  L2  #28  done(transport_to_crib)
+  1.33s  L2  #29  enable(release)
+  1.34s  L2  #30  bind(release) -> toolcrib via exrelease [+session-context]
+  1.37s  L2  #31  done(release)
+  1.37s  L2  #32  finish(Finish)
+  1.37s  L2  #33  close
+  1.37s  L2  #33  == L2 session 12 completed after 33 transitions
+  1.46s  L1  #6   done(reserve)
+  1.46s  L1  #7   enable(transport_to_station)
+  1.46s  L1  #8   bind(transport_to_station) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  1.90s  L1  #9   done(transport_to_station)
+  1.90s  L1  #10  finish(Prepare)
+  1.90s  L1  #11  start(Tighten)
+  1.90s  L1  #12  enable(configure)
+  1.91s  L1  #13  bind(configure) -> nutrunner via exconfigure [+session-context, renew-tool-lease]
+  1.94s  L1  #14  done(configure)
+  1.94s  L1  #15  enable(tighten)
+  1.94s  L1  #16  bind(tighten) -> nutrunner via extighten [+session-context, renew-tool-lease]
+  1.97s  L1  #17  done(tighten)
+  1.97s  L1  #18  finish(Tighten)
+  1.97s  L1  #19  start(Finish)
+  1.97s  L1  #20  enable(evaluate)
+  1.97s  L1  #21  enable(record)
+  1.97s  L1  #22  enable(transport_to_crib)
+  1.99s  L1  #23  bind(evaluate) -> qms via exevaluate [+session-context]
+  2.00s  L1  #24  bind(record) -> qms via exrecord [+session-context]
+  2.01s  L1  #25  bind(transport_to_crib) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  2.02s  L1  #26  done(evaluate)
+  2.03s  L1  #27  done(record)
+  2.47s  L1  #28  done(transport_to_crib)
+  2.47s  L1  #29  enable(release)
+  2.48s  L1  #30  bind(release) -> toolcrib via exrelease [+session-context]
+  2.54s  L1  #31  done(release)
+  2.54s  L1  #32  finish(Finish)
+  2.54s  L1  #33  close
+  2.54s  L1  #33  == L1 session 11 completed after 33 transitions
+  2.68s  L3  #6   done(reserve)
+  2.68s  L3  #7   enable(transport_to_station)
+  2.69s  L3  #8   bind(transport_to_station) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  3.13s  L3  #9   done(transport_to_station)
+  3.13s  L3  #10  finish(Prepare)
+  3.13s  L3  #11  start(Tighten)
+  3.13s  L3  #12  enable(configure)
+  3.15s  L3  #13  bind(configure) -> nutrunner via exconfigure [+session-context, renew-tool-lease]
+  3.21s  L3  #14  done(configure)
+  3.21s  L3  #15  enable(tighten)
+  3.22s  L3  #16  bind(tighten) -> nutrunner via extighten [+session-context, renew-tool-lease]
+  3.25s  L3  #17  done(tighten)
+  3.25s  L3  #18  finish(Tighten)
+  3.25s  L3  #19  start(Finish)
+  3.25s  L3  #20  enable(evaluate)
+  3.25s  L3  #21  enable(record)
+  3.25s  L3  #22  enable(transport_to_crib)
+  3.25s  L3  #23  bind(evaluate) -> qms via exevaluate [+session-context]
+  3.26s  L3  #24  bind(record) -> qms via exrecord [+session-context]
+  3.28s  L3  #25  bind(transport_to_crib) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  3.29s  L3  #26  done(evaluate)
+  3.33s  L3  #27  done(record)
+  3.74s  L3  #28  done(transport_to_crib)
+  3.74s  L3  #29  enable(release)
+  3.75s  L3  #30  bind(release) -> toolcrib via exrelease [+session-context]
+  3.80s  L3  #31  done(release)
+  3.80s  L3  #32  finish(Finish)
+  3.80s  L3  #33  close
+  3.80s  L3  #33  == L3 session 13 completed after 33 transitions
+crib: {'holder': None, 'queue': []}
+trace: {"ev": "crib-grant", "line": 2, "token": "r2.1", "lease_s": 1.5, "t": 1792843014.124}
+trace: {"ev": "crib-grant", "line": 1, "token": "r1.2", "lease_s": 1.5, "t": 1792843015.262}
+trace: {"ev": "crib-grant", "line": 3, "token": "r3.3", "lease_s": 1.5, "t": 1792843016.425}

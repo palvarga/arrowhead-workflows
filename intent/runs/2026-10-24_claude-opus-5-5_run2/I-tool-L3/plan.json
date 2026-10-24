@@ -1,0 +1,176 @@
+{
+ "name": "line3-f35-tightening-nr7",
+ "firstActionName": "Prepare",
+ "actions": [
+  {
+   "name": "Prepare",
+   "nextActionName": "Tighten",
+   "firstStepNames": [
+    "reserve",
+    "program"
+   ],
+   "steps": [
+    {
+     "name": "reserve",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "reserve-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "res",
+      "dep": ""
+     },
+     "quantity": 1,
+     "nextStepNames": [
+      "transport_to_station"
+     ]
+    },
+    {
+     "name": "transport_to_station",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "transport-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "move",
+      "dep": "res"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    },
+    {
+     "name": "program",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "get-program",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "prog",
+      "dep": ""
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    }
+   ]
+  },
+  {
+   "name": "Tighten",
+   "nextActionName": "Finish",
+   "firstStepNames": [
+    "configure"
+   ],
+   "steps": [
+    {
+     "name": "configure",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "configure-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "cfg",
+      "dep": "prog,res"
+     },
+     "quantity": 1,
+     "nextStepNames": [
+      "tighten"
+     ]
+    },
+    {
+     "name": "tighten",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "tighten-fasteners",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "tight",
+      "dep": "cfg,res"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    }
+   ]
+  },
+  {
+   "name": "Finish",
+   "firstStepNames": [
+    "evaluate",
+    "record",
+    "transport_to_crib"
+   ],
+   "steps": [
+    {
+     "name": "evaluate",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "evaluate-tightening",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "chk",
+      "dep": "tight,prog"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    },
+    {
+     "name": "record",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "record-tightening",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "rec",
+      "dep": "tight"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    },
+    {
+     "name": "transport_to_crib",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "transport-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "ret",
+      "dep": "res"
+     },
+     "quantity": 1,
+     "nextStepNames": [
+      "release"
+     ]
+    },
+    {
+     "name": "release",
+     "serviceRequirement": {
+      "serviceDefinitionRequirement": "release-tool",
+      "interfaceRequirements": [
+       "HTTP-INSECURE-JSON"
+      ]
+     },
+     "staticParameters": {
+      "step": "rel",
+      "dep": "res"
+     },
+     "quantity": 1,
+     "nextStepNames": []
+    }
+   ]
+  }
+ ]
+}

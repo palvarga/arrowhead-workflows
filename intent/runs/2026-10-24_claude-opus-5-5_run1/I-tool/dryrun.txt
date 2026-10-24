@@ -1,0 +1,107 @@
+{"ev": "ctx-rho", "sessionId": 12, "rho": {"tool": "NR7", "line": 2, "stn": "st2", "variant": "F30", "crib": "crib"}, "t": 1792842483.312}
+{"ev": "invoke", "sessionId": 12, "step": "prog", "executor": "exprogram", "provider": "mes", "uri": "http://127.0.0.1:9102/get-program", "t": 1792842483.314}
+{"ev": "invoke", "sessionId": 12, "step": "res", "executor": "exreserve", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/reserve-tool", "t": 1792842483.316}
+{"ev": "crib-grant", "line": 2, "token": "r2.1", "lease_s": 1.5, "t": 1792842483.32}
+{"ev": "done", "sessionId": 12, "step": "prog", "result": [8, 210, 0.05], "t": 1792842483.324}
+{"ev": "done", "sessionId": 12, "step": "res", "result": "r2.1", "t": 1792842483.329}
+{"ev": "invoke", "sessionId": 12, "step": "move", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792842483.354}
+{"ev": "ctx-rho", "sessionId": 11, "rho": {"tool": "NR7", "line": 1, "stn": "st1", "variant": "F25", "crib": "crib"}, "t": 1792842483.522}
+{"ev": "invoke", "sessionId": 11, "step": "res", "executor": "exreserve", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/reserve-tool", "t": 1792842483.526}
+{"ev": "invoke", "sessionId": 11, "step": "prog", "executor": "exprogram", "provider": "mes", "uri": "http://127.0.0.1:9102/get-program", "t": 1792842483.528}
+{"ev": "waiting", "sessionId": 11, "step": "res", "position": 1, "t": 1792842483.542}
+{"ev": "done", "sessionId": 11, "step": "prog", "result": [8, 210, 0.05], "t": 1792842483.55}
+{"ev": "ctx-rho", "sessionId": 13, "rho": {"tool": "NR7", "line": 3, "stn": "st3", "variant": "F35", "crib": "crib"}, "t": 1792842483.733}
+{"ev": "invoke", "sessionId": 13, "step": "res", "executor": "exreserve", "provider": "toolcrib", "uri": "http://127.0.0.1:9101/reserve-tool", "t": 1792842483.735}
+{"ev": "invoke", "sessionId": 13, "step": "prog", "executor": "exprogram", "provider": "mes", "uri": "http://127.0.0.1:9102/get-program", "t": 1792842483.736}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 2, "t": 1792842483.742}
+{"ev": "done", "sessionId": 13, "step": "prog", "result": [6, 180, 0.05], "t": 1792842483.752}
+{"ev": "done", "sessionId": 12, "step": "move", "result": "NR7 arrived at st2", "t": 1792842483.765}
+{"ev": "invoke", "sessionId": 12, "step": "cfg", "executor": "exconfigure", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/configure-tool", "t": 1792842483.794}
+{"ev": "done", "sessionId": 12, "step": "cfg", "result": "program loaded (8 x 210 N*m +-5%)", "t": 1792842483.804}
+{"ev": "fail", "sessionId": 12, "step": "tight", "error": "'cfg'", "t": 1792842483.863}
+{"ev": "waiting", "sessionId": 11, "step": "res", "position": 1, "t": 1792842484.052}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 2, "t": 1792842484.253}
+{"ev": "waiting", "sessionId": 11, "step": "res", "position": 1, "t": 1792842484.561}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 2, "t": 1792842484.771}
+{"ev": "waiting", "sessionId": 11, "step": "res", "position": 1, "t": 1792842485.071}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 2, "t": 1792842485.279}
+{"ev": "crib-lease-expired", "line": 2, "tool_at": "st2", "note": "reservation revoked; tool must be recovered to the crib before the next delivery", "t": 1792842485.39}
+{"ev": "crib-grant", "line": 1, "token": "r1.2", "lease_s": 1.5, "t": 1792842485.391}
+{"ev": "done", "sessionId": 11, "step": "res", "result": "r1.2", "t": 1792842485.588}
+{"ev": "invoke", "sessionId": 11, "step": "move", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792842485.616}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 1, "t": 1792842485.789}
+{"ev": "done", "sessionId": 11, "step": "move", "result": "NR7 arrived at st1", "t": 1792842486.03}
+{"ev": "invoke", "sessionId": 11, "step": "cfg", "executor": "exconfigure", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/configure-tool", "t": 1792842486.063}
+{"ev": "done", "sessionId": 11, "step": "cfg", "result": "program loaded (8 x 210 N*m +-5%)", "t": 1792842486.073}
+{"ev": "fail", "sessionId": 11, "step": "tight", "error": "'cfg'", "t": 1792842486.095}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 1, "t": 1792842486.297}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 1, "t": 1792842486.807}
+{"ev": "waiting", "sessionId": 13, "step": "res", "position": 1, "t": 1792842487.318}
+{"ev": "crib-lease-expired", "line": 1, "tool_at": "st1", "note": "reservation revoked; tool must be recovered to the crib before the next delivery", "t": 1792842487.609}
+{"ev": "crib-grant", "line": 3, "token": "r3.3", "lease_s": 1.5, "t": 1792842487.61}
+{"ev": "done", "sessionId": 13, "step": "res", "result": "r3.3", "t": 1792842487.834}
+{"ev": "invoke", "sessionId": 13, "step": "move", "executor": "agvexecutor", "provider": "agvfleet", "uri": "http://127.0.0.1:9103/transport-tool", "t": 1792842487.869}
+{"ev": "done", "sessionId": 13, "step": "move", "result": "NR7 arrived at st3", "t": 1792842488.283}
+{"ev": "invoke", "sessionId": 13, "step": "cfg", "executor": "exconfigure", "provider": "nutrunner", "uri": "http://127.0.0.1:9104/configure-tool", "t": 1792842488.315}
+{"ev": "done", "sessionId": 13, "step": "cfg", "result": "program loaded (6 x 180 N*m +-5%)", "t": 1792842488.325}
+{"ev": "fail", "sessionId": 13, "step": "tight", "error": "'cfg'", "t": 1792842488.354}
+  0.00s  L2  #1   enable(reserve-nr7)
+  0.00s  L2  #2   enable(get-program-f30)
+  0.01s  L2  #3   bind(reserve-nr7) -> toolcrib via exreserve [+session-context]
+  0.02s  L2  #4   bind(get-program-f30) -> mes via exprogram [+session-context]
+  0.21s  L1  #1   enable(reserve-nr7)
+  0.21s  L1  #2   enable(get-program-f30)
+  0.21s  L1  #3   bind(reserve-nr7) -> toolcrib via exreserve [+session-context]
+  0.22s  L2  #5   done(get-program-f30)
+  0.22s  L1  #4   bind(get-program-f30) -> mes via exprogram [+session-context]
+  0.23s  L2  #6   done(reserve-nr7)
+  0.23s  L2  #7   enable(transport-nr7-to-station)
+  0.23s  L2  #8   bind(transport-nr7-to-station) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  0.42s  L3  #1   enable(reserve-nr7)
+  0.42s  L3  #2   enable(get-program-f30)
+  0.43s  L3  #3   bind(reserve-nr7) -> toolcrib via exreserve [+session-context]
+  0.44s  L3  #4   bind(get-program-f30) -> mes via exprogram [+session-context]
+  0.45s  L1  #5   done(get-program-f30)
+  0.66s  L3  #5   done(get-program-f30)
+  0.66s  L2  #9   done(transport-nr7-to-station)
+  0.66s  L2  #10  finish(Prepare)
+  0.66s  L2  #11  start(Tighten)
+  0.66s  L2  #12  enable(configure-nr7)
+  0.67s  L2  #13  bind(configure-nr7) -> nutrunner via exconfigure [+session-context, renew-tool-lease]
+  0.71s  L2  #14  done(configure-nr7)
+  0.71s  L2  #15  enable(tighten-f30)
+  0.73s  L2  #16  bind(tighten-f30) -> nutrunner via extighten [+session-context, renew-tool-lease]
+  0.77s  L2  #17  fail(tighten-f30) S-FAILINVOKE: 'cfg'
+  0.77s  L2  #17  == L2 session 12 failed after 17 transitions
+  2.49s  L1  #6   done(reserve-nr7)
+  2.49s  L1  #7   enable(transport-nr7-to-station)
+  2.49s  L1  #8   bind(transport-nr7-to-station) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  2.93s  L1  #9   done(transport-nr7-to-station)
+  2.93s  L1  #10  finish(Prepare)
+  2.93s  L1  #11  start(Tighten)
+  2.93s  L1  #12  enable(configure-nr7)
+  2.94s  L1  #13  bind(configure-nr7) -> nutrunner via exconfigure [+session-context, renew-tool-lease]
+  2.97s  L1  #14  done(configure-nr7)
+  2.97s  L1  #15  enable(tighten-f30)
+  2.98s  L1  #16  bind(tighten-f30) -> nutrunner via extighten [+session-context, renew-tool-lease]
+  2.99s  L1  #17  fail(tighten-f30) S-FAILINVOKE: 'cfg'
+  2.99s  L1  #17  == L1 session 11 failed after 17 transitions
+  4.73s  L3  #6   done(reserve-nr7)
+  4.73s  L3  #7   enable(transport-nr7-to-station)
+  4.74s  L3  #8   bind(transport-nr7-to-station) -> agvfleet via agvexecutor [+session-context, renew-tool-lease]
+  5.18s  L3  #9   done(transport-nr7-to-station)
+  5.18s  L3  #10  finish(Prepare)
+  5.18s  L3  #11  start(Tighten)
+  5.18s  L3  #12  enable(configure-nr7)
+  5.19s  L3  #13  bind(configure-nr7) -> nutrunner via exconfigure [+session-context, renew-tool-lease]
+  5.22s  L3  #14  done(configure-nr7)
+  5.22s  L3  #15  enable(tighten-f30)
+  5.23s  L3  #16  bind(tighten-f30) -> nutrunner via extighten [+session-context, renew-tool-lease]
+  5.25s  L3  #17  fail(tighten-f30) S-FAILINVOKE: 'cfg'
+  5.25s  L3  #17  == L3 session 13 failed after 17 transitions
+crib: {'holder': 3, 'queue': []}
+trace: {"ev": "crib-grant", "line": 2, "token": "r2.1", "lease_s": 1.5, "t": 1792842483.32}
+trace: {"ev": "crib-lease-expired", "line": 2, "tool_at": "st2", "note": "reservation revoked; tool must be recovered to the crib before the next delivery", "t": 1792842485.39}
+trace: {"ev": "crib-grant", "line": 1, "token": "r1.2", "lease_s": 1.5, "t": 1792842485.391}
+trace: {"ev": "crib-lease-expired", "line": 1, "tool_at": "st1", "note": "reservation revoked; tool must be recovered to the crib before the next delivery", "t": 1792842487.609}
+trace: {"ev": "crib-grant", "line": 3, "token": "r3.3", "lease_s": 1.5, "t": 1792842487.61}
