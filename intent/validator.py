@@ -22,7 +22,7 @@ finding, else Accept.
 Recipe format (see README.md): {"name", "first_action", "actions": [{"name", "next", "steps":
 [{"name", "service", "next": [...], "dep": [...], "executor": null | "<executor>", "params": {...}}]}]}
 """
-import json, sys
+import json, pathlib, sys
 
 VERDICT_ORDER = ["accept", "revise", "clarify", "reject"]
 
@@ -261,10 +261,10 @@ def validate(candidate, ctx):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.exit("usage: validator.py <candidate.json> [context.json]")
-    cand = json.load(open(sys.argv[1]))
+    cand = json.load(open(sys.argv[1], encoding="utf-8"))
     if "recipe" not in cand:
         cand = {"recipe": cand}
-    ctx = json.load(open(sys.argv[2] if len(sys.argv) > 2 else __file__.rsplit("/", 1)[0] + "/context.json"))
+    ctx = json.load(open(sys.argv[2] if len(sys.argv) > 2 else pathlib.Path(__file__).with_name("context.json"), encoding="utf-8"))
     res = validate(cand, ctx)
     for f in res["findings"]:
         print(f"{f['check']:3} {'ok  ' if f['ok'] else f['severity'].upper():8} {f['message']}")

@@ -34,6 +34,9 @@ python3 pipeline.py --all --run --translator claude                   # default 
 python3 pipeline.py --all --translator claude --model <model-id> --export-web
 ```
 
+On Windows (PowerShell), use `py` (or `python`) instead of `python3` and set the key with
+`$env:ANTHROPIC_API_KEY = "..."`. All files are read and written as UTF-8.
+
 Every run is written to `out/<run>/<intent>/` (`round<k>.json` with interpretation, draft and findings,
 `plan.json`, `dryrun.txt`, `result.json`); Claude runs also keep the raw API responses in `out/<run>/api/`.
 

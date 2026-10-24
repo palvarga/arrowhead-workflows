@@ -6,9 +6,9 @@ HERE = pathlib.Path(__file__).parent
 sys.path.insert(0, str(HERE))
 import compiler, pipeline, translator, validator   # noqa: E402
 
-CTX = json.loads((HERE / "context.json").read_text())
-REF = json.loads((HERE / "drafts" / "I-tool" / "round2.json").read_text())
-INTENTS = {i["id"]: i for i in json.loads((HERE / "intents.json").read_text())}
+CTX = json.loads((HERE / "context.json").read_text(encoding="utf-8"))
+REF = json.loads((HERE / "drafts" / "I-tool" / "round2.json").read_text(encoding="utf-8"))
+INTENTS = {i["id"]: i for i in json.loads((HERE / "intents.json").read_text(encoding="utf-8"))}
 
 
 def failed(res):
@@ -22,18 +22,18 @@ class ValidatorTests(unittest.TestCase):
     def test_each_defect_caught_by_its_check(self):
         """Table 9 of the paper: D1..D5, each detected by the named check and returned for revision."""
         for f in sorted((HERE / "drafts" / "defects").glob("D*.json")):
-            d = json.loads(f.read_text())
+            d = json.loads(f.read_text(encoding="utf-8"))
             res = validator.validate({"interpretation": REF["interpretation"], "recipe": d["recipe"]}, CTX)
             with self.subTest(defect=d["defect"]):
                 self.assertEqual(res["verdict"], "revise")
                 self.assertEqual(failed(res), {d["expected_check"]})
 
     def test_policy_conflict_is_clarify(self):
-        c = json.loads((HERE / "drafts" / "I-noqc" / "round0.json").read_text())
+        c = json.loads((HERE / "drafts" / "I-noqc" / "round0.json").read_text(encoding="utf-8"))
         self.assertEqual(validator.validate(c, CTX)["verdict"], "clarify")
 
     def test_ungrounded_capability_is_reject(self):
-        c = json.loads((HERE / "drafts" / "I-wrench" / "round0.json").read_text())
+        c = json.loads((HERE / "drafts" / "I-wrench" / "round0.json").read_text(encoding="utf-8"))
         self.assertEqual(validator.validate(c, CTX)["verdict"], "reject")
 
     def test_no_lease_is_clarify(self):
@@ -58,7 +58,7 @@ class ValidatorTests(unittest.TestCase):
 class CompilerTests(unittest.TestCase):
     def test_compiled_reference_equals_hand_authored_plan(self):
         plan = compiler.compile_recipe(REF["recipe"], CTX)
-        ref = json.loads((HERE.parent / "forklift" / "plan.json").read_text())
+        ref = json.loads((HERE.parent / "forklift" / "plan.json").read_text(encoding="utf-8"))
         self.assertEqual(compiler.diff(plan, ref), [])
 
 

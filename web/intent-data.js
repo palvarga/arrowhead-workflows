@@ -3,7 +3,7 @@ window.INTENT_RUNS = {
  "stored": {
   "translator": "stored",
   "model": null,
-  "timestamp": "2026-10-24T11:12:18+00:00",
+  "timestamp": "2026-10-24T11:25:16+00:00",
   "no_lease": false,
   "results": [
    {
@@ -669,11 +669,6 @@ window.INTENT_RUNS = {
      }
     ],
     "reference_diffs": [],
-    "dryrun": [
-     "  1.07s  L2  #33  == L2 session 12 completed after 33 transitions",
-     "  2.27s  L1  #33  == L1 session 11 completed after 33 transitions",
-     "  3.47s  L3  #33  == L3 session 13 completed after 33 transitions"
-    ],
     "identical_to_reference": true
    },
    {
@@ -904,11 +899,6 @@ window.INTENT_RUNS = {
      }
     ],
     "reference_diffs": [],
-    "dryrun": [
-     "  1.06s  L2  #33  == L2 session 12 completed after 33 transitions",
-     "  2.26s  L1  #33  == L1 session 11 completed after 33 transitions",
-     "  3.47s  L3  #33  == L3 session 13 completed after 33 transitions"
-    ],
     "identical_to_reference": true
    },
    {

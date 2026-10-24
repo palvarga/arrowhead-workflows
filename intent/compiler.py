@@ -11,7 +11,7 @@ eta(s) is not emitted: in the 4.6.2 kit every service definition has its own Exe
 Choreographer selects the Executor by service definition (see README.md).
 Only call this on a Recipe the Validator has accepted.
 """
-import json, sys
+import json, pathlib, sys
 
 
 def kit_step_id(step, ctx):
@@ -68,6 +68,6 @@ def diff(a, b, path=""):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.exit("usage: compiler.py <candidate.json> [context.json]")
-    cand = json.load(open(sys.argv[1]))
-    ctx = json.load(open(sys.argv[2] if len(sys.argv) > 2 else __file__.rsplit("/", 1)[0] + "/context.json"))
+    cand = json.load(open(sys.argv[1], encoding="utf-8"))
+    ctx = json.load(open(sys.argv[2] if len(sys.argv) > 2 else pathlib.Path(__file__).with_name("context.json"), encoding="utf-8"))
     print(json.dumps(compile_recipe(cand.get("recipe", cand), ctx), indent=1))

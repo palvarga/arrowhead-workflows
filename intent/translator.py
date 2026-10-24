@@ -24,7 +24,7 @@ class StoredTranslator:
         if not files:
             raise FileNotFoundError(f"no stored drafts for {intent['id']} in {d}")
         f = files[min(round_no, len(files) - 1)]
-        c = json.loads(f.read_text())
+        c = json.loads(f.read_text(encoding="utf-8"))
         return {"interpretation": c.get("interpretation"), "recipe": c.get("recipe"),
                 "source": str(f.relative_to(HERE)), "note": c.get("note")}
 
@@ -61,8 +61,8 @@ class ClaudeTranslator:
             raise RuntimeError("ANTHROPIC_API_KEY is not set")
         self.max_tokens, self.timeout = max_tokens, timeout
         self.log_dir = pathlib.Path(log_dir) if log_dir else None
-        self.system = (HERE / "prompts" / "translator_system.md").read_text()
-        self.fmt = (HERE / "prompts" / "output_format.md").read_text()
+        self.system = (HERE / "prompts" / "translator_system.md").read_text(encoding="utf-8")
+        self.fmt = (HERE / "prompts" / "output_format.md").read_text(encoding="utf-8")
         self.history = {}
 
     def _call(self, messages):
@@ -96,7 +96,7 @@ class ClaudeTranslator:
         msgs.append({"role": "assistant", "content": text})
         if self.log_dir:
             self.log_dir.mkdir(parents=True, exist_ok=True)
-            (self.log_dir / f"{intent['id']}.round{round_no}.response.json").write_text(json.dumps(resp, indent=1))
+            (self.log_dir / f"{intent['id']}.round{round_no}.response.json").write_text(json.dumps(resp, indent=1), encoding="utf-8")
         try:
             c = extract_json(text)
         except (ValueError, json.JSONDecodeError) as e:
