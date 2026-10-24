@@ -45,8 +45,6 @@ Results of the dry runs:
 ## Intent to Recipe
 
 `intent/` is the runnable companion of Worked Example II of *Intent-based Workflow Choreography* (P. Varga, under
-review at *Sensors*). An Intent Translator (stored drafts, or Claude through the Anthropic API) turns an operator's
-intent for the forklift example into a draft Recipe; a deterministic Validator applies checks I1–I2 and V1–V8; an
-accepted Recipe is compiled to a Choreographer plan, compared with `forklift/plan.json`, and executed with
-`forklift/dryrun.py --plan`. With the stored drafts, defects D1–D5 are caught, the Recipe is accepted in round 2,
-the compiled plan is identical to the hand-authored one, and the kit runs 3 × 33 transitions. See `intent/README.md`.
+review at *Sensors*). An Intent Translator turns an operator's intent for the forklift example into a draft Recipe;
+a deterministic Validator applies checks I1–I2 and V1–V8; an accepted Recipe is compiled to a Choreographer plan,
+compared with `forklift/plan.json`, and executed with `forklift/dryrun.py --plan`. 
