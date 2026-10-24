@@ -5,35 +5,56 @@
     "services": {
       "reserve-tool": {
         "provider": "toolcrib",
-        "text": "Reserve the shared tool for a line. Input: tool id, line. Result: reservation token (lease)."
+        "text": "Reserve the shared tool for a line. Input: tool id and line (session parameters). Result: reservation token (lease).",
+        "requires_results": []
       },
       "release-tool": {
         "provider": "toolcrib",
-        "text": "Release a reservation. Input: tool id, reservation token."
+        "text": "Release a reservation. Input: tool id and the reservation token, i.e. the result of reserve-tool.",
+        "requires_results": [
+          "reserve-tool"
+        ]
       },
       "get-program": {
         "provider": "mes",
-        "text": "Tightening program of a forklift variant. Input: variant. Result: (bolt count, target torque N*m, relative tolerance)."
+        "text": "Tightening program of a forklift variant. Input: variant (session parameter). Result: (bolt count, target torque N*m, relative tolerance).",
+        "requires_results": []
       },
       "transport-tool": {
         "provider": "agvfleet",
-        "text": "AGV mission moving a tool. Input: tool id, from, to, reservation token. Long-running."
+        "text": "AGV mission moving a tool. Input: tool id, from, to, and the reservation token, i.e. the result of reserve-tool. Long-running.",
+        "requires_results": [
+          "reserve-tool"
+        ]
       },
       "configure-tool": {
         "provider": "nutrunner",
-        "text": "Load a tightening program into the nutrunner. Input: tool id, program."
+        "text": "Load a tightening program into the nutrunner. Input: tool id and the program, i.e. the result of get-program.",
+        "requires_results": [
+          "get-program"
+        ]
       },
       "tighten-fasteners": {
         "provider": "nutrunner",
-        "text": "Tighten all fasteners according to the loaded program. Result: measured torques."
+        "text": "Tighten all fasteners according to the loaded program. Input: tool id and the confirmation of the loaded program, i.e. the result of configure-tool. Result: measured torques.",
+        "requires_results": [
+          "configure-tool"
+        ]
       },
       "evaluate-tightening": {
         "provider": "qms",
-        "text": "Evaluate measured torques against a program. Input: torques, program. Result: OK or NOK."
+        "text": "Evaluate measured torques against a program. Input: the result of tighten-fasteners and the result of get-program. Result: OK or NOK.",
+        "requires_results": [
+          "tighten-fasteners",
+          "get-program"
+        ]
       },
       "record-tightening": {
         "provider": "qms",
-        "text": "Record a tightening result for traceability. Input: line, variant, tool id, torques."
+        "text": "Record a tightening result for traceability. Input: line, variant, tool id (session parameters) and the result of tighten-fasteners.",
+        "requires_results": [
+          "tighten-fasteners"
+        ]
       }
     },
     "executors": {
@@ -55,7 +76,8 @@
       "agvexecutor": [
         "transport-tool"
       ]
-    }
+    },
+    "_inputs_comment": "requires_results: services whose Step results the input of a Step with this service is composed from (service interface / input composition kappa_s). Checked by V9."
   },
   "K_eng": {
     "facts": [

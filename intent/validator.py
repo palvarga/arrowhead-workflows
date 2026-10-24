@@ -15,6 +15,8 @@ context Ctx_i (context.json). No LLM is involved here.
   V6  goal coverage        mandatory services present; tighten precedes evaluate/record (E5) -> Revise
   V7  resource bracketing  reserve < every tool use < release; return to crib < release (E1) -> Revise
   V8  failure admission    lease declared (else Clarify); tool-using Steps depend on reserve (E6) -> Revise
+  V9  input completeness   dep(s) contains a Step of every service whose result the input of
+                           theta(s) requires (service interface, K_AH requires_results)        -> Revise
 
 Verdict: Reject if any Reject finding, else Clarify if any Clarify finding, else Revise if any Revise
 finding, else Accept.
@@ -242,6 +244,21 @@ def v8_failure(R, ctx):
                    fact=lease["fact"])
 
 
+def v9_inputs(R, ctx):
+    """Input completeness: every result that the service interface of theta(s) needs as input is
+    provided by a Step in dep(s). Control order alone (next) does not make a result available."""
+    errs = []
+    for n, s in R.step.items():
+        svc = ctx["K_AH"]["services"].get(s.get("service"))
+        if svc is None:
+            continue                                         # reported by V2
+        for need in svc.get("requires_results", []):
+            if not any(R.step[d].get("service") == need for d in s.get("dep", []) if d in R.step):
+                errs.append(f"{n} ({s['service']}) needs the result of {need}, but no Step in dep({n}) requires {need}")
+    return finding("V9", not errs, "; ".join(errs) or "every Step depends on the Steps whose results its input needs",
+                   fact="interface")
+
+
 def validate(candidate, ctx):
     """candidate = {"interpretation": {...}, "recipe": {...} | None}. Returns {"verdict", "findings"}."""
     findings = check_intent(candidate.get("interpretation"), ctx)
@@ -252,7 +269,8 @@ def validate(candidate, ctx):
     else:
         R = Recipe(recipe)
         findings += [v1_structure(R), v2_grounding(R, ctx), v3_binding(R, ctx), v4_precondition(R, ctx),
-                     v5_provenance(R, ctx), v6_goal(R, ctx), v7_bracketing(R, ctx), v8_failure(R, ctx)]
+                     v5_provenance(R, ctx), v6_goal(R, ctx), v7_bracketing(R, ctx), v8_failure(R, ctx),
+                     v9_inputs(R, ctx)]
     sev = [f["severity"] for f in findings if not f["ok"]]
     verdict = max(sev, key=VERDICT_ORDER.index) if sev else "accept"
     return {"verdict": verdict, "findings": findings}

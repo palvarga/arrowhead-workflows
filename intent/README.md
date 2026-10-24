@@ -22,7 +22,7 @@ python3 pipeline.py --all                           # stored drafts: all four in
 python3 pipeline.py --intent I-tool --run           # D1-D5 caught, accepted in round 2, identical plan, 3 x 33 transitions
 python3 pipeline.py --intent I-tool --run --fail    # failure case: L2 fails, its lease expires, L1 and L3 complete
 python3 pipeline.py --intent I-tool --no-lease      # without lease semantics E6: V8 -> clarify
-python3 -m unittest -v test_intent.py               # 11 tests
+python3 -m unittest -v test_intent.py               # 12 tests
 python3 pipeline.py --all --run --export-web        # writes ../web/intent-data.js for ../web/intent.html
 ```
 
@@ -36,6 +36,16 @@ python3 pipeline.py --all --translator claude --model <model-id> --export-web
 
 On Windows (PowerShell), use `py` (or `python`) instead of `python3` and set the key with
 `$env:ANTHROPIC_API_KEY = "..."`. All files are read and written as UTF-8.
+
+The pipeline prints `OK` and exits with status 0 only if every verdict matches the expected one and, with
+`--run`, every accepted plan completes in the kit; otherwise it prints `NOT OK` and exits with 1.
+
+**Why V9 exists.** In the first run with `claude-opus-5-5` (2026-10-24) both accepted Recipes ordered configure
+before tighten through `next`, but did not list configure in dep(tighten). Ordering does not make a result
+available; the kit composes the input of `tighten-fasteners` from ξ restricted to dep(s), so every Session failed
+at that Step. The context did not state which results each service needs, so neither the Translator nor the
+Validator could know. `context.json` now states it (`requires_results`, also in the service texts the Translator
+sees), and V9 checks it. The defect is kept as `drafts/defects/D8_missing_input_dependency.json`.
 
 Every run is written to `out/<run>/<intent>/` (`round<k>.json` with interpretation, draft and findings,
 `plan.json`, `dryrun.txt`, `result.json`); Claude runs also keep the raw API responses in `out/<run>/api/`.
@@ -52,7 +62,7 @@ Every run is written to `out/<run>/<intent>/` (`round<k>.json` with interpretati
 | `compiler.py` | Recipe → `ChoreographerPlanRequestDTO` in the format of `../forklift/plan.json`; structural diff |
 | `pipeline.py` | The generate–validate–revise loop, comparison with the reference plan, kit execution, web export |
 | `drafts/I-tool/` | Stored drafts: round 0 with defects D1, D3, D5; round 1 with D2, D4; round 2 correct |
-| `drafts/defects/` | Reference Recipe with exactly one defect each (D1–D5), used by the tests |
+| `drafts/defects/` | Reference Recipe with one defect each (D1–D5 constructed; D8 observed in the first Claude run), used by the tests |
 | `test_intent.py` | Unit tests |
 
 The stored drafts are constructed for illustration (Table 9 of the paper); they are not outputs of a model.
@@ -89,6 +99,7 @@ s′ along next_A. The consumer c(s) is the Executor if η(s) is set, otherwise 
 | V6 | tighten, evaluate and record present; tighten precedes evaluate and record | E5 | revise |
 | V7 | reserve ≺ every tool use ≺ release; a transport to the crib precedes release | E1 | revise |
 | V8 | lease semantics declared (else clarify); every tool-using Step depends on reserve | E6 | revise / clarify |
+| V9 | dep(s) contains a Step of every service whose result the input of θ(s) needs (`requires_results` in `context.json`) | interface | revise |
 
 Verdict: reject if any reject finding, else clarify if any clarify finding, else revise if any revise finding,
 else accept. After `--k-max` rounds (default 3) without acceptance the verdict is reject.

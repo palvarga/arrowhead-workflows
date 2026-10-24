@@ -1,6 +1,8 @@
 {
   "defect": "D3",
-  "expected_check": "V3",
+  "expected_check": [
+    "V3"
+  ],
   "recipe": {
     "name": "shared-tool-tightening",
     "first_action": "provision",

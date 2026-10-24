@@ -20,13 +20,13 @@ class ValidatorTests(unittest.TestCase):
         self.assertEqual(validator.validate(REF, CTX)["verdict"], "accept")
 
     def test_each_defect_caught_by_its_check(self):
-        """Table 9 of the paper: D1..D5, each detected by the named check and returned for revision."""
+        """Table 9 of the paper: D1..D5 and D8, each detected by the named checks and returned for revision."""
         for f in sorted((HERE / "drafts" / "defects").glob("D*.json")):
             d = json.loads(f.read_text(encoding="utf-8"))
             res = validator.validate({"interpretation": REF["interpretation"], "recipe": d["recipe"]}, CTX)
             with self.subTest(defect=d["defect"]):
                 self.assertEqual(res["verdict"], "revise")
-                self.assertEqual(failed(res), {d["expected_check"]})
+                self.assertEqual(failed(res), set(d["expected_check"]))
 
     def test_policy_conflict_is_clarify(self):
         c = json.loads((HERE / "drafts" / "I-noqc" / "round0.json").read_text(encoding="utf-8"))
@@ -53,6 +53,13 @@ class ValidatorTests(unittest.TestCase):
         r = copy.deepcopy(REF)
         r["recipe"]["actions"][0]["steps"][0]["dep"] = ["release"]
         self.assertIn("V1", failed(validator.validate(r, CTX)))
+
+
+    def test_every_service_declares_its_inputs(self):
+        for name, svc in CTX["K_AH"]["services"].items():
+            with self.subTest(service=name):
+                self.assertIn("requires_results", svc)
+                self.assertTrue(set(svc["requires_results"]) <= set(CTX["K_AH"]["services"]))
 
 
 class CompilerTests(unittest.TestCase):
