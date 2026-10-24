@@ -126,7 +126,7 @@ function render() {
               : res.identical_to_reference === false ? `compiled plan differs structurally from forklift/plan.json (${(res.reference_diffs || []).length} differences, e.g. ${(res.reference_diffs || []).slice(0, 2).join("; ")}); correctness is judged by validation and kit execution` : "";
     const dry = (res.dryrun || []).length ? `<pre>${esc(res.dryrun.join("\n"))}</pre>` : "";
     const ex = res.execution ? ` · kit ${res.execution === "completed" ? '<span class="badge accept">' : '<span class="badge reject">'}${esc(res.execution)} ${res.sessions ? res.sessions.completed + "/" + (res.sessions.completed + res.sessions.failed) : ""}</span>` : "";
-    return `<div class="card"><div class="head"><h2>${esc(it.id)}</h2><div>expected ${badge(it.expected)} · result ${badge(res.verdict)} · ${res.rounds} round(s)${ex}</div></div>
+    return `<div class="card"><div class="head"><h2>${esc(it.id)}</h2><div>expected ${badge(it.expected)} · result ${badge(res.verdict)} · ${res.rounds} round(s)${ex}${res.preference && res.preference.tool_hold_s != null ? ` · J(W) tool hold ${res.preference.tool_hold_s} s` : ""}</div></div>
       <div class="quote">“${esc(it.text)}”</div>
       <div class="meta">Ladder level ${esc(it.ladder_level)} · ${esc(it.paper || "")}</div>
       ${idt ? `<div class="note">${esc(idt)}</div>` : ""}${dry}${rounds}</div>`;

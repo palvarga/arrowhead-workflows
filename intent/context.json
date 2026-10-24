@@ -104,6 +104,10 @@
       {
         "id": "E6",
         "text": "Reservations are leases. A lease that is neither renewed nor released expires. Every tool-using Step renews the lease with the reservation token before the physical use and therefore depends on the reserve-tool Step."
+      },
+      {
+        "id": "E9",
+        "text": "Nominal durations (s): reserve-tool 1, release-tool 1, get-program 1, transport-tool 90, configure-tool 5, tighten-fasteners 60, evaluate-tightening 2, record-tightening 3. The tool lease is 120 s and is renewed before every physical use, so it must exceed the duration of every single tool-using Step."
       }
     ],
     "physical_precondition": {
@@ -158,6 +162,24 @@
         "configure-tool",
         "tighten-fasteners"
       ]
+    },
+    "timing": {
+      "fact": "E9",
+      "nominal_duration_s": {
+        "reserve-tool": 1,
+        "release-tool": 1,
+        "get-program": 1,
+        "transport-tool": 90,
+        "configure-tool": 5,
+        "tighten-fasteners": 60,
+        "evaluate-tightening": 2,
+        "record-tightening": 3
+      },
+      "lease_s": 120
+    },
+    "preference": {
+      "_comment": "Soft preference of the intent: hold the tool no longer than necessary. J(W) = estimated time from completion of reserve-tool to completion of release-tool (critical path over next_A and next_alpha with nominal durations). Ranks admissible Recipes; does not affect admission.",
+      "name": "tool_hold_s"
     }
   },
   "K_runtime": {

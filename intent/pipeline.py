@@ -35,20 +35,24 @@ def run_intent(intent, ctx, tr, k_max, out_dir, run_kit=False, quiet=False, fail
         verdict = res["verdict"]
         rounds.append({"round": k, "source": cand.get("source"), "note": cand.get("note"),
                        "interpretation": cand.get("interpretation"), "recipe": cand.get("recipe"),
-                       "verdict": verdict, "findings": res["findings"]})
+                       "verdict": verdict, "findings": res["findings"], "preference": res.get("preference")})
         (d / f"round{k}.json").write_text(json.dumps(rounds[-1], indent=1), encoding="utf-8")
         say(f"--- round {k}: {cand.get('source')}")
         for f in res["findings"]:
             if not f["ok"]:
                 say(f"    {f['check']:3} {f['severity'].upper():8} {f['message']}")
         say(f"    verdict: {verdict.upper()}")
+        if res.get("preference"):
+            pr = res["preference"]
+            say(f"    preference J(W): tool hold {pr['tool_hold_s']} s, makespan {pr['makespan_s']} s (nominal, E9)")
         if verdict != "revise":
             break
         feedback = res["findings"]
     else:
         verdict = "reject"
         say(f"    revision bound k_max={k_max} reached -> REJECT")
-    result = {"intent": intent, "verdict": verdict, "rounds": len(rounds), "trace": rounds}
+    result = {"intent": intent, "verdict": verdict, "rounds": len(rounds), "trace": rounds,
+              "preference": rounds[-1].get("preference") if verdict == "accept" else None}
     if verdict == "accept":
         plan = compiler.compile_recipe(rounds[-1]["recipe"], ctx)
         (d / "plan.json").write_text(json.dumps(plan, indent=1) + "\n", encoding="utf-8")
@@ -110,13 +114,15 @@ def main():
 
     results = [run_intent(i, ctx, tr, a.k_max, out_dir, a.run, fail=a.fail) for i in todo]
 
-    print("\nintent        expected  verdict   rounds  kit-execution  identical-to-reference")
+    print("\nintent        expected  verdict   rounds  kit-execution  J(W) hold [s]  identical-to-reference")
     for r in results:
         idt = {True: "yes", False: "no", None: "-"}[r["identical_to_reference"]]
         ex = r.get("execution", "-")
         if ex != "-":
             ex += f" {r['sessions']['completed']}/{r['sessions']['completed'] + r['sessions']['failed']}"
-        print(f"{r['intent']['id']:13} {r['intent'].get('expected', '-'):9} {r['verdict']:9} {r['rounds']:<7} {ex:14} {idt}")
+        jh = (r.get("preference") or {}).get("tool_hold_s")
+        jh = "-" if jh is None else f"{jh:g}"
+        print(f"{r['intent']['id']:13} {r['intent'].get('expected', '-'):9} {r['verdict']:9} {r['rounds']:<7} {ex:14} {jh:14} {idt}")
     summary = {"translator": tr.name, "model": getattr(tr, "model", None),
                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
                "no_lease": a.no_lease, "results": results}

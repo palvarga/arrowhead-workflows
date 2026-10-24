@@ -17,6 +17,11 @@ context Ctx_i (context.json). No LLM is involved here.
   V8  failure admission    lease declared (else Clarify); tool-using Steps depend on reserve (E6) -> Revise
   V9  input completeness   dep(s) contains a Step of every service whose result the input of
                            theta(s) requires (service interface, K_AH requires_results)        -> Revise
+  V10 timing               the lease exceeds the nominal duration of every tool-using Step (E9) -> Clarify
+
+Preference (no effect on admission): J(W) = estimated tool-hold time, i.e. the time from completion of
+reserve-tool to completion of release-tool on the critical path over next_A and next_alpha, with the
+nominal durations of E9. It ranks admissible Recipes (Ladder Level 4).
 
 Verdict: Reject if any Reject finding, else Clarify if any Clarify finding, else Revise if any Revise
 finding, else Accept.
@@ -259,6 +264,53 @@ def v9_inputs(R, ctx):
                    fact="interface")
 
 
+def v10_timing(R, ctx):
+    """The lease is renewed before every physical use, so it must outlast every single tool-using Step."""
+    t = ctx["K_eng"].get("timing")
+    if not t:
+        return finding("V10", True, "no timing facts in the context")
+    uses = [n for n in tool_uses(R, ctx)]
+    too_long = [f"{n} ({R.step[n]['service']}, {t['nominal_duration_s'].get(R.step[n]['service'])} s)"
+                for n in uses if t["nominal_duration_s"].get(R.step[n]["service"], 0) >= t["lease_s"]]
+    return finding("V10", not too_long,
+                   f"lease of {t['lease_s']} s does not exceed the duration of {too_long}; the lease must be "
+                   "set longer by an engineer" if too_long else
+                   f"lease of {t['lease_s']} s exceeds every tool-using Step "
+                   f"(longest {max([t['nominal_duration_s'].get(R.step[n]['service'], 0) for n in uses] or [0])} s)",
+                   "clarify", t["fact"])
+
+
+def schedule(R, ctx):
+    """Earliest finish times with nominal durations: Actions run in sequence along next_A; inside an Action a
+    Step starts when its predecessors under next_alpha have finished (or when the Action starts)."""
+    dur = ctx["K_eng"]["timing"]["nominal_duration_s"]
+    finish, t0 = {}, 0.0
+    for a in R.action_seq:
+        steps = [s for s in R.actions[a]["steps"]]
+        pred = {s["name"]: [p["name"] for p in steps if s["name"] in p.get("next", [])] for s in steps}
+        todo = [s["name"] for s in steps]
+        while todo:
+            for n in list(todo):
+                if all(p in finish for p in pred[n]):
+                    start = max([finish[p] for p in pred[n]] + [t0])
+                    finish[n] = start + dur.get(R.step[n]["service"], 0)
+                    todo.remove(n)
+        t0 = max([finish[s["name"]] for s in steps] + [t0])
+    return finish, t0
+
+
+def preference(R, ctx):
+    """J(W): estimated tool-hold time and makespan; None if the Recipe cannot be scheduled."""
+    if "timing" not in ctx["K_eng"] or R.action_cycle or any(n in R._reach(n) for n in R.step):
+        return None
+    ex = ctx["K_eng"]["exclusive_resource"]
+    finish, makespan = schedule(R, ctx)
+    acq = [finish[n] for n in R.by_service(ex["acquire_service"])]
+    rel = [finish[n] for n in R.by_service(ex["release_service"])]
+    hold = (max(rel) - min(acq)) if acq and rel else None
+    return {"tool_hold_s": hold, "makespan_s": makespan, "unit": "s (nominal durations, E9)"}
+
+
 def validate(candidate, ctx):
     """candidate = {"interpretation": {...}, "recipe": {...} | None}. Returns {"verdict", "findings"}."""
     findings = check_intent(candidate.get("interpretation"), ctx)
@@ -270,10 +322,13 @@ def validate(candidate, ctx):
         R = Recipe(recipe)
         findings += [v1_structure(R), v2_grounding(R, ctx), v3_binding(R, ctx), v4_precondition(R, ctx),
                      v5_provenance(R, ctx), v6_goal(R, ctx), v7_bracketing(R, ctx), v8_failure(R, ctx),
-                     v9_inputs(R, ctx)]
+                     v9_inputs(R, ctx), v10_timing(R, ctx)]
     sev = [f["severity"] for f in findings if not f["ok"]]
     verdict = max(sev, key=VERDICT_ORDER.index) if sev else "accept"
-    return {"verdict": verdict, "findings": findings}
+    res = {"verdict": verdict, "findings": findings}
+    if recipe is not None and verdict == "accept":
+        res["preference"] = preference(R, ctx)
+    return res
 
 
 if __name__ == "__main__":
@@ -287,3 +342,5 @@ if __name__ == "__main__":
     for f in res["findings"]:
         print(f"{f['check']:3} {'ok  ' if f['ok'] else f['severity'].upper():8} {f['message']}")
     print("verdict:", res["verdict"])
+    if res.get("preference"):
+        print("preference J(W):", res["preference"])

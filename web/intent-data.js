@@ -3,7 +3,7 @@ window.INTENT_RUNS = {
  "stored": {
   "translator": "stored",
   "model": null,
-  "timestamp": "2026-10-24T12:00:31+00:00",
+  "timestamp": "2026-10-24T14:28:37+00:00",
   "no_lease": false,
   "results": [
    {
@@ -238,8 +238,15 @@ window.INTENT_RUNS = {
         "ok": true,
         "message": "every Step depends on the Steps whose results its input needs",
         "fact": "interface"
+       },
+       {
+        "check": "V10",
+        "ok": true,
+        "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+        "fact": "E9"
        }
-      ]
+      ],
+      "preference": null
      },
      {
       "round": 1,
@@ -463,8 +470,15 @@ window.INTENT_RUNS = {
         "message": "evaluate (evaluate-tightening) needs the result of get-program, but no Step in dep(evaluate) requires get-program",
         "severity": "revise",
         "fact": "interface"
+       },
+       {
+        "check": "V10",
+        "ok": true,
+        "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+        "fact": "E9"
        }
-      ]
+      ],
+      "preference": null
      },
      {
       "round": 2,
@@ -683,15 +697,31 @@ window.INTENT_RUNS = {
         "ok": true,
         "message": "every Step depends on the Steps whose results its input needs",
         "fact": "interface"
+       },
+       {
+        "check": "V10",
+        "ok": true,
+        "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+        "fact": "E9"
        }
-      ]
+      ],
+      "preference": {
+       "tool_hold_s": 249.0,
+       "makespan_s": 250.0,
+       "unit": "s (nominal durations, E9)"
+      }
      }
     ],
+    "preference": {
+     "tool_hold_s": 249.0,
+     "makespan_s": 250.0,
+     "unit": "s (nominal durations, E9)"
+    },
     "reference_diffs": [],
     "dryrun": [
      "  1.07s  L2  #33  == L2 session 12 completed after 33 transitions",
-     "  2.27s  L1  #33  == L1 session 11 completed after 33 transitions",
-     "  3.47s  L3  #33  == L3 session 13 completed after 33 transitions"
+     "  2.26s  L1  #33  == L1 session 11 completed after 33 transitions",
+     "  3.46s  L3  #33  == L3 session 13 completed after 33 transitions"
     ],
     "execution": "completed",
     "sessions": {
@@ -929,15 +959,31 @@ window.INTENT_RUNS = {
         "ok": true,
         "message": "every Step depends on the Steps whose results its input needs",
         "fact": "interface"
+       },
+       {
+        "check": "V10",
+        "ok": true,
+        "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+        "fact": "E9"
        }
-      ]
+      ],
+      "preference": {
+       "tool_hold_s": 249.0,
+       "makespan_s": 250.0,
+       "unit": "s (nominal durations, E9)"
+      }
      }
     ],
+    "preference": {
+     "tool_hold_s": 249.0,
+     "makespan_s": 250.0,
+     "unit": "s (nominal durations, E9)"
+    },
     "reference_diffs": [],
     "dryrun": [
-     "  1.07s  L2  #33  == L2 session 12 completed after 33 transitions",
-     "  2.27s  L1  #33  == L1 session 11 completed after 33 transitions",
-     "  3.49s  L3  #33  == L3 session 13 completed after 33 transitions"
+     "  1.05s  L2  #33  == L2 session 12 completed after 33 transitions",
+     "  2.26s  L1  #33  == L1 session 11 completed after 33 transitions",
+     "  3.46s  L3  #33  == L3 session 13 completed after 33 transitions"
     ],
     "execution": "completed",
     "sessions": {
@@ -1165,10 +1211,18 @@ window.INTENT_RUNS = {
         "ok": true,
         "message": "every Step depends on the Steps whose results its input needs",
         "fact": "interface"
+       },
+       {
+        "check": "V10",
+        "ok": true,
+        "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+        "fact": "E9"
        }
-      ]
+      ],
+      "preference": null
      }
     ],
+    "preference": null,
     "identical_to_reference": null
    },
    {
@@ -1224,13 +1278,15 @@ window.INTENT_RUNS = {
         "message": "no conflict with mandatory policies",
         "fact": "E5"
        }
-      ]
+      ],
+      "preference": null
      }
     ],
+    "preference": null,
     "identical_to_reference": null
    }
   ],
-  "note": "Stored drafts (constructed defects D1–D5 in rounds 0 and 1), current validator including V9."
+  "note": "Stored drafts (constructed defects D1–D5 in rounds 0 and 1), current validator including V9, V10 and the preference J(W)."
  },
  "claude-opus-5-5 run 2": {
   "translator": "claude",
@@ -1499,7 +1555,12 @@ window.INTENT_RUNS = {
      "completed": 3,
      "failed": 0
     },
-    "identical_to_reference": false
+    "identical_to_reference": false,
+    "preference": {
+     "tool_hold_s": 249.0,
+     "makespan_s": 250.0,
+     "unit": "s (nominal durations, E9)"
+    }
    },
    {
     "intent": {
@@ -1756,7 +1817,12 @@ window.INTENT_RUNS = {
      "completed": 3,
      "failed": 0
     },
-    "identical_to_reference": false
+    "identical_to_reference": false,
+    "preference": {
+     "tool_hold_s": 246.0,
+     "makespan_s": 247.0,
+     "unit": "s (nominal durations, E9)"
+    }
    },
    {
     "intent": {
@@ -2042,7 +2108,7 @@ window.INTENT_RUNS = {
     "identical_to_reference": null
    }
   ],
-  "note": "Recorded 2026-10-24 11:57 UTC with service input requirements and V9. All verdicts as expected in round 0; accepted plans complete in the kit (3 × 33 transitions)."
+  "note": "Recorded 2026-10-24 11:57 UTC with service input requirements and V9. All verdicts as expected in round 0; accepted plans complete in the kit (3 × 33 transitions). J(W) computed afterwards with the current validator (nominal durations E9)."
  },
  "claude-opus-5-5 run 1 (before V9)": {
   "translator": "claude",
@@ -2843,7 +2909,7 @@ window.INTENT_RUNS = {
  "stored-no-lease": {
   "translator": "stored",
   "model": null,
-  "timestamp": "2026-10-24T12:00:31+00:00",
+  "timestamp": "2026-10-24T14:28:37+00:00",
   "no_lease": true,
   "results": [
    {
@@ -3079,10 +3145,18 @@ window.INTENT_RUNS = {
         "ok": true,
         "message": "every Step depends on the Steps whose results its input needs",
         "fact": "interface"
+       },
+       {
+        "check": "V10",
+        "ok": true,
+        "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+        "fact": "E9"
        }
-      ]
+      ],
+      "preference": null
      }
     ],
+    "preference": null,
     "identical_to_reference": null
    }
   ],

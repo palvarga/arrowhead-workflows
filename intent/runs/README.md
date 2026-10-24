@@ -36,3 +36,16 @@ with E5 in its constraints; the Validator returns `clarify`. For I-wrench it rep
 instead of inventing a service; the Validator returns `reject`.
 
 These are two single runs of one model, not a statistical evaluation.
+
+**Preference J(W)** (estimated tool-hold time with the nominal durations of E9, computed afterwards with the
+current validator; Recipes that pass all checks):
+
+| Recipe | Actions | J(W) tool hold | Makespan |
+|---|---|---|---|
+| Hand-authored (`forklift/plan.json`, stored round 2) | 3 | 249 s | 250 s |
+| Run 2, I-tool | 3 | 249 s | 250 s |
+| Run 2, I-tool-L3 (evaluate and record parallel to the return transport) | 3 | 246 s | 247 s |
+
+Both run-2 Recipes are admissible; the I-tool-L3 Recipe releases the tool 3 s earlier, because evaluation and
+recording no longer delay the return transport.
+

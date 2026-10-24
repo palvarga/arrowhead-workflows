@@ -62,6 +62,29 @@ class ValidatorTests(unittest.TestCase):
                 self.assertTrue(set(svc["requires_results"]) <= set(CTX["K_AH"]["services"]))
 
 
+    def test_short_lease_is_clarify(self):
+        ctx = copy.deepcopy(CTX); ctx["K_eng"]["timing"]["lease_s"] = 80
+        res = validator.validate(REF, ctx)
+        self.assertEqual((res["verdict"], failed(res)), ("clarify", {"V10"}))
+
+    def test_preference_of_reference(self):
+        pref = validator.validate(REF, CTX)["preference"]
+        self.assertEqual((pref["tool_hold_s"], pref["makespan_s"]), (249, 250))
+
+    def test_preference_ranks_parallel_return_better(self):
+        """Evaluating and recording in parallel with the return transport shortens the tool hold."""
+        r = copy.deepcopy(REF["recipe"])
+        use, ret = r["actions"][1], r["actions"][2]
+        moved = [s for s in use["steps"] if s["name"] in ("evaluate", "record")]
+        use["steps"] = [s for s in use["steps"] if s["name"] not in ("evaluate", "record")]
+        for s in use["steps"]:
+            s["next"] = []
+        ret["steps"] = moved + ret["steps"]
+        res = validator.validate({"interpretation": REF["interpretation"], "recipe": r}, CTX)
+        self.assertEqual(res["verdict"], "accept")
+        self.assertEqual(res["preference"]["tool_hold_s"], 246)
+
+
 class CompilerTests(unittest.TestCase):
     def test_compiled_reference_equals_hand_authored_plan(self):
         plan = compiler.compile_recipe(REF["recipe"], CTX)

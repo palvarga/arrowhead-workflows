@@ -22,7 +22,7 @@ python3 pipeline.py --all                           # stored drafts: all four in
 python3 pipeline.py --intent I-tool --run           # D1-D5 caught, accepted in round 2, identical plan, 3 x 33 transitions
 python3 pipeline.py --intent I-tool --run --fail    # failure case: L2 fails, its lease expires, L1 and L3 complete
 python3 pipeline.py --intent I-tool --no-lease      # without lease semantics E6: V8 -> clarify
-python3 -m unittest -v test_intent.py               # 12 tests
+python3 -m unittest -v test_intent.py               # 15 tests
 python3 pipeline.py --all --run --export-web        # writes ../web/intent-data.js for ../web/intent.html
 ```
 
@@ -100,6 +100,13 @@ s′ along next_A. The consumer c(s) is the Executor if η(s) is set, otherwise 
 | V7 | reserve ≺ every tool use ≺ release; a transport to the crib precedes release | E1 | revise |
 | V8 | lease semantics declared (else clarify); every tool-using Step depends on reserve | E6 | revise / clarify |
 | V9 | dep(s) contains a Step of every service whose result the input of θ(s) needs (`requires_results` in `context.json`) | interface | revise |
+| V10 | the tool lease (120 s) exceeds the nominal duration of every tool-using Step | E9 | clarify |
+
+**Preference J(W).** For an accepted Recipe the Validator also reports J(W), the estimated tool-hold time:
+the time from completion of `reserve-tool` to completion of `release-tool` on the critical path over
+next_A and next_α, with the nominal durations of E9 (`K_eng.timing`). J(W) does not affect admission; it ranks
+admissible Recipes, as the cost function of Ladder Level 4. It is a static estimate, not a measurement: the kit
+compresses durations (e.g. a 0.4 s AGV trip), and timings in single dry runs are dominated by noise.
 
 Verdict: reject if any reject finding, else clarify if any clarify finding, else revise if any revise finding,
 else accept. After `--k-max` rounds (default 3) without acceptance the verdict is reject.
