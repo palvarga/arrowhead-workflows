@@ -82,7 +82,7 @@ button.on{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--safety);font-w
 .phead{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between}
 .phead b{font:700 20px/1 var(--f-display);letter-spacing:.03em}
 .steps{display:flex;flex-wrap:wrap;gap:6px;align-items:stretch}
-.st{border:1px solid var(--line);border-left:5px solid var(--idle);border-radius:3px;padding:5px 7px;font:11.5px/1.3 var(--f-mono);min-width:0;max-width:100%}
+.st{border:1px solid var(--line);border-left:5px solid var(--idle);border-radius:3px;padding:5px 7px;font:11.5px/1.3 var(--f-mono);min-width:0;max-width:min(100%,250px)}
 .st i{font-style:normal;color:var(--muted);display:block;overflow-wrap:anywhere}
 .st.done{border-left-color:var(--ok)} .st.cur{border-left-color:var(--safety);background:var(--band2)}
 .st.fail{border-left-color:var(--bad);color:var(--bad)} .st.flag{border-color:var(--bad)}
@@ -115,13 +115,30 @@ footer{color:var(--muted);font-size:13px;display:grid;gap:6px}
 /* svg text */
 svg text{fill:var(--ink);font-family:var(--f-body)}
 svg .m{font-family:var(--f-mono)} svg .mut{fill:var(--muted)} svg .bad{fill:var(--bad)} svg .okc{fill:var(--ok)}
+/* scenario groups and trap overview */
+.groups{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.grp{display:grid;gap:6px;align-content:start}
+.grp .row button{padding:7px 9px;font-size:12.5px}
+.over{display:grid;gap:12px;align-items:start;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.bin{border:1px solid var(--line);border-top:5px solid var(--idle);border-radius:3px;padding:10px;display:grid;gap:8px;align-content:start;min-width:0}
+.bin.l3{border-top-color:var(--steel)} .bin.l4{border-top-color:var(--safety)} .bin.l6{border-top-color:var(--bad)}
+.bin h3 span{font-family:var(--f-mono);font-weight:500}
+.tchips{display:flex;flex-wrap:wrap;gap:5px}
+.tchips button{font:11.5px/1.2 var(--f-mono);padding:5px 7px}
+.stack{display:grid;gap:6px}
+.stack .bar{display:flex;height:22px;border-radius:2px;overflow:hidden;border:1px solid var(--line)}
+.stack .bar span{display:flex;align-items:center;justify-content:center;font:600 11px var(--f-mono);color:var(--bg);min-width:0;overflow:hidden}
+.stack .lab{display:grid;grid-template-columns:11em minmax(0,1fr);gap:8px;align-items:center;font-size:13px}
+@media (max-width:560px){.stack .lab{grid-template-columns:minmax(0,1fr)}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
   <div style="display:grid;gap:6px">
-    <span class="lbl">Arrowhead Workflow · TDK 2026 rubber-duck cell · expert tier</span>
+    <span class="lbl">Arrowhead Workflow · TDK 2026 rubber-duck cell · expert tier X01–X12</span>
     <h1>Duck Cell</h1>
   </div>
   <div class="row"><a href="./">All examples</a><a href="intent">Intent to Recipe</a><a href="forklift">Forklift</a></div>
@@ -130,7 +147,7 @@ svg .m{font-family:var(--f-mono)} svg .mut{fill:var(--muted)} svg .bad{fill:var(
 <p>An operator states a production goal, a language model translates it into a ProductionIntent, and a deterministic
 compiler turns that into an Arrowhead Choreographer plan. Before anything reaches a machine, the plan is checked statically
 and dry-run on a digital twin of the fourteen workstations; the benchmark oracle then decides whether the plan does what was
-asked. Pick a scenario and a translation: the certified gold plan or one of the plausible wrong ones (traps).</p>
+asked. Pick one of the twelve expert scenarios and a translation: the certified reference plan or one of the plausible wrong ones (traps).</p>
 
 <section class="grid">
   <div class="panel">
@@ -149,20 +166,24 @@ asked. Pick a scenario and a translation: the certified gold plan or one of the 
     <button id="reset">Reset</button>
     <button id="end">Jump to result</button>
     <label class="toggle" for="speed">Speed <select id="speed"><option value="900">0.5×</option><option value="450" selected>1×</option><option value="220">2×</option><option value="90">5×</option></select></label>
-    <label class="toggle" for="cmp"><input type="checkbox" id="cmp" checked> Compare with gold</label>
+    <label class="toggle" for="cmp"><input type="checkbox" id="cmp" checked> Compare with reference</label>
     <span class="lbl" id="tick"></span>
   </div>
 </div>
 
 <section class="players" id="players"></section>
 
+<section class="panel" id="overview"></section>
+
 <footer>
   <p><b>How this page works.</b> The station models are a JavaScript port of the limits and formulas the cell publishes to the
-  plan generator (tool wear = cycle/60 · 300/V<sub>c</sub>, stack height = 144 mm + layers · case height, coating cure windows, payload limits).
-  Execution follows the twin's rules: steps in topological order, the plan repeated session-quantity times, station state carried over,
-  stop at the first failing step. It is an illustration and not the cell's own digital twin. Oven ramp slopes are schematic; only plateau temperatures and dwell are checked.
-  The reviewer (L5) and the human gate (L7) are not modelled here.</p>
-  <p>Scenarios, gold translations, traps and oracle expectations: <span class="mono">intent_benchmark.json</span> v2.0 (X01, X03, X08).
+  plan generator: tool wear = cycle/60 · 300/V<sub>c</sub>, stack height = 144 mm + layers · case height, tray mass, coating cure windows,
+  the 12-job booth filter, battery reserves, travel ranges and payload limits. Execution follows the twin's rules: steps in topological order,
+  the plan repeated session-quantity times, station state carried over, stop at the first failing step. Where the published limits give no
+  formula the values are schematic: AMR floor coordinates and energy, drone energy per flight (chosen to match the benchmark note of X05),
+  initial stock (14 per colour), oven ramp slopes, the simulated weighing (nominal + drift), and the default case height (200 mm).
+  It is an illustration and not the cell's own digital twin. The reviewer (L5) and the human gate (L7) are not modelled here.</p>
+  <p>Scenarios, reference translations, traps and oracle expectations: <span class="mono">intent_benchmark.json</span> v2.0, expert tier.
   Source: <a href="https://github.com/palvarga/arrowhead-workflows">github.com/palvarga/arrowhead-workflows</a>.</p>
 </footer>
 </div>
@@ -173,65 +194,80 @@ asked. Pick a scenario and a translation: the certified gold plan or one of the 
 const M = window.DuckModel;
 const SPECS = /*@DATA@*/;
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fx = (v, d = 1) => (Math.round(v * 10 ** d) / 10 ** d).toFixed(d);
 
 /* ------------------------------------------------------------------ stations (Table 3.1 + generator system prompt) */
 const STATIONS = [
- {n:1,key:"camera",name:"Camera",sys:"vision-camera-workstation",load:"5 kg",fn:"Chromatic recognition, 2D inspection, QR decoding",
-  svc:["vision-duck-color-detector","vision-defect-inspection","vision-qr-barcode-reader","camera-stream-snapshot"],lim:"Defect tolerance down to 0.02 mm."},
+ {n:1,key:"camera",name:"Camera",sys:"vision-camera-workstation",load:"5 kg",fn:"Chromatic recognition, 2D inspection, QR decoding",lim:"Defect tolerance down to 0.02 mm."},
  {n:2,key:"dobot",name:"Dobot SCARA",sys:"dobot-magician-workstation",load:"0.5 kg",fn:"4-axis pick-and-place, alignment, cell transfer",
   svc:["dobot-move-tray-a / -tray-b","dobot-pick-and-align","dobot-lift-arm-reject","dobot-moveboxservice","robot1/robot2 handover"],lim:"Reach √(X²+Y²) ≤ 320 mm, −50 ≤ Z ≤ 200 mm."},
  {n:3,key:"conveyor",name:"Conveyor belt",sys:"conveyor-belt-workstation",load:"10 kg",fn:"Continuous transfer (50–300 mm/s), index tracking",
   svc:["conveyor-feed-item","conveyor-transfer-to-station","conveyor-speed-control","conveyor-e-stop"],lim:"1200 mm belt, five light barriers, 10–300 mm/s, 30 kg on the belt."},
- {n:4,key:"laser",name:"Laser scanner",sys:"laser-scanner-workstation",load:"10 kg",fn:"3D profilometry, roughness Ra, laser engraving",
-  svc:["optical-defect-scanner","laser-profile-measure","laser-engrave-marking","laser-surface-profiler"],lim:"Resolution 0.5 µm; text ≤ 64 characters; power 1–100 %."},
- {n:5,key:"warehouse",name:"Smart ASRS",sys:"smart-warehouse-workstation",load:"25 kg",fn:"Storage/retrieval, raw material dispensing, scrap isolation",
-  svc:["warehouse-dispense-item","warehouse-store-finished-goods","warehouse-quarantine-store","warehouse-inventory-query"],lim:"Stock: yellow, blue, red; finite, depletes."},
- {n:6,key:"painting_robot",name:"Painting robot",sys:"painting-robot-workstation",load:"13 kg",fn:"6-axis spray coating, color flushing, booth purging",
-  svc:["paint-spray-coat","paint-color-change","paint-booth-purge","paint-reservoir-status"],lim:"Filter saturates after 12 spray jobs; 1–5 coats of 10–200 µm."},
- {n:7,key:"amr",name:"AMR logistics",sys:"amr-logistics-workstation",load:"250 kg",fn:"Heavy horizontal SLAM intralogistics (0.8–1.5 m/s)",
-  svc:["amr-transport-load","amr-navigate-to","amr-dock-charge","amr-fleet-status"],lim:"11 floor locations; keeps a 15 % battery reserve."},
- {n:8,key:"drone",name:"Inspection drone",sys:"inspection-drone-workstation",load:"2.5 kg",fn:"High-bay aerial visual audit, urgent part transport",
-  svc:["drone-aerial-delivery","drone-aerial-inspection","drone-return-to-home","drone-battery-swap"],lim:"Wind ≤ 8 m/s, 20 % battery reserve, swaps only on HOME."},
- {n:9,key:"delta_robot",name:"Delta robot",sys:"delta-picker-workstation",load:"3 kg",fn:"High-speed packaging (120 picks/min), tray packing",
-  svc:["delta-pick-and-place","delta-color-sort","delta-tray-pack"],lim:"One step = one tray; tray mass ≤ tray capacity (default 5 kg)."},
- {n:10,key:"cartesian_robot",name:"Cartesian gantry",sys:"cartesian-gantry-workstation",load:"50 kg",fn:"3-axis heavy linear transfer (X 2000, Y 1000, Z 500 mm)",
-  svc:["gantry-homing","gantry-move-xyz","gantry-pick-place"],lim:"Homing required once before any motion."},
- {n:11,key:"cnc",name:"CNC machining",sys:"cnc-machining-workstation",load:"300 kg",fn:"3-axis precision milling, 8-tool ATC, tool-life models",
-  svc:["cnc-load-program","cnc-machine-part","cnc-tool-change","cnc-spindle-status"],lim:"Wear per part = cycle/60 · 300/Vc (steel Vc 90, stainless 60 m/min); a part is refused if wear would exceed 90 %. Steel and stainless need coolant."},
- {n:12,key:"curing_oven",name:"Curing oven",sys:"curing-oven-workstation",load:"100 kg",fn:"Thermal coating polymerization (20–220 °C)",
-  svc:["oven-preheat","oven-cure-batch","oven-cooldown","oven-status"],lim:"Windows: solvent paint 120–160 °C ≥ 20 min, clear coat 110–140 °C ≥ 25 min, powder, waterborne, silicone. Door opens by hand only at ≤ 60 °C."},
- {n:13,key:"palletizer",name:"Palletizer",sys:"robotic-palletizer-workstation",load:"25 kg",fn:"EUR-pallet case stacking (1000 kg total), stretch wrap",
-  svc:["palletizer-stack-case","palletizer-wrap-pallet","palletizer-pallet-change","palletizer-status"],lim:"8 cases per layer; 144 mm + layers · case height ≤ 1800 mm; ≤ 1000 kg; a loaded pallet must be wrapped before release."},
- {n:14,key:"checkweigher",name:"Checkweigher",sys:"checkweigher-workstation",load:"6 kg",fn:"Dynamic inline gravimetric tolerance verification (0.1 g)",
-  svc:["checkweigher-weigh-item","checkweigher-calibrate","checkweigher-tare","checkweigher-statistics"],lim:"Load-cell drift +0.02 g per item; refused once drift > 2 g."},
+ {n:4,key:"laser",name:"Laser scanner",sys:"laser-scanner-workstation",load:"10 kg",fn:"3D profilometry, roughness Ra, laser engraving",lim:"Resolution 0.5 µm; text ≤ 64 characters; power 1–100 %."},
+ {n:5,key:"warehouse",name:"Smart ASRS",sys:"smart-warehouse-workstation",load:"25 kg",fn:"Storage/retrieval, raw material dispensing, scrap isolation",lim:"Stock: yellow, blue, red; finite, depletes."},
+ {n:6,key:"painting_robot",name:"Painting robot",sys:"painting-robot-workstation",load:"13 kg",fn:"6-axis spray coating, color flushing, booth purging",lim:"Filter saturates after 12 spray jobs; 1–5 coats of 10–200 µm each."},
+ {n:7,key:"amr",name:"AMR logistics",sys:"amr-logistics-workstation",load:"250 kg",fn:"Heavy horizontal SLAM intralogistics (0.8–1.5 m/s)",lim:"11 floor locations; keeps a 15 % battery reserve."},
+ {n:8,key:"drone",name:"Inspection drone",sys:"inspection-drone-workstation",load:"2.5 kg",fn:"High-bay aerial visual audit, urgent part transport",lim:"Altitude 1–8 m, wind ≤ 8 m/s, 20 % battery reserve, swaps only on HOME."},
+ {n:9,key:"delta_robot",name:"Delta robot",sys:"delta-picker-workstation",load:"3 kg",fn:"High-speed packaging (120 picks/min), tray packing",lim:"One step = one tray; rows · cols ≤ 48; tray mass ≤ tray capacity (default 5 kg)."},
+ {n:10,key:"cartesian_robot",name:"Cartesian gantry",sys:"cartesian-gantry-workstation",load:"50 kg",fn:"3-axis heavy linear transfer (X 2000, Y 1000, Z 500 mm)",lim:"Homing required once before any motion; no homing while holding a load."},
+ {n:11,key:"cnc",name:"CNC machining",sys:"cnc-machining-workstation",load:"300 kg",fn:"3-axis precision milling, 8-tool ATC, tool-life models",lim:"Wear per part = cycle/60 · 300/Vc (steel Vc 90, stainless 60 m/min); a part is refused if wear would exceed 90 %. Steel and stainless need coolant."},
+ {n:12,key:"curing_oven",name:"Curing oven",sys:"curing-oven-workstation",load:"100 kg",fn:"Thermal coating polymerization (20–220 °C)",lim:"Windows: solvent paint 120–160 °C ≥ 20 min, clear coat 110–140 °C ≥ 25 min, powder, waterborne, silicone. Door opens by hand only at ≤ 60 °C."},
+ {n:13,key:"palletizer",name:"Palletizer",sys:"robotic-palletizer-workstation",load:"25 kg",fn:"EUR-pallet case stacking (1000 kg total), stretch wrap",lim:"8 cases per layer; 144 mm + layers · case height ≤ 1800 mm; ≤ 1000 kg; a loaded pallet must be wrapped before release."},
+ {n:14,key:"checkweigher",name:"Checkweigher",sys:"checkweigher-workstation",load:"6 kg",fn:"Dynamic inline gravimetric tolerance verification (0.1 g)",lim:"Load-cell drift +0.02 g per item; refused once drift > 2 g."},
 ];
+STATIONS.forEach(s => { s.svc = s.svc || M.STATION_SERVICES[s.key] || (s.key === "camera" ? ["vision-duck-color-detector","vision-defect-inspection","vision-qr-barcode-reader","camera-stream-snapshot"] : []); });
 const ST_BY_KEY = Object.fromEntries(STATIONS.map(s => [s.key, s]));
 
-/* ------------------------------------------------------------------ scenarios */
+/* ------------------------------------------------------------------ scenarios (groups of Table 5.3) */
+const GROUPS = [["Stateful scheduling", ["X01","X05","X06"]], ["Discrete arithmetic", ["X02","X03","X04"]],
+  ["Units and constraints", ["X07","X08","X12"]], ["Negative tests", ["X09","X10","X11"]]];
 const SCEN = {
-  X01: {station:"cnc", title:"CNC tool wear", derive:() => `<div>Wear per blank = cycle 6 min / 60 · 300 / V<sub>c</sub>(steel 90 m/min) = <b class="mono">33.3 %</b>. The 90 % limit allows two blanks per insert, so the minimum schedule changes the tool after blanks 2 and 4: <b>2 tool changes</b>.</div>`},
-  X03: {station:"palletizer", title:"Pallet height versus weight", derive:() => `<div>Height = 144 mm + layers · 250 mm ≤ 1800 mm gives <b class="mono">6 layers · 8 = 48 cases</b> per pallet (576 kg, so the 1000 kg limit is not binding). 150 = 48 + 48 + 48 + 6: <b>4 pallets</b>, each wrapped and released.</div>`},
-  X08: {station:"curing_oven", title:"Cure-window intersection", derive: windowMap},
+  X01:{title:"CNC tool changes", st:["cnc"], view:cncView, derive:`Wear per blank = cycle 6 min / 60 · 300 / V<sub>c</sub>(steel 90 m/min) = <b class="mono">33.3 %</b>. The 90 % limit allows two blanks per insert, so the minimum schedule changes the tool after blanks 2 and 4: <b>2 tool changes</b>.`},
+  X02:{title:"Tray packing", st:["delta_robot"], view:deltaView, derive:`24 caps × 0.18 kg = <b class="mono">4.32 kg ≤ 5 kg</b> per 4 × 6 tray. 100 = 4 × 24 + 4: four full trays and one tray whose grid holds exactly 4 (1 × 4, 2 × 2 or 4 × 1): <b>5 trays, 100 picks</b>.`},
+  X03:{title:"Pallet height", st:["palletizer"], view:palView, derive:`Height = 144 mm + layers · 250 mm ≤ 1800 mm gives <b class="mono">6 layers · 8 = 48 cases</b> per pallet (576 kg, so the 1000 kg limit is not binding). 150 = 48 + 48 + 48 + 6: <b>4 pallets</b>, each wrapped and released.`},
+  X04:{title:"AMR trips", st:["amr"], view:amrView, derive:`The CNC bay accepts at most <b class="mono">220 kg</b> per delivery, tighter than the AMR's 250 kg. ⌈600 / 220⌉ = <b>3 trips</b>, e.g. 3 × 200 kg; then dock and charge to 100 %.`},
+  X05:{title:"Drone battery swaps", st:["drone"], view:droneView, derive:`A hover inspection costs about 6.2–6.6 %. With the 20 % reserve the drone manages 12 inspections (23.6 % left); the 13th is refused. Swaps happen only on HOME: <b>return after inspection 12, swap, fly round 4, return and swap again</b> (2 returns, 2 swaps).`},
+  X06:{title:"Filter purge and batch cure", st:["painting_robot","curing_oven"], view:paintView, derive:`The booth filter saturates after 12 spray jobs: <b>exactly one purge, before housing 13</b>. Film thickness is per coat (3 × 30 µm, not 1 × 90 µm). Oven batch = 14 × 4.5 kg = <b class="mono">63 kg ≤ 100 kg</b>, one run.`},
+  X07:{title:"Gantry move", st:["cartesian_robot"], view:gantryView, derive:`92.6 lb = <b class="mono">42.0 kg</b> (≤ 50 kg). Place = (250 + 1500, 300 + 400, 420) = <b class="mono">(1750, 700, 420)</b>. Homing is an unstated precondition before any motion.`},
+  X08:{title:"Cure-window intersection", st:["curing_oven"], view:ovenView, derive:windowMap},
+  X09:{title:"Drone payload", st:["drone"], view:deliveryView, derive:`1.8 kg + 0.9 kg = <b class="mono">2.7 kg > 2.5 kg</b> drone limit, and the operator requires one flight. The request is infeasible: it must be refused, not split or reduced.`},
+  X10:{title:"Stainless wear", st:["cnc"], view:cncView, derive:`Stainless: 6 / 60 · 300 / 60 = <b class="mono">50 %</b> wear per blank. The second blank would reach 100 % > 90 %, and tool changes are forbidden: <b>refuse</b>. Every parameter is valid on its own; only the dry run sees it.`},
+  X11:{title:"Rework branch", st:["checkweigher","painting_robot","palletizer"], view:branchView, derive:`Repaint or palletize depends on the weighing result at run time. A Choreographer plan has no branches and no data passing, so the request must be <b>flagged</b>. An acceptable fallback is a quality gate (<span class="mono">fail_on_reject</span>) that stops the session before palletizing.`},
+  X12:{title:"Serials with parallel drone", st:["warehouse","laser","drone"], view:ganttView, derive:`A session repeats identical steps, so batchSize 3 cannot carry three serials: <b>one explicit chain per duck</b> (dispense → engrave → store) in serial order, and the drone inspection as a separate branch that starts at once.`},
 };
-const ORDER = ["X01","X03","X08"];
+const ORDER = GROUPS.flatMap(g => g[1]);
 const RESULTS = {};
 ORDER.forEach(id => {
-  const spec = SPECS[id];
-  RESULTS[id] = [{name:"gold", label:"Gold translation", error:"certified reference plan", intent:spec.reference_intent}]
-    .concat(spec.traps.map(t => ({name:t.id, label:t.id.replace(/_/g," "), error:t.error, intent:t.intent})))
+  const spec = SPECS[id], refLabel = spec.expected_outcome === "REJECT" ? "Faithful translation" : spec.expected_outcome === "LIMITATION" ? "Gated translation" : "Reference translation";
+  const refNote = spec.expected_outcome === "REJECT" ? "keeps the user's values; must be refused" : spec.expected_outcome === "LIMITATION" ? "quality gate instead of a branch" : "certified reference plan";
+  RESULTS[id] = [{name:"gold", label:refLabel, error:refNote, intent:spec.reference_intent}]
+    .concat((spec.traps || []).map(t => ({name:t.id, label:t.id.replace(/_/g," "), error:t.error, intent:t.intent})))
     .map(t => Object.assign(t, {res: M.evaluate(spec, t.intent)}));
 });
 
 /* ------------------------------------------------------------------ state */
 let cur = {id:"X01", tr:"gold", sel:"cnc"}, tick = 0, timer = null;
-function tr(name) { return RESULTS[cur.id].find(t => t.name === name); }
-function totalTicks(r) { return r.static.length ? 2 : 1 + 3 * r.run.trace.length + 1; }
+const tr = name => RESULTS[cur.id].find(t => t.name === name);
+const totalTicks = r => (r.run ? 1 + 3 * r.run.trace.length + 1 : 2);
+
+/* ------------------------------------------------------------------ outcome labels */
+function outcomeInfo(r) {
+  switch (r.outcome) {
+    case "SUCCESS": return {pill:`<span class="pill ok">success</span>`, cls:"ok", head:"SUCCESS", text:"approved, executed, meets the intent"};
+    case "WRONG_PLAN": return {pill:`<span class="pill bad">silent · wrong plan</span>`, cls:"bad", head:"WRONG_PLAN · silent failure", text:"every machine step reported SUCCESS; only the oracle sees that the plan is wrong"};
+    case "NOT_ACCEPTED": return {pill:`<span class="pill safe">refused at ${r.layer}</span>`, cls:"safe", head:"Refused before dispatch · safe failure", text:`caught at ${r.layer}; nothing reached a machine`};
+    case "CORRECT_REFUSAL": return {pill:`<span class="pill ok">correct refusal · ${r.layer}</span>`, cls:"ok", head:"CORRECT_REFUSAL", text:`the infeasible request was refused at ${r.layer}; ${r.note}`};
+    case "FALSE_ACCEPT": return {pill:`<span class="pill bad">false accept</span>`, cls:"bad", head:"FALSE_ACCEPT · silent failure", text:"the request is infeasible, yet a plan was dispatched: it changes what the operator asked for"};
+    case "ACCEPTABLE_PLAN": return {pill:`<span class="pill ok">acceptable plan</span>`, cls:"ok", head:"ACCEPTABLE_PLAN", text:"the branch is replaced by a quality gate; the oracle accepts it (in the real pipeline the request is also flagged for review)"};
+    case "CORRECT_FLAG": return {pill:`<span class="pill ok">refused / flagged</span>`, cls:"ok", head:"CORRECT_FLAG", text:"not dispatched"};
+    default: return {pill:"", cls:"", head:r.outcome, text:""};
+  }
+}
 
 /* ------------------------------------------------------------------ cell map */
 function mapSvg() {
-  const used = SCEN[cur.id].station;
-  const activeStation = activeStationNow();
-  const tile = (s, x, y, w = 128, h = 58) => `<g class="tile ${s.key === used ? "used" : ""} ${s.key === cur.sel ? "sel" : ""} ${s.key === activeStation ? "active" : ""}" data-k="${s.key}" tabindex="0" role="button" aria-label="${esc(s.name)}">
+  const used = SCEN[cur.id].st, act = activeStationNow();
+  const tile = (s, x, y, w = 128, h = 58) => `<g class="tile ${used.includes(s.key) ? "used" : ""} ${s.key === cur.sel ? "sel" : ""} ${s.key === act ? "active" : ""}" data-k="${s.key}" tabindex="0" role="button" aria-label="${esc(s.name)}">
     <rect class="box" x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>
     <text x="${x + 8}" y="${y + 20}" class="m mut" font-size="11">#${s.n}</text>
     <text x="${x + 30}" y="${y + 20}" font-size="14" font-weight="600">${esc(s.name)}</text>
@@ -245,15 +281,13 @@ function mapSvg() {
   <text x="28" y="100" class="m mut" font-size="11">DUCK CELL · STATIONS 1–5</text>
   <text x="470" y="100" class="m mut" font-size="11">EXTENSION · STATIONS 6–14 · AMR ROUTES</text>
   <line x1="452" y1="88" x2="452" y2="440" stroke="var(--line)" stroke-dasharray="4 4"/>`;
-  // inline cell
   g += tile(S("camera"), 150, 116) + tile(S("dobot"), 296, 116) + tile(S("laser"), 296, 196) + tile(S("warehouse"), 20, 300, 116, 112);
-  g += `<g class="tile ${"conveyor" === cur.sel ? "sel" : ""} ${"conveyor" === activeStation ? "active" : ""}" data-k="conveyor" tabindex="0" role="button" aria-label="Conveyor belt">
+  g += `<g class="tile ${"conveyor" === cur.sel ? "sel" : ""} ${"conveyor" === act ? "active" : ""}" data-k="conveyor" tabindex="0" role="button" aria-label="Conveyor belt">
     <rect class="box" x="150" y="330" width="274" height="54" rx="3"/>
     <text x="158" y="350" class="m mut" font-size="11">#3</text><text x="180" y="350" font-size="14" font-weight="600">Conveyor belt</text>
-    ${["ENTRY","A","B","C","EXIT"].map((t, i) => `<line x1="${168 + i * 60}" y1="358" x2="${168 + i * 60}" y2="376" stroke="var(--safety)" stroke-width="3"/><text x="${168 + i * 60}" y="${t.length > 1 ? 400 : 400}" text-anchor="middle" class="m mut" font-size="10">${t}</text>`).join("")}</g>
+    ${["ENTRY","A","B","C","EXIT"].map((t, i) => `<line x1="${168 + i * 60}" y1="358" x2="${168 + i * 60}" y2="376" stroke="var(--safety)" stroke-width="3"/><text x="${168 + i * 60}" y="400" text-anchor="middle" class="m mut" font-size="10">${t}</text>`).join("")}</g>
   <text x="150" y="430" class="mut" font-size="11">items flow ENTRY → EXIT; 10 kg per item, 30 kg on the belt</text>
   <path d="M136 356 H150" stroke="var(--line)" stroke-width="2"/>`;
-  // extension grid with AMR route
   const pos = {painting_robot:[470,116], curing_oven:[640,116], checkweigher:[810,116], cnc:[470,216], cartesian_robot:[640,216], delta_robot:[810,216], amr:[470,316], drone:[640,316], palletizer:[810,316]};
   const c = k => [pos[k][0] + 75, pos[k][1] + 29];
   const route = [["amr","cnc"],["cnc","painting_robot"],["painting_robot","curing_oven"],["curing_oven","checkweigher"],["checkweigher","delta_robot"],["delta_robot","palletizer"],["cnc","cartesian_robot"],["amr","palletizer"]];
@@ -264,8 +298,8 @@ function mapSvg() {
 }
 function activeStationNow() {
   const r = tr(cur.tr).res; if (!r.run) return null;
-  const k = Math.floor((tick - 1) / 3); const rec = r.run.trace[k];
-  return tick >= 1 && rec && tick < totalTicks(r) - 0 ? rec.station : null;
+  const k = Math.floor((tick - 1) / 3), rec = r.run.trace[k];
+  return tick >= 1 && rec && tick < totalTicks(r) - 1 ? rec.station : null;
 }
 function renderMap() {
   const host = document.getElementById("map"); host.innerHTML = mapSvg();
@@ -277,7 +311,7 @@ function renderMap() {
 }
 function renderCard() {
   const s = ST_BY_KEY[cur.sel];
-  document.getElementById("card").innerHTML = `<span class="lbl">Station #${s.n}${s.key === SCEN[cur.id].station ? " · used by " + cur.id : ""}</span>
+  document.getElementById("card").innerHTML = `<span class="lbl">Station #${s.n}${SCEN[cur.id].st.includes(s.key) ? " · used by " + cur.id : ""}</span>
     <h2>${esc(s.name)}</h2>
     <dl><dt>System</dt><dd class="mono">${esc(s.sys)}</dd><dt>Max load</dt><dd class="mono">${esc(s.load)}</dd><dt>Function</dt><dd>${esc(s.fn)}</dd><dt>Limits</dt><dd>${esc(s.lim)}</dd></dl>
     <div><span class="lbl">Services (registered in the Service Registry)</span><ul>${s.svc.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
@@ -285,26 +319,24 @@ function renderCard() {
 
 /* ------------------------------------------------------------------ scenario panel */
 function highlight(text) {
-  return esc(text).replace(/(\b\d+(?:\.\d+)?\s?(?:kg|g|mm|%|°C|°C|minutes|min|µm|lb)?\b(?:\s?°C)?)/g, "<mark>$1</mark>");
+  return esc(text).replace(/(\b\d+(?:[.,]\d+)?(?:\s?x\s?\d+)?\s?(?:kg|g|mm|%|°C|minutes|min|µm|lb|m\/s|m|cm²|trays?)?(?![\w]))/g, "<mark>$1</mark>");
 }
 function renderScenario() {
   const spec = SPECS[cur.id], sc = SCEN[cur.id];
-  const outPill = r => r.outcome === "SUCCESS" ? `<span class="pill ok">success</span>`
-    : r.outcome === "WRONG_PLAN" ? `<span class="pill bad">silent · wrong plan</span>` : `<span class="pill safe">refused at ${r.layer}</span>`;
+  const exp = spec.expected_outcome === "ACCEPT" ? "feasible: a faithful plan must be produced" : spec.expected_outcome === "REJECT" ? "infeasible: the pipeline must refuse" : "not expressible: flag, or a plan the oracle accepts";
   document.getElementById("scenario").innerHTML = `
-    <div class="row" style="justify-content:space-between">
-      <div class="row" role="tablist" aria-label="Scenario">${ORDER.map(id => `<button role="tab" aria-selected="${id === cur.id}" class="${id === cur.id ? "on" : ""}" data-id="${id}">${id} · ${esc(SCEN[id].title)}</button>`).join("")}</div>
-      <span class="lbl">expected: ${esc(spec.expected_outcome)}</span>
-    </div>
+    <div class="groups" role="tablist" aria-label="Scenario">${GROUPS.map(([gname, ids]) => `<div class="grp"><span class="lbl">${gname}</span><div class="row">${ids.map(id =>
+      `<button role="tab" aria-selected="${id === cur.id}" class="${id === cur.id ? "on" : ""}" data-id="${id}">${id} · ${esc(SCEN[id].title)}${SPECS[id].expected_outcome !== "ACCEPT" ? " (" + SPECS[id].expected_outcome[0] + ")" : ""}</button>`).join("")}</div></div>`).join("")}</div>
+    <div class="row" style="justify-content:space-between"><h2>${cur.id} · ${esc(sc.title)}</h2><span class="lbl">expected: ${esc(spec.expected_outcome)} · ${esc(exp)}</span></div>
     <div class="prompt">“${highlight(spec.prompt)}”</div>
-    <div class="derive"><span class="lbl">What a correct plan must derive</span>${sc.derive()}</div>
+    <div class="derive"><span class="lbl">What a correct answer must derive</span>${typeof sc.derive === "function" ? sc.derive() : `<div>${sc.derive}</div>`}</div>
     <div><span class="lbl">Translations</span></div>
-    <div class="chips">${RESULTS[cur.id].map(t => `<button class="chip ${t.name === cur.tr ? "on" : ""}" data-tr="${t.name}"><b>${esc(t.label)}</b><span class="e">${esc(t.error)}</span>${outPill(t.res)}</button>`).join("")}</div>`;
+    <div class="chips">${RESULTS[cur.id].map(t => `<button class="chip ${t.name === cur.tr ? "on" : ""}" data-tr="${t.name}"><b>${esc(t.label)}</b><span class="e">${esc(t.error)}</span>${outcomeInfo(t.res).pill}</button>`).join("")}</div>`;
   document.querySelectorAll("#scenario [data-id]").forEach(b => b.addEventListener("click", () => selectScenario(b.dataset.id)));
   document.querySelectorAll("#scenario [data-tr]").forEach(b => b.addEventListener("click", () => { cur.tr = b.dataset.tr; restart(); }));
 }
-function selectScenario(id) {
-  cur = {id, tr:"gold", sel:SCEN[id].station};
+function selectScenario(id, trName) {
+  cur = {id, tr: trName || "gold", sel: SCEN[id].st[0]};
   try { history.replaceState(null, "", "#" + id.toLowerCase()); } catch (e) {}
   renderCard(); restart();
 }
@@ -322,17 +354,16 @@ function windowMap() {
   g += `<rect x="${X(120)}" y="${Y(35)}" width="${X(140) - X(120)}" height="${Y(25) - Y(35)}" fill="var(--band3)" stroke="var(--ok)" stroke-width="1.5"/><text x="${X(130)}" y="${Y(29)}" text-anchor="middle" font-size="11" font-weight="600">both cured</text>`;
   const groups = [];
   RESULTS.X08.forEach(t => t.intent.operations.filter(o => o.service === "oven-cure-batch").forEach(o => {
-    const T = +o.parameters.temperature_c, D = +o.parameters.dwell_min, coat = o.parameters.coating;
+    const T = +o.parameters.temperature_c, D = +o.parameters.dwell_min;
     let gr = groups.find(q => q.t === T && q.d === D);
     if (!gr) groups.push(gr = {t: T, d: D, items: []});
-    gr.items.push({n: t.label, coat, gold: t.name === "gold", sel: t.name === cur.tr});
+    gr.items.push({n: t.label, coat: o.parameters.coating, gold: t.name === "gold", sel: t.name === cur.tr});
   }));
   groups.forEach((p, i) => { p.i = i + 1; p.gold = p.items.some(x => x.gold); p.sel = p.items.some(x => x.sel);
     g += `<circle cx="${X(p.t)}" cy="${Y(p.d)}" r="${p.sel ? 9 : 8}" fill="${p.gold ? "var(--ok)" : "var(--bad)"}" stroke="var(--ink)" stroke-width="${p.sel ? 2.5 : 0}"/><text x="${X(p.t)}" y="${Y(p.d) + 4}" text-anchor="middle" font-size="10" font-weight="700" class="m" style="fill:var(--bg)">${p.i}</text>`; });
-  windowMap.legend = groups;
   g += `<text x="${(x0 + x1) / 2}" y="${H - 4}" text-anchor="middle" font-size="11" class="mut">temperature °C</text><text x="12" y="${(y0 + y1) / 2}" font-size="11" class="mut" transform="rotate(-90 12 ${(y0 + y1) / 2})" text-anchor="middle">dwell min</text></svg>`;
-  const legend = `<div class="checks">${windowMap.legend.map(p => `<div><span class="${p.gold ? "y" : "n"}">${p.i}</span><span>${p.t} °C · ${p.d} min: ${p.items.map(x => esc(x.n) + " (" + esc(x.coat) + ")").join(", ")}</span></div>`).join("")}</div>`;
-  return `<div>The batch holds both coatings, so the plan needs a temperature inside both windows and the longer dwell: <b class="mono">120–140 °C, ≥ 25 min</b>, clear-coat profile, batch 10 × 3 kg = 30 kg. Each numbered point is the cure step of one or more translations; the point's position alone does not decide the outcome (coating and batch mass count too).</div>` + g + legend;
+  const legend = `<div class="checks">${groups.map(p => `<div><span class="${p.gold ? "y" : "n"}">${p.i}</span><span>${p.t} °C · ${p.d} min: ${p.items.map(x => esc(x.n) + " (" + esc(x.coat) + ")").join(", ")}</span></div>`).join("")}</div>`;
+  return `<div>The batch holds both coatings, so the plan needs a temperature inside both windows and the longer dwell: <b class="mono">120–140 °C, ≥ 25 min</b>, clear-coat profile, batch 10 × 3 kg = 30 kg. Each numbered point is the cure step of one or more translations; position alone does not decide the outcome (coating and batch mass count too).</div>` + g + legend;
 }
 
 /* ------------------------------------------------------------------ players */
@@ -343,231 +374,376 @@ function players() {
 function renderPlayers() {
   const ps = players(), host = document.getElementById("players");
   host.className = "players" + (ps.length > 1 ? " two" : "");
-  host.innerHTML = ps.map((t, i) => playerHtml(t, i)).join("");
+  host.innerHTML = ps.map((t, i) => playerHtml(t, i, ps.length)).join("");
   const T = Math.max(...ps.map(t => totalTicks(t.res)));
   document.getElementById("tick").textContent = `step ${Math.min(tick, T)} / ${T}`;
   document.getElementById("play").textContent = timer ? "Pause" : tick >= T ? "Replay" : "Play";
-  renderMapActive();
-}
-function renderMapActive() {
   const a = activeStationNow();
   document.querySelectorAll("#map .tile").forEach(t => t.classList.toggle("active", t.dataset.k === a));
 }
 
-function playerHtml(t, idx) {
-  const r = t.res, T = totalTicks(r), k = Math.min(tick, T), done = k >= T;
+function playerHtml(t, idx, count) {
+  const r = t.res, T = totalTicks(r), k = Math.min(tick, T), done = k >= T, plan = r.plan, q = plan.sessionQuantity;
   const n = r.run ? r.run.trace.length : 0;
-  // which trace record is current, and in which phase
   const si = k >= 1 && r.run ? Math.min(Math.floor((k - 1) / 3), n - 1) : -1, ph = k >= 1 ? (k - 1) % 3 : -1;
-  const execd = r.run ? (k <= 0 ? 0 : k >= T - 1 ? n : si + (ph === 2 ? 1 : 0)) : 0;  // records whose effect is visible
-  const failedRec = r.run && r.run.failed ? r.run.failed : null;
-  const cls = !done ? "" : r.outcome === "SUCCESS" ? "ok" : r.outcome === "WRONG_PLAN" ? "bad" : "safe";
-  const plan = r.plan, q = plan.sessionQuantity;
+  const execd = r.run ? (k <= 0 ? 0 : k >= T - 1 ? n : si + (ph === 2 ? 1 : 0)) : 0;
+  const running = r.run && si >= 0 && k < T - 1 && ph < 2 ? r.run.trace[si] : null;
+  const info = outcomeInfo(r);
 
-  // plan chips (one Action "main"); per-iteration status from the trace
-  const stepsOf = plan.actions[0].steps, statusOf = name => {
-    if (r.static.length) return done && r.static.some(e => e.step === name) ? "fail flag" : "";
+  // failing step (shown once the run reached it, or for a static refusal once the result is shown)
+  let failing = null;
+  if (r.run && r.run.failed && execd >= n) failing = r.run.failed;
+  if (!r.run && k >= 1) { const e = r.static[0], st = plan.actions[0].steps.find(s => s.name === e.step);
+    failing = {step: e.step, service: e.service, params: st ? st.staticParameters : {}, message: e.msg, static: true}; }
+
+  // plan chips
+  const steps = plan.actions[0].steps;
+  const statusOf = name => {
+    if (!r.run) return failing && failing.step === name ? "fail flag" : "";
+    if (running && running.step === name) return "cur";
     const recs = r.run.trace.slice(0, execd).filter(x => x.step === name);
-    const curRec = si >= 0 && k < T - 1 && r.run.trace[si] && r.run.trace[si].step === name && ph < 2;
-    if (curRec) return "cur";
     if (recs.length && recs[recs.length - 1].status !== "SUCCESS") return "fail";
     if (recs.length) return recs.length >= q ? "done" : "cur";
     return "";
   };
-  const pkeys = ["count","material","tool","program","coating","temperature_c","dwell_min","payload_kg","parts","film_layers","target_c"];
-  const chips = stepsOf.map((s, i) => {
-    const p = s.staticParameters, ks = pkeys.filter(x => x in p).slice(0, 3);
-    return (i ? `<span class="arrow" aria-hidden="true">→</span>` : "") + `<div class="st ${statusOf(s.name)}"><b>${esc(s.name)}</b><i>${esc(s.serviceRequirement.serviceDefinitionRequirement)}</i>${ks.length ? `<i>${ks.map(x => esc(x + "=" + p[x])).join(" ")}</i>` : ""}</div>`;
+  const pkeys = ["count","rows","cols","material","tool","program","coating","temperature_c","dwell_min","payload_kg","parts","film_layers","target_c","zone","from","to","coats","film_thickness_um","text","item_id","pick","place","target_coordinates","nominal_kg","fail_on_reject"];
+  const chips = steps.map((s, i) => {
+    const p = s.staticParameters, pr = plan.preds[s.name] || [], prev = steps[i - 1];
+    const same = prev && M.svcOf(prev) === M.svcOf(s) && JSON.stringify(prev.staticParameters) === JSON.stringify(p);
+    const ks = same ? [] : pkeys.filter(x => x in p).slice(0, 3);
+    const sep = i === 0 ? "" : pr.length === 1 && pr[0] === steps[i - 1].name ? "→" : pr.length === 0 ? "∥" : "↳";
+    return (sep ? `<span class="arrow" title="${sep === "∥" ? "starts in parallel" : sep === "↳" ? "after " + esc(pr.join(", ")) : ""}" aria-hidden="true">${sep}</span>` : "") +
+      `<div class="st ${statusOf(s.name)}"><b>${esc(s.name)}</b><i>${same ? "same as before" : esc(M.svcOf(s))}</i>${ks.length ? `<i>${ks.map(x => esc(x + "=" + p[x])).join(" ")}</i>` : ""}</div>`;
   }).join("");
 
   // message lane
   let hops = ["", "", ""], herr = -1;
   if (k === 0) hops = ["POST /mgmt/plan (upload)", "", ""];
-  else if (r.static.length) { hops = ["POST /mgmt/plan (upload)", "static validator: plan refused", "nothing is dispatched"]; herr = 1; }
-  else if (si >= 0 && k < T - 1) {
+  else if (!r.run) { hops = ["POST /mgmt/plan (upload)", `static validator: plan refused (${r.layer})`, "nothing is dispatched"]; herr = 1; }
+  else if (running || (si >= 0 && k < T - 1)) {
     const rec = r.run.trace[si];
     hops = [`Choreographer → Orchestrator: provider for ${rec.service}?`, `Choreographer → ${ST_BY_KEY[rec.station].name} Executor: start ${rec.step}${q > 1 ? " (iteration " + rec.iteration + ")" : ""}`,
-      `Executor → Choreographer: notify-step-done ${rec.status}`];
-    hops = hops.map((h, i) => (i <= ph ? h : ""));
+      `Executor → Choreographer: notify-step-done ${rec.status}`].map((h, i) => (i <= ph ? h : ""));
     if (ph === 2 && rec.status !== "SUCCESS") herr = 2;
-  } else if (k >= T - 1) hops = ["session finished", r.run.status === "SUCCESS" ? "dry run: all steps SUCCESS" : "dry run: session aborted", "oracle compares with the intent"];
+  } else hops = ["session finished", r.run.status === "SUCCESS" ? "dry run: all steps SUCCESS" : "dry run: session aborted", r.oracle ? "oracle compares with the intent" : r.dispatched ? "executed, although the request is infeasible" : "plan refused before dispatch"];
   if (r.run && r.run.status !== "SUCCESS" && k >= T - 1) herr = 1;
   const lane = `<div class="lane">${hops.map((h, i) => `<div class="hop ${h ? "on" : ""} ${i === herr ? "err" : ""}">${esc(h || "·")}</div>`).join("")}</div>`;
 
-  // station view: state after the last visible record (or fresh)
-  const st = SCEN[cur.id].station;
+  // station view: all station states after the last visible record
   const lastRec = r.run && execd > 0 ? r.run.trace[execd - 1] : null;
-  const state = lastRec && lastRec.state ? lastRec.state : M.freshState(st);
-  const failing = failedRec && execd >= n ? failedRec : null;
-  const view = stationView(cur.id, state, failing, r, k >= 1 && si >= 0 && k < T - 1 && ph < 2 ? r.run.trace[si] : null);
+  const snap = lastRec && lastRec.snapshot ? lastRec.snapshot : {};
+  const S = key => snap[key] || M.freshState(key);
+  const view = SCEN[cur.id].view({S, failing, running, r, plan, execd, done});
 
-  // log
   const log = r.run ? r.run.trace.slice(0, execd).map(x => `<div class="${x.status !== "SUCCESS" ? "err" : ""}"><span>${q > 1 ? "i" + x.iteration : ""}</span><span>${esc(x.step)}</span><span>${esc(x.status)} · ${esc(x.message)}</span></div>`).reverse().join("")
-    : (done ? r.static.map(e => `<div class="err"><span>${e.layer}</span><span>${esc(e.step || "")}</span><span>${esc(e.msg)}</span></div>`).join("") : "");
+    : (k >= 1 ? r.static.map(e => `<div class="err"><span>${e.layer}</span><span>${esc(e.step || "")}</span><span>${esc(e.msg)}</span></div>`).join("") : "");
 
-  return `<article class="panel player ${cls}" aria-label="${esc(t.label)}">
-    <div class="phead"><div><span class="lbl">${idx === 0 && players().length > 1 ? "reference" : "translation"}</span><br><b>${esc(t.label)}</b></div>
+  return `<article class="panel player ${done ? info.cls : ""}" aria-label="${esc(t.label)}">
+    <div class="phead"><div><span class="lbl">${idx === 0 && count > 1 ? "reference" : "translation"}</span><br><b>${esc(t.label)}</b></div>
       <span class="mono" style="font-size:12px;color:var(--muted)">${esc(t.error)} · session quantity ${q}</span></div>
     <div class="steps" aria-label="Compiled Choreographer plan">${chips}</div>
     ${lane}
     <div class="view">${view}</div>
-    <div class="log" aria-label="Execution log">${log || `<div><span></span><span></span><span class="mut">press Play or Step</span></div>`}</div>
-    ${done ? resultHtml(r) : `<div class="note" style="color:var(--muted);font-size:13px">Result appears when the run ends.</div>`}
+    <div class="log" aria-label="Execution log">${log || `<div><span></span><span></span><span style="color:var(--muted)">press Play or Step</span></div>`}</div>
+    ${done ? resultHtml(r, info) : `<p class="note">The result appears when the run ends.</p>`}
     <details><summary>Compiled plan (Choreographer JSON)</summary><pre>${esc(JSON.stringify({name: plan.name, firstActionName: plan.firstActionName, actions: plan.actions}, null, 1))}</pre></details>
   </article>`;
 }
 
-function resultHtml(r) {
-  const layers = [
-    ["L1", "Platform", "Choreographer graph rules"],
-    ["L2", "Capability", "services exist in the cell"],
-    ["L3", "Physical, static", "each step within station limits"],
-    ["L4", "Physical, stateful", "digital-twin dry run"],
-    ["L5", "Intent fidelity", "reviewer (not modelled here)"],
-    ["L6", "Outcome", "benchmark oracle"],
-  ];
-  const stopAt = r.layer && r.outcome === "NOT_ACCEPTED" ? r.layer : null;
-  const order = ["L1","L2","L3","L4","L5","L6"];
+function resultHtml(r, info) {
+  const layers = [["L1","Platform","Choreographer graph rules"],["L2","Capability","services exist in the cell"],["L3","Physical, static","each step within station limits"],
+    ["L4","Physical, stateful","digital-twin dry run"],["L5","Intent fidelity","reviewer (not modelled here)"],["L6","Outcome","benchmark oracle"]];
+  const order = layers.map(l => l[0]), stopAt = r.dispatched ? null : r.layer;
   const rows = layers.map(([k, name, what]) => {
-    let pill, note = what;
-    if (k === "L5") { pill = `<span class="pill">n/a</span>`; return `<div class="lad skip"><span class="k">${k}</span><span>${name}</span><span class="r">${note}</span>${pill}</div>`; }
+    if (k === "L5") return `<div class="lad skip"><span class="k">${k}</span><span>${name}</span><span class="r">${what}</span><span class="pill">n/a</span></div>`;
     const reached = !stopAt || order.indexOf(k) <= order.indexOf(stopAt);
+    let pill, note = what;
     if (!reached) pill = `<span class="pill">not reached</span>`;
-    else if (k === stopAt) { pill = `<span class="pill safe">refused</span>`; note = r.reason; }
-    else if (k === "L6") { pill = r.outcome === "SUCCESS" ? `<span class="pill ok">S = 1.00</span>` : `<span class="pill bad">S = ${r.oracle.score.toFixed(2)}</span>`; note = `${r.oracle.passed} of ${r.oracle.total} checks`; }
-    else pill = `<span class="pill ok">pass</span>`;
+    else if (k === stopAt) { pill = `<span class="pill ${r.good ? "ok" : "safe"}">refused</span>`; note = r.reason; }
+    else if (k === "L6") {
+      if (r.oracle) { pill = `<span class="pill ${r.good ? "ok" : "bad"}">S = ${r.oracle.score.toFixed(2)}</span>`; note = `${r.oracle.passed} of ${r.oracle.total} checks`; }
+      else { pill = `<span class="pill bad">false accept</span>`; note = "an infeasible request was executed"; }
+    } else pill = `<span class="pill ok">pass</span>`;
     return `<div class="lad ${reached ? "" : "skip"}"><span class="k">${k}</span><span>${name}</span><span class="r">${esc(note)}</span>${pill}</div>`;
   }).join("");
-  const verdict = r.outcome === "SUCCESS" ? ["SUCCESS", "approved, executed, meets the intent", "var(--ok)"]
-    : r.outcome === "WRONG_PLAN" ? ["WRONG_PLAN · silent failure", "every machine step reported SUCCESS; only the oracle sees that the plan is wrong", "var(--bad)"]
-    : ["Refused before dispatch · safe failure", `caught at ${r.layer}; nothing reached a machine`, "var(--steel)"];
-  const checks = r.oracle ? `<details ${r.outcome === "WRONG_PLAN" ? "open" : ""}><summary>Oracle checks (${r.oracle.passed}/${r.oracle.total})</summary><div class="checks">${r.oracle.checks.map(c => `<div><span class="${c.ok ? "y" : "n"}">${c.ok ? "✓" : "✗"}</span><span>${esc(c.label)}${c.detail ? ` <span style="color:var(--muted)">(${esc(c.detail)})</span>` : ""}</span></div>`).join("")}</div></details>` : "";
-  return `<div style="display:grid;gap:6px"><div class="verdict" style="color:${verdict[2]}">${verdict[0]}</div><p class="note">${esc(verdict[1])}</p>
+  const color = info.cls === "ok" ? "var(--ok)" : info.cls === "bad" ? "var(--bad)" : "var(--steel)";
+  const checks = r.oracle ? `<details ${r.good ? "" : "open"}><summary>Oracle checks (${r.oracle.passed}/${r.oracle.total})</summary><div class="checks">${r.oracle.checks.map(c => `<div><span class="${c.ok ? "y" : "n"}">${c.ok ? "✓" : "✗"}</span><span>${esc(c.label)}${c.detail ? ` <span style="color:var(--muted)">(${esc(c.detail)})</span>` : ""}</span></div>`).join("")}</div></details>` : "";
+  return `<div style="display:grid;gap:6px"><div class="verdict" style="color:${color}">${esc(info.head)}</div><p class="note">${esc(info.text)}</p>
     <div class="ladder">${rows}</div>${checks}</div>`;
 }
 
-/* ------------------------------------------------------------------ station views */
-function stationView(id, s, failing, r, running) {
-  if (id === "X01") return cncView(s, failing, r, running);
-  if (id === "X03") return palView(s, failing, r, running);
-  return ovenView(s, failing, r, running);
-}
+/* ------------------------------------------------------------------ station views (each gets {S, failing, running, r, plan, execd, done}) */
+const svgOpen = (W, H, label) => `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">`;
+const T = (x, y, s, cls = "", size = 11, anchor = "start", extra = "") => `<text x="${x}" y="${y}" font-size="${size}" class="${cls}" text-anchor="${anchor}" ${extra}>${s}</text>`;
+const failText = (f, x, y) => f ? T(x, y, esc(f.message.length > 78 ? f.message.slice(0, 76) + "…" : f.message), "bad m", 11) : "";
+function planSteps(plan, svc) { return plan.actions[0].steps.filter(s => M.svcOf(s) === svc); }
 
-function cncView(s, failing, r, running) {
-  const W = 600, H = 268, cx = 92, cy = 126, R = 66, per = M.wearPerPart("DUCK_MOLD_ROUGH", "steel");
-  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="CNC tool magazine, active insert wear and machined blanks">`;
-  g += `<text x="16" y="22" class="m mut" font-size="11">TOOL MAGAZINE (8 POCKETS)</text>`;
+function cncView({S, failing, running, plan}) {
+  const s = S("cnc"), W = 600, H = 268, cx = 92, cy = 126, R = 66;
+  const mp = planSteps(plan, "cnc-machine-part"), prog = (planSteps(plan, "cnc-load-program")[0] || {staticParameters:{}}).staticParameters.program || "DUCK_MOLD_ROUGH";
+  const mat = mp.length ? mp[0].staticParameters.material : "steel", per = M.wearPerPart(prog, mat), nBlanks = mp.length * plan.sessionQuantity;
+  let g = svgOpen(W, H, "CNC tool magazine, active insert wear and machined blanks") + T(16, 22, "TOOL MAGAZINE (8 POCKETS)", "m mut");
   g += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--line)" stroke-width="10"/>`;
   for (let i = 1; i <= 8; i++) {
-    const a = -Math.PI / 2 + (i - 1) * Math.PI / 4, x = cx + R * Math.cos(a), y = cy + R * Math.sin(a), w = s.wear[i], act = s.activeTool === i;
-    const circ = 2 * Math.PI * 14, frac = Math.min(1, w / 100);
+    const a = -Math.PI / 2 + (i - 1) * Math.PI / 4, x = cx + R * Math.cos(a), y = cy + R * Math.sin(a), w = s.wear[i], act = s.activeTool === i, circ = 2 * Math.PI * 14;
     g += `<circle cx="${x}" cy="${y}" r="17" fill="var(--panel)" stroke="${act ? "var(--safety)" : "var(--line)"}" stroke-width="${act ? 4 : 1.5}"/>`;
-    if (w > 0) g += `<circle cx="${x}" cy="${y}" r="14" fill="none" stroke="${w > 60 ? "var(--bad)" : "var(--steel)"}" stroke-width="4" stroke-dasharray="${circ * frac} ${circ}" transform="rotate(-90 ${x} ${y})"/>`;
-    g += `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" class="m" font-weight="${act ? 700 : 400}">T${i}</text>`;
+    if (w > 0) g += `<circle cx="${x}" cy="${y}" r="14" fill="none" stroke="${w > 60 ? "var(--bad)" : "var(--steel)"}" stroke-width="4" stroke-dasharray="${circ * Math.min(1, w / 100)} ${circ}" transform="rotate(-90 ${x} ${y})"/>`;
+    g += T(x, y + 4, "T" + i, "m", 11, "middle", act ? 'font-weight="700"' : "");
   }
-  g += `<text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="11" class="mut">active</text><text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="18" class="m" font-weight="600">T${s.activeTool}</text>`;
-  g += `<text x="${cx}" y="${cy + R + 36}" text-anchor="middle" font-size="11" class="m mut">program ${esc(s.program || "– not loaded")}</text>`;
-  // wear bar
-  const bx = 210, by = 34, bh = 180, bw = 40, Yw = w => by + bh - w / 100 * bh;
-  const wNow = s.wear[s.activeTool];
-  g += `<text x="${bx - 20}" y="22" class="m mut" font-size="11">WEAR OF ACTIVE INSERT</text>`;
-  g += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="var(--panel)" stroke="var(--line)"/>`;
+  g += T(cx, cy - 4, "active", "mut", 11, "middle") + T(cx, cy + 14, "T" + s.activeTool, "m", 18, "middle", 'font-weight="600"') + T(cx, cy + R + 36, "program " + esc(s.program || "– not loaded"), "m mut", 11, "middle");
+  const bx = 210, by = 34, bh = 180, bw = 40, Yw = w => by + bh - Math.min(w, 110) / 100 * bh, wNow = s.wear[s.activeTool];
+  g += T(bx - 20, 22, "WEAR OF ACTIVE INSERT", "m mut") + `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="var(--panel)" stroke="var(--line)"/>`;
   const segs = Math.round(wNow / per);
   for (let j = 0; j < segs; j++) g += `<rect x="${bx + 2}" y="${Yw((j + 1) * per) + 1}" width="${bw - 4}" height="${per / 100 * bh - 2}" fill="var(--steel)"/>`;
   if (failing && failing.service === "cnc-machine-part") {
-    g += `<rect x="${bx + 2}" y="${Yw(wNow + per)}" width="${bw - 4}" height="${per / 100 * bh - 2}" fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"/>`;
-    g += `<text x="${bx + bw / 2}" y="${by + bh + 34}" text-anchor="middle" font-size="11" class="bad m">next blank: ${(wNow + per).toFixed(1)} % · refused</text>`;
+    g += `<rect x="${bx + 2}" y="${Yw(wNow + per)}" width="${bw - 4}" height="${Math.min(per, 110 - wNow) / 100 * bh - 2}" fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"/>`;
+    g += T(bx + bw / 2, by + bh + 34, `next blank: ${fx(wNow + per)} % · refused`, "bad m", 11, "middle");
   }
-  g += `<line x1="${bx - 6}" y1="${Yw(90)}" x2="${bx + bw + 6}" y2="${Yw(90)}" stroke="var(--bad)" stroke-width="2"/><text x="${bx + bw + 8}" y="${Yw(90) + 4}" font-size="11" class="bad m">90 % limit</text>`;
-  [0, 33.3, 66.7, 100].forEach(v => (g += `<text x="${bx - 6}" y="${Yw(v) + 4}" text-anchor="end" font-size="10" class="m mut">${v}</text>`));
-  g += `<text x="${bx + bw / 2}" y="${by + bh + 18}" text-anchor="middle" font-size="12" class="m" font-weight="600">${wNow.toFixed(1)} %</text>`;
-  // blanks
-  const nBlanks = 5, partsDone = s.parts_machined;
-  g += `<text x="390" y="22" class="m mut" font-size="11">STEEL BLANKS 12 kg</text>`;
+  g += `<line x1="${bx - 6}" y1="${Yw(90)}" x2="${bx + bw + 6}" y2="${Yw(90)}" stroke="var(--bad)" stroke-width="2"/>` + T(bx + bw + 8, Yw(90) + 4, "90 % limit", "bad m");
+  [0, 50, 100].forEach(v => (g += T(bx - 6, Yw(v) + 4, v, "m mut", 10, "end")));
+  g += T(bx + bw / 2, by + bh + 18, fx(wNow) + " %", "m", 12, "middle", 'font-weight="600"');
+  g += T(390, 22, `${mat.toUpperCase()} BLANKS · ${fx(per)} % WEAR EACH`, "m mut");
+  const rowH = Math.min(36, 190 / Math.max(1, nBlanks));
   for (let i = 0; i < nBlanks; i++) {
-    const x = 390, y = 34 + i * 36, isFail = failing && failing.service === "cnc-machine-part" && i === partsDone;
-    const isRun = running && running.service === "cnc-machine-part" && i === partsDone;
-    const fill = i < partsDone ? "var(--steel)" : "var(--panel)";
-    g += `<rect x="${x}" y="${y}" width="44" height="26" rx="2" fill="${fill}" stroke="${isFail ? "var(--bad)" : isRun ? "var(--safety)" : "var(--line)"}" stroke-width="${isFail || isRun ? 3 : 1.5}" ${isRun ? 'class="pulse"' : ""}/>`;
-    g += `<text x="${x + 54}" y="${y + 17}" font-size="12" class="m ${isFail ? "bad" : i < partsDone ? "" : "mut"}">blank ${i + 1}${i < partsDone ? " · machined" : isFail ? " · refused" : ""}</text>`;
+    const x = 390, y = 34 + i * rowH, isFail = failing && failing.service === "cnc-machine-part" && i === s.parts_machined, isRun = running && running.service === "cnc-machine-part" && i === s.parts_machined;
+    g += `<rect x="${x}" y="${y}" width="44" height="${rowH - 10}" rx="2" fill="${i < s.parts_machined ? "var(--steel)" : "var(--panel)"}" stroke="${isFail ? "var(--bad)" : isRun ? "var(--safety)" : "var(--line)"}" stroke-width="${isFail || isRun ? 3 : 1.5}" ${isRun ? 'class="pulse"' : ""}/>`;
+    g += T(x + 54, y + rowH / 2, `blank ${i + 1}${i < s.parts_machined ? " · machined" : isFail ? " · refused" : ""}`, `m ${isFail ? "bad" : i < s.parts_machined ? "" : "mut"}`, 12);
   }
-  g += `<text x="390" y="${H - 14}" font-size="11" class="m mut">tool changes ${s.tool_changes} · status reads ${s.spindle_reads}</text></svg>`;
-  return g;
+  return g + T(390, H - 14, `tool changes ${s.tool_changes} · status reads ${s.spindle_reads}`, "m mut") + "</svg>";
 }
 
-function palView(s, failing, r, running) {
-  const W = 520, H = 300, base = 144, maxMM = 2700, y0 = H - 30, top = 22, Y = mm => y0 - mm / maxMM * (y0 - top), px = mm => mm / maxMM * (y0 - top);
-  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Palletizer side view with stack height, pallet load and released pallets">`;
-  // ruler
-  for (let mm = 0; mm <= 2600; mm += 200) g += `<line x1="44" y1="${Y(mm)}" x2="50" y2="${Y(mm)}" stroke="var(--muted)"/><text x="40" y="${Y(mm) + 3}" text-anchor="end" font-size="9" class="m mut">${mm}</text>`;
-  g += `<line x1="50" y1="${Y(0)}" x2="50" y2="${Y(2600)}" stroke="var(--muted)"/>`;
-  g += `<line x1="50" y1="${Y(1800)}" x2="244" y2="${Y(1800)}" stroke="var(--bad)" stroke-width="2"/><text x="246" y="${Y(1800) + 4}" font-size="11" class="bad m">1800 mm</text>`;
-  // current pallet
+function deltaView({S, failing, running}) {
+  const s = S("delta_robot"), W = 600, H = 250, cell = 11;
+  let g = svgOpen(W, H, "Delta robot trays and picks") + T(16, 20, "PICKS", "m mut");
+  const bx = 70, bw = 500, Xp = v => bx + Math.min(v, 130) / 130 * bw;
+  g += `<rect x="${bx}" y="10" width="${bw}" height="14" fill="var(--panel)" stroke="var(--line)"/><rect x="${bx}" y="10" width="${Xp(Math.min(s.total_picks, 100)) - bx}" height="14" fill="var(--steel)"/>`;
+  if (s.total_picks > 100) g += `<rect x="${Xp(100)}" y="10" width="${Xp(s.total_picks) - Xp(100)}" height="14" fill="var(--bad)"/>`;
+  g += `<line x1="${Xp(100)}" y1="4" x2="${Xp(100)}" y2="30" stroke="var(--ink)" stroke-width="2"/>` + T(Xp(100), 42, "100 ordered", "m", 10, "middle") + T(bx, 42, `${s.total_picks} picked`, `m ${s.total_picks > 100 ? "bad" : ""}`, 11, "start", 'font-weight="600"');
+  const trays = s.trays.slice(); if (failing && failing.service === "delta-tray-pack") trays.push({rows: +failing.params.rows, cols: +failing.params.cols, ghost: true});
+  if (running && running.service === "delta-tray-pack") trays.push({rows: +running.params.rows, cols: +running.params.cols, run: true});
+  trays.forEach((t, i) => {
+    const x = 16 + i * 116, y = 64, w = t.cols * cell + 8, h = t.rows * cell + 8;
+    g += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="var(--panel)" stroke="${t.ghost ? "var(--bad)" : t.run ? "var(--safety)" : "var(--ink)"}" stroke-width="${t.ghost || t.run ? 2 : 1}" ${t.ghost ? 'stroke-dasharray="4 3"' : ""} ${t.run ? 'class="pulse"' : ""}/>`;
+    if (!t.ghost && !t.run) for (let rr = 0; rr < t.rows; rr++) for (let cc = 0; cc < t.cols; cc++) g += `<circle cx="${x + 4 + cell / 2 + cc * cell}" cy="${y + 4 + cell / 2 + rr * cell}" r="${cell / 2 - 1}" fill="var(--safety)"/>`;
+    g += T(x, y + h + 16, `tray ${i + 1}: ${t.rows}×${t.cols}`, "m", 11) + (t.mass !== undefined ? T(x, y + h + 30, `${t.mass} / 5 kg`, `m ${t.mass > 5 ? "bad" : "mut"}`, 11) : "");
+  });
+  if (failing) g += failText(failing, 16, H - 12);
+  return g + "</svg>";
+}
+
+function palView({S, failing, running}) {
+  const s = S("palletizer"), W = 520, H = 300, base = 144, maxMM = 2700, y0 = H - 30, top = 22, Y = mm => y0 - mm / maxMM * (y0 - top), px = mm => mm / maxMM * (y0 - top);
+  let g = svgOpen(W, H, "Palletizer side view with stack height, pallet load and released pallets");
+  for (let mm = 0; mm <= 2600; mm += 200) g += `<line x1="44" y1="${Y(mm)}" x2="50" y2="${Y(mm)}" stroke="var(--muted)"/>` + T(40, Y(mm) + 3, mm, "m mut", 9, "end");
+  g += `<line x1="50" y1="${Y(0)}" x2="50" y2="${Y(2600)}" stroke="var(--muted)"/><line x1="50" y1="${Y(1800)}" x2="244" y2="${Y(1800)}" stroke="var(--bad)" stroke-width="2"/>` + T(246, Y(1800) + 4, "1800 mm", "bad m");
   const x = 70, w = 150, n = s.cases.length, h = n ? s.cases[0].h : 250, layers = Math.ceil(n / 8);
-  g += `<text x="${x}" y="14" class="m mut" font-size="11">CURRENT PALLET</text>`;
-  g += `<rect x="${x}" y="${Y(base)}" width="${w}" height="${px(base)}" fill="var(--muted)"/>`;
-  for (let L = 0; L < layers; L++) {
-    const inLayer = Math.min(8, n - L * 8), yL = Y(base + (L + 1) * h);
-    for (let c = 0; c < 4; c++) {
-      const filled = c < Math.ceil(inLayer / 2);
-      g += `<rect x="${x + 2 + c * (w - 4) / 4}" y="${yL + 1}" width="${(w - 4) / 4 - 3}" height="${px(h) - 2}" fill="${filled ? "var(--safety)" : "none"}" stroke="var(--ink)" stroke-width=".8"/>`;
-    }
-  }
-  if (s.wrapped && n) g += `<rect x="${x - 3}" y="${Y(base + layers * h) - 3}" width="${w + 6}" height="${px(layers * h) + 3}" fill="var(--band1)" stroke="var(--steel)" stroke-width="2" stroke-dasharray="2 3"/><text x="${x + w / 2}" y="${Y(base + layers * h) - 7}" text-anchor="middle" font-size="10" class="m">wrapped · ${s.film_layers} film layers</text>`;
+  g += T(x, 14, "CURRENT PALLET", "m mut") + `<rect x="${x}" y="${Y(base)}" width="${w}" height="${px(base)}" fill="var(--muted)"/>`;
+  for (let L = 0; L < layers; L++) { const inLayer = Math.min(8, n - L * 8), yL = Y(base + (L + 1) * h);
+    for (let c = 0; c < 4; c++) g += `<rect x="${x + 2 + c * (w - 4) / 4}" y="${yL + 1}" width="${(w - 4) / 4 - 3}" height="${px(h) - 2}" fill="${c < Math.ceil(inLayer / 2) ? "var(--safety)" : "none"}" stroke="var(--ink)" stroke-width=".8"/>`; }
+  if (s.wrapped && n) g += `<rect x="${x - 3}" y="${Y(base + layers * h) - 3}" width="${w + 6}" height="${px(layers * h) + 3}" fill="var(--band1)" stroke="var(--steel)" stroke-width="2" stroke-dasharray="2 3"/>` + T(x + w / 2, Y(base + layers * h) - 7, `wrapped · ${s.film_layers} film layers`, "m", 10, "middle");
   if (failing && failing.service === "palletizer-stack-case") {
-    const c = +failing.params.count, hh = +failing.params.case_height_mm, tot = n + c, L2 = Math.ceil(tot / 8);
+    const c = +failing.params.count, hh = +failing.params.case_height_mm || 200, L2 = Math.ceil((n + c) / 8);
     for (let L = layers; L < L2; L++) g += `<rect x="${x + 2}" y="${Y(base + (L + 1) * hh) + 1}" width="${w - 4}" height="${px(hh) - 2}" fill="none" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-    g += `<text x="${x}" y="${Y(base + L2 * hh) - 6}" font-size="11" class="bad m">${base + L2 * hh} mm > 1800 mm: refused</text>`;
+    g += T(x, Y(base + L2 * hh) - 6, `${base + L2 * hh} mm > 1800 mm: refused`, "bad m");
   }
   if (running && running.service === "palletizer-stack-case") g += `<rect x="${x - 2}" y="${Y(1800)}" width="${w + 4}" height="${Y(base) - Y(1800)}" fill="none" stroke="var(--safety)" stroke-width="2" class="pulse"/>`;
-  g += `<text x="${x + w / 2}" y="${y0 + 16}" text-anchor="middle" font-size="11" class="m">${n} cases · ${layers} layers · ${n ? base + layers * h : base} mm</text>`;
-  // load gauge
+  g += T(x + w / 2, y0 + 16, `${n} cases · ${layers} layers · ${n ? base + layers * h : base} mm`, "m", 11, "middle");
   const mass = s.cases.reduce((a, c) => a + c.m, 0), gx = 300, gw = 200;
-  g += `<text x="${gx}" y="14" class="m mut" font-size="11">PALLET LOAD</text><rect x="${gx}" y="22" width="${gw}" height="12" fill="var(--panel)" stroke="var(--line)"/>
-    <rect x="${gx}" y="22" width="${Math.min(1, mass / 1000) * gw}" height="12" fill="var(--steel)"/><text x="${gx + gw}" y="48" text-anchor="end" font-size="11" class="m">${mass} / 1000 kg</text>`;
-  // released pallets
-  g += `<text x="${gx}" y="70" class="m mut" font-size="11">RELEASED PALLETS (${s.completed_pallets.length})</text>`;
-  s.completed_pallets.forEach((p, i) => {
-    const px0 = gx + i * 50, sc = 1, hp = px(p.height) * sc, yb = y0;
-    g += `<rect x="${px0}" y="${yb - hp}" width="40" height="${hp}" fill="var(--safety)" stroke="var(--ink)" stroke-width=".8"/><rect x="${px0}" y="${yb - hp}" width="40" height="${hp}" fill="var(--band1)" stroke="var(--steel)" stroke-dasharray="2 3"/>
-      <text x="${px0 + 20}" y="${yb - hp - 6}" text-anchor="middle" font-size="10" class="m">${p.cases}</text>`;
-  });
-  g += `<text x="${gx}" y="${y0 + 16}" font-size="11" class="m mut">cases placed ${s.cases_total} / 150</text></svg>`;
-  return g;
+  g += T(gx, 14, "PALLET LOAD", "m mut") + `<rect x="${gx}" y="22" width="${gw}" height="12" fill="var(--panel)" stroke="var(--line)"/><rect x="${gx}" y="22" width="${Math.min(1, mass / 1000) * gw}" height="12" fill="var(--steel)"/>` + T(gx + gw, 48, `${mass} / 1000 kg`, "m", 11, "end");
+  g += T(gx, 70, `RELEASED PALLETS (${s.completed_pallets.length})`, "m mut");
+  s.completed_pallets.forEach((p, i) => { const hp = px(p.height), x0 = gx + i * 50;
+    g += `<rect x="${x0}" y="${y0 - hp}" width="40" height="${hp}" fill="var(--safety)" stroke="var(--ink)" stroke-width=".8"/><rect x="${x0}" y="${y0 - hp}" width="40" height="${hp}" fill="var(--band1)" stroke="var(--steel)" stroke-dasharray="2 3"/>` + T(x0 + 20, y0 - hp - 6, p.cases, "m", 10, "middle"); });
+  return g + T(gx, y0 + 16, `cases placed ${s.cases_total} / 150`, "m mut") + "</svg>";
 }
 
-function ovenView(s, failing, r, running) {
-  const W = 560, H = 250, x0 = 44, x1 = 360, y0 = 210, y1 = 24;
-  const final = r.run ? r.run.trace[r.run.trace.length - 1].state : null;
-  const tMax = Math.max(60, final && final.profile ? final.profile[final.profile.length - 1].t : 60) * 1.05;
-  const X = t => x0 + t / tMax * (x1 - x0), Y = c => y0 - c / 180 * (y0 - y1);
-  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Oven chamber temperature over time with the cure windows">`;
-  g += `<rect x="${x0}" y="${Y(140)}" width="${x1 - x0}" height="${Y(110) - Y(140)}" fill="var(--band1)"/><rect x="${x0}" y="${Y(160)}" width="${x1 - x0}" height="${Y(120) - Y(160)}" fill="var(--band2)"/>
-    <rect x="${x0}" y="${Y(140)}" width="${x1 - x0}" height="${Y(120) - Y(140)}" fill="var(--band3)"/>
-    <text x="${x1 - 4}" y="${Y(156)}" text-anchor="end" font-size="10" class="mut">solvent paint 120–160</text><text x="${x1 - 4}" y="${Y(112)}" text-anchor="end" font-size="10" class="mut">clear coat 110–140</text>`;
-  for (let c = 0; c <= 180; c += 30) g += `<line x1="${x0}" y1="${Y(c)}" x2="${x1}" y2="${Y(c)}" stroke="var(--line)" stroke-width=".6"/><text x="${x0 - 6}" y="${Y(c) + 3}" text-anchor="end" font-size="10" class="m mut">${c}</text>`;
-  g += `<line x1="${x0}" y1="${Y(60)}" x2="${x1}" y2="${Y(60)}" stroke="var(--muted)" stroke-dasharray="4 4"/><text x="${x0 + 4}" y="${Y(60) - 4}" font-size="10" class="mut">door opens by hand ≤ 60 °C</text>`;
-  g += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="var(--muted)"/><text x="${(x0 + x1) / 2}" y="${y0 + 28}" text-anchor="middle" font-size="10" class="mut">minutes (ramps schematic)</text>`;
-  for (let t = 0; t <= tMax; t += 20) g += `<text x="${X(t)}" y="${y0 + 13}" text-anchor="middle" font-size="9" class="m mut">${t}</text>`;
+function amrView({S, failing, running}) {
+  const s = S("amr"), W = 600, H = 292, fx0 = 16, fy0 = 24, sc = 4.2, P = k => [fx0 + M.FLOOR[k][0] * sc, fy0 + (40 - M.FLOOR[k][1]) * sc];
+  let g = svgOpen(W, H, "AMR floor map, trips and battery") + T(fx0, 14, "FLOOR (SCHEMATIC)", "m mut");
+  g += `<rect x="${fx0}" y="${fy0}" width="${90 * sc}" height="${40 * sc}" fill="var(--panel)" stroke="var(--line)"/>`;
+  s.path.forEach(([a, b, kg]) => { const [x1, y1] = P(a), [x2, y2] = P(b);
+    g += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${kg ? (kg > 220 ? "var(--bad)" : "var(--steel)") : "var(--muted)"}" stroke-width="${kg ? 3 : 1.5}" ${kg ? "" : 'stroke-dasharray="5 4"'} opacity=".8"/>`; });
+  const SHORT = {CONVEYOR_ENTRY:"CONV. IN", CONVEYOR_EXIT:"CONV. OUT", PAINT_BOOTH:"PAINT", CURING_OVEN:"OVEN", CHECKWEIGHER:"WEIGHER", PALLETIZER:"PALLETIZER"};
+  Object.keys(M.FLOOR).forEach(k => { const [x, y] = P(k), hot = k === "WAREHOUSE" || k === "CNC";
+    g += `<circle cx="${x}" cy="${y}" r="${hot ? 6 : 4}" fill="${hot ? "var(--safety)" : "var(--muted)"}"/>` + T(x, y + 20, SHORT[k] || k, hot ? "m" : "m mut", 9, "middle", hot ? 'font-weight="700"' : ""); });
+  const [ax, ay] = P(s.location);
+  g += `<rect x="${ax - 9}" y="${ay - 9}" width="18" height="18" rx="3" fill="var(--steel)" stroke="var(--ink)" ${running && running.station === "amr" ? 'class="pulse"' : ""}/>` + T(ax, ay + 4, "A", "m", 10, "middle", 'style="fill:var(--bg)" font-weight="700"');
+  // trips panel
+  const tx = 408, ty0 = 40, th = 150, Yk = kg => ty0 + th - kg / 260 * th;
+  g += T(tx, 14, "PAYLOAD PER TRIP", "m mut");
+  g += `<line x1="${tx}" y1="${Yk(220)}" x2="${W - 10}" y2="${Yk(220)}" stroke="var(--bad)" stroke-width="2"/>` + T(W - 10, Yk(220) - 4, "CNC bay 220 kg", "bad m", 10, "end");
+  g += `<line x1="${tx}" y1="${Yk(250)}" x2="${W - 10}" y2="${Yk(250)}" stroke="var(--muted)" stroke-dasharray="4 3"/>` + T(W - 10, Yk(250) - 4, "AMR 250 kg", "m mut", 10, "end");
+  s.trips.forEach((t, i) => { const x = tx + 6 + i * 40;
+    g += `<rect x="${x}" y="${Yk(t.kg)}" width="28" height="${ty0 + th - Yk(t.kg)}" fill="${t.kg > 220 ? "var(--bad)" : "var(--steel)"}"/>` + T(x + 14, ty0 + th + 14, t.kg, "m", 10, "middle"); });
+  g += `<line x1="${tx}" y1="${ty0 + th}" x2="${W - 10}" y2="${ty0 + th}" stroke="var(--muted)"/>`;
+  g += T(tx, ty0 + th + 32, `delivered ${s.delivered_kg} / 600 kg`, `m ${s.delivered_kg > 600 ? "bad" : ""}`, 11) + T(tx, ty0 + th + 46, `${s.missions} trip(s)`, "m mut", 11);
+  const bw = 170; g += T(tx, H - 26, `BATTERY ${fx(s.battery_pct)} % · at ${s.location}`, "m mut", 10) + `<rect x="${tx}" y="${H - 20}" width="${bw}" height="10" fill="var(--panel)" stroke="var(--line)"/><rect x="${tx}" y="${H - 20}" width="${bw * s.battery_pct / 100}" height="10" fill="${s.battery_pct < 30 ? "var(--bad)" : "var(--ok)"}"/><line x1="${tx + bw * .15}" y1="${H - 24}" x2="${tx + bw * .15}" y2="${H - 6}" stroke="var(--bad)"/>`;
+  g += T(fx0, H - 30, "solid: loaded trip · dashed: empty drive", "mut", 10);
+  if (failing) g += failText(failing, fx0, H - 12);
+  return g + "</svg>";
+}
+
+function droneView({S, failing, running}) {
+  const s = S("drone"), W = 600, H = 260, x0 = 40, x1 = W - 16, y0 = 210, y1 = 50, N = 22, X = i => x0 + i / N * (x1 - x0), Y = p => y0 - p / 100 * (y0 - y1);
+  let g = svgOpen(W, H, "Drone battery over the mission with the 20 % reserve");
+  for (let p = 0; p <= 100; p += 20) g += `<line x1="${x0}" y1="${Y(p)}" x2="${x1}" y2="${Y(p)}" stroke="var(--line)" stroke-width=".6"/>` + T(x0 - 6, Y(p) + 3, p, "m mut", 10, "end");
+  g += `<rect x="${x0}" y="${Y(20)}" width="${x1 - x0}" height="${Y(0) - Y(20)}" fill="var(--bad)" opacity=".12"/><line x1="${x0}" y1="${Y(20)}" x2="${x1}" y2="${Y(20)}" stroke="var(--bad)" stroke-width="2"/>` + T(x1, Y(20) - 4, "20 % reserve", "bad m", 10, "end");
+  const L = s.log; let pts = [];
+  L.forEach((e, i) => { if (e.k === "swap") pts.push([i - 0.001, e.prev]); pts.push([i, e.pct]); });
+  g += `<polyline fill="none" stroke="var(--ink)" stroke-width="2" points="${pts.map(([i, p]) => X(i) + "," + Y(p)).join(" ")}"/>`;
+  L.forEach((e, i) => {
+    const col = e.k === "insp" ? "var(--steel)" : e.k === "swap" ? "var(--ok)" : e.k === "rth" ? "var(--safety)" : "var(--muted)";
+    g += `<circle cx="${X(i)}" cy="${Y(e.pct)}" r="4" fill="${col}"/>`;
+    if (e.k === "swap") g += T(X(i), Y(100) - 6, "swap", "m okc", 9, "middle");
+    if (e.k === "insp") g += T(X(i), y0 + 14, e.loc[0], "m mut", 9, "middle");
+  });
+  if (failing && failing.service === "drone-aerial-inspection") { const i = L.length, cost = M.DRONE.inspect[failing.params.zone] || 6.4, last = L[L.length - 1].pct;
+    g += `<line x1="${X(i - 1)}" y1="${Y(last)}" x2="${X(i)}" y2="${Y(last - cost)}" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"/><circle cx="${X(i)}" cy="${Y(last - cost)}" r="5" fill="none" stroke="var(--bad)" stroke-width="2"/>`; }
+  g += T(x0, 14, `BATTERY · ${s.inspections.length} inspections · at ${s.location} · ${fx(s.battery_pct)} %`, "m mut", 11);
+  g += T(x0, H - 8, "letters: zone of each inspection (H high-bay rack, R roof truss, P palletizer, C CNC)", "mut", 10);
+  if (failing) g += failText(failing, x0, 32);
+  return g + "</svg>";
+}
+
+function deliveryView({S, failing, plan}) {
+  const s = S("drone"), W = 560, H = 200, bx = 150, bw = 360, X = kg => bx + kg / 3 * bw;
+  let g = svgOpen(W, H, "Drone flights in the plan against the 2.5 kg payload limit") + T(16, 18, "PAYLOAD PER FLIGHT IN THE PLAN", "m mut");
+  const fl = planSteps(plan, "drone-aerial-delivery");
+  g += `<line x1="${X(2.5)}" y1="26" x2="${X(2.5)}" y2="${36 + fl.length * 34}" stroke="var(--bad)" stroke-width="2"/>` + T(X(2.5) + 4, 34, "2.5 kg limit", "bad m", 10);
+  fl.forEach((f, i) => { const kg = +f.staticParameters.payload_kg, y = 44 + i * 34, flown = s.log.filter(e => e.k === "deliv").length > i;
+    g += T(16, y + 14, `${esc(f.name)}`, "m", 11) + `<rect x="${bx}" y="${y}" width="${X(kg) - bx}" height="20" fill="${kg > 2.5 ? "var(--bad)" : "var(--steel)"}" opacity="${flown || kg > 2.5 ? 1 : .45}"/>` + T(X(kg) + 6, y + 14, `${kg} kg${flown ? " · flown" : ""}`, "m", 11); });
+  g += T(16, H - 36, "requested: sensor 1.8 kg + bracket 0.9 kg together, in one flight", "mut", 11);
+  if (failing) g += failText(failing, 16, H - 14);
+  return g + "</svg>";
+}
+
+function paintView({S, failing, running}) {
+  const p = S("painting_robot"), o = S("curing_oven"), W = 600, H = 250;
+  let g = svgOpen(W, H, "Paint booth filter, painted housings and the oven batch") + T(16, 18, `BOOTH FILTER ${p.filter_jobs} / 12 JOBS · ${p.purges} PURGE(S)`, "m mut");
+  for (let i = 0; i < 12; i++) g += `<rect x="${16 + i * 22}" y="28" width="18" height="22" fill="${i < p.filter_jobs ? (p.filter_jobs >= 12 ? "var(--bad)" : "var(--safety)") : "var(--panel)"}" stroke="var(--line)"/>`;
+  if (failing && failing.service === "paint-spray-coat") g += T(16, 66, "filter saturated: 13th spray job refused", "bad m");
+  g += T(16, 92, `HOUSINGS PAINTED ${p.painted_parts} / 14`, "m mut");
+  const coats = p.jobs.length ? p.jobs[p.jobs.length - 1] : null;
+  for (let i = 0; i < 14; i++) { const x = 16 + (i % 7) * 40, y = 100 + Math.floor(i / 7) * 40, done = i < p.painted_parts, fail = failing && failing.service === "paint-spray-coat" && i === p.painted_parts;
+    g += `<rect x="${x}" y="${y}" width="32" height="30" rx="3" fill="${done ? "var(--bad)" : "var(--panel)"}" opacity="${done ? .85 : 1}" stroke="${fail ? "var(--bad)" : "var(--line)"}" stroke-width="${fail ? 3 : 1}" ${fail ? 'stroke-dasharray="4 3"' : ""}/>` + T(x + 16, y + 19, i + 1, "m", 10, "middle", done ? 'style="fill:var(--bg)"' : ""); }
+  if (coats) g += T(16, 196, `last job: ${coats.coats} coat(s) × ${coats.film} µm`, `m ${coats.coats === 3 && coats.film === 30 ? "" : "bad"}`);
+  const gx = 330, gw = 250, b = o.batches[o.batches.length - 1];
+  g += T(gx, 18, `CURING OVEN · ${o.batches_cured} BATCH(ES)`, "m mut") + `<rect x="${gx}" y="28" width="${gw}" height="14" fill="var(--panel)" stroke="var(--line)"/>`;
+  const tot = o.batches.reduce((a, x) => a + x.payload_kg, 0);
+  g += `<rect x="${gx}" y="28" width="${Math.min(1, tot / 100) * gw}" height="14" fill="var(--steel)"/><line x1="${gx + .63 * gw}" y1="22" x2="${gx + .63 * gw}" y2="48" stroke="var(--ink)" stroke-width="2"/>` + T(gx + .63 * gw, 60, "63 kg = 14 × 4.5", "m", 10, "middle") + T(gx + gw, 78, `${tot} / 100 kg loaded`, "m", 11, "end");
+  if (b) g += T(gx, 104, `${b.coating} · ${b.temperature_c} °C · ${b.dwell_min} min`, "m") + T(gx, 120, `${b.parts} parts · ${b.payload_kg} kg declared`, `m ${b.payload_kg === 63 ? "" : "bad"}`);
+  if (running) g += T(gx, 150, esc(running.service) + "…", "m pulse");
+  if (failing) g += failText(failing, 16, H - 12);
+  return g + "</svg>";
+}
+
+function gantryView({S, failing, plan}) {
+  const s = S("cartesian_robot"), W = 600, H = 270, x0 = 40, y0 = 30, sc = 0.2, P = (x, y) => [x0 + x * sc, y0 + (1000 - y) * sc];
+  let g = svgOpen(W, H, "Gantry workspace top view with the move of the die") + T(x0, 18, "WORKSPACE TOP VIEW · X 0–2000 · Y 0–1000 mm", "m mut");
+  g += `<rect x="${x0}" y="${y0}" width="${2000 * sc}" height="${1000 * sc}" fill="var(--panel)" stroke="var(--line)"/>`;
+  for (let x = 0; x <= 2000; x += 500) g += T(P(x, 0)[0], y0 + 1000 * sc + 14, x, "m mut", 9, "middle");
+  const [rx, ry] = P(1750, 700); g += `<circle cx="${rx}" cy="${ry}" r="11" fill="none" stroke="var(--ok)" stroke-width="2" stroke-dasharray="3 3"/>` + T(rx, ry - 16, "requested place 1750, 700", "m okc", 9, "middle");
+  const [px0, py0] = P(250, 300); g += `<rect x="${px0 - 7}" y="${py0 - 7}" width="14" height="14" fill="none" stroke="var(--safety)" stroke-width="2"/>` + T(px0, py0 + 22, "die at 250, 300", "m", 9, "middle");
+  const pts = [{x: 0, y: 0}].concat(s.path.filter(p => p.k !== "home"));
+  if (s.path.length) g += `<polyline fill="none" stroke="var(--steel)" stroke-width="2.5" points="${pts.map(p => P(p.x, p.y).join(",")).join(" ")}"/>`;
+  s.path.filter(p => p.k === "place").forEach(p => { const [x, y] = P(p.x, p.y); g += `<rect x="${x - 7}" y="${y - 7}" width="14" height="14" fill="var(--safety)"/>` + T(x, y + 22, `placed ${p.x}, ${p.y}`, `m ${p.x === 1750 && p.y === 700 ? "" : "bad"}`, 9, "middle"); });
+  const [cx, cy] = P(s.position.x, s.position.y); g += `<circle cx="${cx}" cy="${cy}" r="6" fill="var(--ink)"/>`;
+  const gx = 470, mp = planSteps(plan, "gantry-pick-place")[0], kg = mp ? +mp.staticParameters.payload_kg : 0;
+  g += T(gx, 44, `homed: ${s.homed ? "yes" : "no"}`, `m ${s.homed ? "okc" : "mut"}`) + T(gx, 62, `at ${s.position.x}, ${s.position.y}, ${s.position.z}`, "m") + T(gx, 80, `travel ${Math.round(s.travel_mm)} mm`, "m mut");
+  g += T(gx, 112, "PAYLOAD IN THE PLAN", "m mut", 10) + `<rect x="${gx}" y="120" width="110" height="12" fill="var(--panel)" stroke="var(--line)"/><rect x="${gx}" y="120" width="${Math.min(1, kg / 100) * 110}" height="12" fill="${kg > 50 ? "var(--bad)" : "var(--steel)"}"/><line x1="${gx + 55}" y1="114" x2="${gx + 55}" y2="138" stroke="var(--bad)" stroke-width="2"/>` + T(gx + 55, 152, "50 kg limit", "bad m", 9, "middle") + T(gx, 172, `${kg} kg in the plan`, `m ${Math.abs(kg - 42) <= .1 ? "" : "bad"}`, 10) + T(gx, 188, "92.6 lb = 42.0 kg", "m mut", 10);
+  if (failing) g += failText(failing, x0, H - 10);
+  return g + "</svg>";
+}
+
+function ovenView({S, failing, running, r}) {
+  const s = S("curing_oven"), W = 560, H = 250, x0 = 44, x1 = 360, y0 = 210, y1 = 24;
+  const fin = r.run && r.run.trace.length ? r.run.trace[r.run.trace.length - 1].snapshot : null, fo = fin && fin.curing_oven;
+  const tMax = Math.max(60, fo ? fo.profile[fo.profile.length - 1].t : 60) * 1.05, X = t => x0 + t / tMax * (x1 - x0), Y = c => y0 - c / 180 * (y0 - y1);
+  let g = svgOpen(W, H, "Oven chamber temperature over time with the cure windows");
+  g += `<rect x="${x0}" y="${Y(140)}" width="${x1 - x0}" height="${Y(110) - Y(140)}" fill="var(--band1)"/><rect x="${x0}" y="${Y(160)}" width="${x1 - x0}" height="${Y(120) - Y(160)}" fill="var(--band2)"/><rect x="${x0}" y="${Y(140)}" width="${x1 - x0}" height="${Y(120) - Y(140)}" fill="var(--band3)"/>`;
+  g += T(x1 - 4, Y(156), "solvent paint 120–160", "mut", 10, "end") + T(x1 - 4, Y(112), "clear coat 110–140", "mut", 10, "end");
+  for (let c = 0; c <= 180; c += 30) g += `<line x1="${x0}" y1="${Y(c)}" x2="${x1}" y2="${Y(c)}" stroke="var(--line)" stroke-width=".6"/>` + T(x0 - 6, Y(c) + 3, c, "m mut", 10, "end");
+  g += `<line x1="${x0}" y1="${Y(60)}" x2="${x1}" y2="${Y(60)}" stroke="var(--muted)" stroke-dasharray="4 4"/>` + T(x0 + 4, Y(60) - 4, "door opens by hand ≤ 60 °C", "mut", 10);
+  g += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="var(--muted)"/>` + T((x0 + x1) / 2, y0 + 28, "minutes (ramps schematic)", "mut", 10, "middle");
+  for (let t = 0; t <= tMax; t += 20) g += T(X(t), y0 + 13, t, "m mut", 9, "middle");
   const pr = s.profile;
-  if (pr.length > 1) {
-    g += `<polyline fill="none" stroke="var(--ink)" stroke-width="2" points="${pr.map(p => X(p.t) + "," + Y(p.c)).join(" ")}"/>`;
-    pr.forEach((p, i) => { if (p.dwell) g += `<line x1="${X(pr[i - 1].t)}" y1="${Y(p.c)}" x2="${X(p.t)}" y2="${Y(p.c)}" stroke="var(--safety)" stroke-width="5"/>`; });
-  }
-  if (failing) g += `<text x="${x0 + 8}" y="${y1 + 4}" font-size="11" class="bad m">${esc(failing.message)}</text>`;
-  // side panel
-  const b = s.batches[s.batches.length - 1], gx = 384;
-  g += `<text x="${gx}" y="30" class="m mut" font-size="11">CHAMBER</text><text x="${gx}" y="58" font-size="26" class="m" font-weight="600">${s.chamber_c} °C</text>`;
-  g += `<text x="${gx}" y="80" font-size="12" class="m ${s.door_locked ? "bad" : "okc"}">door ${s.door_locked ? "locked" : "free"}</text>`;
-  g += `<text x="${gx}" y="108" class="m mut" font-size="11">BATCHES ${s.batches.length}</text>`;
-  s.batches.forEach((bb, i) => { const y = 126 + i * 46; g += `<text x="${gx}" y="${y}" font-size="11" class="m">${esc(bb.coating)} · ${bb.temperature_c} °C</text><text x="${gx}" y="${y + 14}" font-size="11" class="m mut">${bb.dwell_min} min · ${bb.parts} parts</text><text x="${gx}" y="${y + 28}" font-size="11" class="m mut">batch ${bb.payload_kg} kg</text>`; });
-  if (running) g += `<text x="${gx}" y="${H - 14}" font-size="11" class="m pulse">${esc(running.service)}…</text>`;
-  g += `</svg>`;
-  return g;
+  if (pr.length > 1) { g += `<polyline fill="none" stroke="var(--ink)" stroke-width="2" points="${pr.map(p => X(p.t) + "," + Y(p.c)).join(" ")}"/>`;
+    pr.forEach((p, i) => { if (p.dwell) g += `<line x1="${X(pr[i - 1].t)}" y1="${Y(p.c)}" x2="${X(p.t)}" y2="${Y(p.c)}" stroke="var(--safety)" stroke-width="5"/>`; }); }
+  if (failing) g += failText(failing, x0 + 8, y1 + 4);
+  const gx = 384;
+  g += T(gx, 30, "CHAMBER", "m mut") + T(gx, 58, s.chamber_c + " °C", "m", 26, "start", 'font-weight="600"') + T(gx, 80, "door " + (s.door_locked ? "locked" : "free"), "m " + (s.door_locked ? "bad" : "okc"), 12);
+  g += T(gx, 108, "BATCHES " + s.batches.length, "m mut");
+  s.batches.forEach((b, i) => { const y = 126 + i * 46; g += T(gx, y, `${esc(b.coating)} · ${b.temperature_c} °C`, "m") + T(gx, y + 14, `${b.dwell_min} min · ${b.parts} parts`, "m mut") + T(gx, y + 28, `batch ${b.payload_kg} kg`, "m mut"); });
+  if (running) g += T(gx, H - 14, esc(running.service) + "…", "m pulse");
+  return g + "</svg>";
+}
+
+function branchView({S, plan, failing}) {
+  const cw = S("checkweigher"), p = S("painting_robot"), pal = S("palletizer"), W = 600, H = 216;
+  const has = svc => planSteps(plan, svc).length > 0, gate = planSteps(plan, "checkweigher-weigh-item").some(s => String(s.staticParameters.fail_on_reject) === "true");
+  const box = (x, y, w, label, sub, on, ran, bad) => `<rect x="${x}" y="${y}" width="${w}" height="44" rx="3" fill="${ran ? "var(--band2)" : "var(--panel)"}" stroke="${bad ? "var(--bad)" : on ? "var(--ink)" : "var(--line)"}" stroke-width="${on ? 2 : 1}" ${on ? "" : 'stroke-dasharray="4 3"'}/>` + T(x + 10, y + 18, label, "m", 11) + T(x + 10, y + 34, sub, "m mut", 10);
+  let g = svgOpen(W, H, "What the request asks for versus what a plan can express");
+  g += T(16, 18, "REQUESTED: A RUN-TIME DECISION", "m mut");
+  g += box(16, 30, 170, "weigh housing", cw.readings.length ? `reading: ${cw.readings[cw.readings.length - 1]}` : "nominal 4.5 kg ± 2 %", has("checkweigher-weigh-item"), cw.weighed > 0);
+  g += `<path d="M186 52 L230 32 M186 52 L230 92" stroke="var(--muted)" fill="none"/>` + T(200, 30, "under", "m mut", 9) + T(200, 96, "ok", "m mut", 9);
+  g += box(232, 12, 190, "repaint one coat", `${p.painted_parts} part(s) painted`, has("paint-spray-coat"), p.painted_parts > 0, has("paint-spray-coat") && has("palletizer-stack-case"));
+  g += box(232, 72, 190, "palletize as case", `${pal.cases_total} case(s) stacked`, has("palletizer-stack-case"), pal.cases_total > 0, has("paint-spray-coat") && has("palletizer-stack-case"));
+  g += T(16, 150, "A Choreographer plan has no branch and no data passing: solid boxes are the steps this plan contains.", "", 11);
+  const both = has("paint-spray-coat") && has("palletizer-stack-case");
+  g += T(16, 170, both ? "This plan runs both branches for every housing: repaint AND palletize." : gate ? "This plan gates instead: fail_on_reject stops the session" : "", both ? "bad m" : "okc m", 11);
+  if (!both && gate) g += T(16, 186, "for an off-tolerance housing, before it is palletized.", "okc m", 11);
+  g += T(16, 206, "Simulated reading: nominal + load-cell drift (no real scale data).", "mut", 10);
+  return g + "</svg>";
+}
+
+function ganttView({S, plan, execd, r}) {
+  const steps = plan.actions[0].steps, q = plan.sessionQuantity, preds = plan.preds;
+  const depth = {}; const d = n => depth[n] !== undefined ? depth[n] : (depth[n] = (preds[n] || []).length ? 1 + Math.max(...preds[n].map(d)) : 0);
+  steps.forEach(s => d(s.name));
+  const maxD = Math.max(...Object.values(depth)) + 1, cols = maxD * q, lanes = [["warehouse", "Warehouse"], ["laser", "Laser"], ["drone", "Drone"]];
+  const W = 640, H = 230, x0 = 90, cw = Math.min(52, (W - x0 - 20) / cols), lh = 40;
+  const done = new Set((r.run ? r.run.trace.slice(0, execd) : []).map(x => x.iteration + "/" + x.step));
+  let g = svgOpen(W, H, "Steps by station lane and dependency depth") + T(16, 16, "STEPS BY STATION AND DEPENDENCY DEPTH (LEFT = EARLIER)", "m mut");
+  lanes.forEach(([k, name], i) => g += T(16, 46 + i * lh, name, "m", 11) + `<line x1="${x0}" y1="${50 + i * lh + 8}" x2="${W - 10}" y2="${50 + i * lh + 8}" stroke="var(--line)"/>`);
+  for (let it = 1; it <= q; it++) steps.forEach(s => {
+    const st = M.SERVICE_STATION[M.svcOf(s)], li = lanes.findIndex(l => l[0] === st); if (li < 0) return;
+    const x = x0 + ((it - 1) * maxD + depth[s.name]) * cw, y = 30 + li * lh, ok = done.has(it + "/" + s.name);
+    const lab = s.staticParameters.text || s.staticParameters.item_id || (M.svcOf(s).includes("dispense") ? "disp" : M.svcOf(s).includes("inspection") ? "insp" : "");
+    g += `<rect x="${x + 1}" y="${y}" width="${cw - 3}" height="26" rx="2" fill="${ok ? "var(--steel)" : "var(--panel)"}" stroke="var(--ink)" stroke-width=".8"/>` + T(x + cw / 2, y + 17, esc(String(lab).replace("SN-00", "")), "m", 9, "middle", ok ? 'style="fill:var(--bg)"' : "");
+  });
+  const wh = S("warehouse");
+  g += T(16, 168, `engraved in order: ${S("laser").engraved.join(", ") || "–"}`, "m", 11);
+  g += T(16, 186, `rack: ${wh.finished_goods_rack.map(x => x.itemId || "(no id)").join(", ") || "–"} · blue stock ${wh.raw_inventory.blue.length}`, "m", 11);
+  g += T(16, 206, q > 1 ? `session quantity ${q}: the same steps, same serial, every iteration` : "a box further right waits for more predecessors; the drone should start at depth 0", "mut", 10);
+  return g + "</svg>";
+}
+
+/* ------------------------------------------------------------------ trap overview (all 43 traps of the expert tier) */
+function renderOverview() {
+  const traps = []; ORDER.forEach(id => RESULTS[id].filter(t => t.name !== "gold").forEach(t => traps.push({id, t})));
+  const bins = [["l3", "Refused by the static validator (L3)", x => !x.t.res.dispatched && x.t.res.layer !== "L4"],
+    ["l4", "Refused in the twin dry run (L4)", x => !x.t.res.dispatched && x.t.res.layer === "L4"],
+    ["l6", "Executed without error: only the oracle (L6) sees it", x => x.t.res.dispatched]];
+  const counts = bins.map(b => traps.filter(b[2]).length);
+  const paper = [["static validator (L3)", 2, "var(--steel)"], ["twin (L4)", 9, "var(--safety)"], ["reviewer (L5)", 4, "var(--muted)"], ["anchor (L5)", 2, "var(--muted)"], ["not caught", 26, "var(--bad)"]];
+  const mine = [["static validator (L3)", counts[0], "var(--steel)"], ["twin (L4)", counts[1], "var(--safety)"], ["reviewer / anchor (L5)", 0, "var(--muted)"], ["", 0, ""], ["not caught", counts[2], "var(--bad)"]];
+  const bar = arr => `<div class="bar">${arr.filter(a => a[1]).map(a => `<span style="width:${a[1] / 43 * 100}%;background:${a[2]}" title="${a[0]}: ${a[1]}">${a[1]}</span>`).join("")}</div>`;
+  document.getElementById("overview").innerHTML = `<div class="row" style="justify-content:space-between"><h2>All 43 traps of the expert tier</h2><span class="lbl">click a trap to play it</span></div>
+    <p class="note">Each trap is a plausible wrong translation. A trap is caught if the pipeline refuses it before dispatch; otherwise it executes and only the benchmark oracle, which knows the right answer, sees the error. In operation there is no oracle, so the right-hand column is what the human gate would have to catch.</p>
+    <div class="over">${bins.map((b, i) => `<div class="bin ${b[0]}"><h3>${b[1]} <span>${counts[i]}</span></h3><div class="tchips">${traps.filter(b[2]).map(x =>
+      `<button data-goto="${x.id}|${x.t.name}" title="${esc(x.t.error)}">${x.id} ${esc(x.t.label)}</button>`).join("")}</div></div>`).join("")}</div>
+    <div class="stack"><span class="lbl">Where the traps are caught: this page's model versus the TDK paper (Table 5.10, deterministic reviewer, no human gate)</span>
+      <div class="lab"><span>this page (no L5)</span>${bar(mine)}</div>
+      <div class="lab"><span>TDK paper run</span>${bar(paper)}</div>
+      <div class="legend"><span><i style="background:var(--steel)"></i>static validator</span><span><i style="background:var(--safety)"></i>twin dry run</span><span><i style="background:var(--muted)"></i>reviewer / anchor (L5)</span><span><i style="background:var(--bad)"></i>not caught, executed</span></div>
+      <p class="note">The two runs differ where the layers are drawn differently: this model refuses grams-as-kg, pounds-as-kg and the short dwell in its static check, and it has no reviewer or anchor, so the traps those catch in the paper (value drift, the serialised drone, split flights, both branches) run through here and only the oracle flags them.</p></div>`;
+  document.querySelectorAll("#overview [data-goto]").forEach(b => b.addEventListener("click", () => {
+    const [id, name] = b.dataset.goto.split("|"); selectScenario(id, name);
+    document.getElementById("scenario").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+  }));
 }
 
 /* ------------------------------------------------------------------ playback */
-function maxT() { return Math.max(...players().map(t => totalTicks(t.res))); }
+const maxT = () => Math.max(...players().map(t => totalTicks(t.res)));
 function stop() { if (timer) { clearInterval(timer); timer = null; } }
 function restart() { stop(); tick = 0; renderScenario(); renderMap(); renderPlayers(); }
 function advance() { if (tick < maxT()) { tick++; renderPlayers(); } if (tick >= maxT()) { stop(); renderPlayers(); } }
@@ -582,13 +758,10 @@ document.getElementById("end").addEventListener("click", () => { stop(); tick = 
 document.getElementById("speed").addEventListener("change", () => { if (timer) { stop(); timer = setInterval(advance, +document.getElementById("speed").value); } });
 document.getElementById("cmp").addEventListener("change", () => renderPlayers());
 
-function fromHash() {
-  const h = (location.hash || "").slice(1).toUpperCase();
-  return ORDER.includes(h) ? h : null;
-}
+const fromHash = () => { const h = (location.hash || "").slice(1).toUpperCase(); return ORDER.includes(h) ? h : null; };
 window.addEventListener("hashchange", () => { const h = fromHash(); if (h && h !== cur.id) selectScenario(h); });
-cur = {id: fromHash() || "X01", tr: "gold", sel: null}; cur.sel = SCEN[cur.id].station;
-renderCard(); restart();
+cur = {id: fromHash() || "X01", tr: "gold", sel: null}; cur.sel = SCEN[cur.id].st[0];
+renderCard(); renderOverview(); restart();
 </script>
 </body>
 </html>
