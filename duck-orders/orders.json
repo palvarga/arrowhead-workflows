@@ -1,0 +1,5065 @@
+{
+ "O1": {
+  "id": "O1",
+  "level": "track2",
+  "expected_outcome": "ACCEPT",
+  "tags": [
+   "multi-action",
+   "material-flow",
+   "end-to-end"
+  ],
+  "prompt": "Machine 14 steel housings (4.5 kg each, coolant on) with program FIXTURE_PLATE; the CNC starts with fresh inserts in all pockets, so change the tool only when the next housing could not be finished. Bring all housings with the AMR to the paint booth and paint them red with 3 coats of 30 \u00b5m on 800 cm\u00b2, purging the booth only when the filter requires it. Cure them together in one oven batch as solvent paint at 150 \u00b0C for 25 minutes and let the oven cool down until the door can be opened by hand. Weigh every housing at the checkweigher (nominal 4.5 kg, \u00b12 %) and stop the line on any reject. Finally stack them on one EUR pallet as 300 mm high cases, wrap it with 4 film layers and release it. Use the AMR for every move between stations, in as few trips as possible.",
+  "flow": {
+   "part_kg": 4.5,
+   "start": {
+    "CNC": {
+     "raw": 14
+    }
+   }
+  },
+  "required_services": [
+   "cnc-load-program",
+   "cnc-machine-part",
+   "cnc-tool-change",
+   "amr-transport-load",
+   "paint-spray-coat",
+   "paint-booth-purge",
+   "oven-cure-batch",
+   "oven-cooldown",
+   "checkweigher-weigh-item",
+   "palletizer-stack-case",
+   "palletizer-wrap-pallet",
+   "palletizer-pallet-change"
+  ],
+  "exact_counts": {
+   "cnc-machine-part": 14,
+   "cnc-tool-change": 4,
+   "paint-spray-coat": 14,
+   "paint-booth-purge": 1,
+   "oven-cure-batch": 1,
+   "amr-transport-load": 4,
+   "palletizer-pallet-change": 1
+  },
+  "strict_order": [
+   [
+    "cnc-machine-part",
+    "paint-spray-coat"
+   ],
+   [
+    "paint-spray-coat",
+    "oven-cure-batch"
+   ],
+   [
+    "oven-cure-batch",
+    "checkweigher-weigh-item"
+   ],
+   [
+    "checkweigher-weigh-item",
+    "palletizer-stack-case"
+   ]
+  ],
+  "params_all": {
+   "cnc-machine-part": {
+    "material": "steel",
+    "payload_kg": "4.5",
+    "coolant": "true"
+   },
+   "paint-spray-coat": {
+    "color": "red",
+    "coats": "3",
+    "film_thickness_um": "30",
+    "area_cm2": "800"
+   },
+   "oven-cure-batch": {
+    "coating": "solvent_paint",
+    "temperature_c": "150",
+    "dwell_min": "25",
+    "parts": "14",
+    "payload_kg": "63"
+   },
+   "checkweigher-weigh-item": {
+    "nominal_kg": "4.5",
+    "tolerance_pct": "2",
+    "fail_on_reject": "true"
+   },
+   "palletizer-wrap-pallet": {
+    "film_layers": "4"
+   }
+  },
+  "aggregates": [
+   {
+    "service": "oven-cooldown",
+    "param": "target_c",
+    "op": "max",
+    "max": 60
+   },
+   {
+    "service": "checkweigher-weigh-item",
+    "param": "count",
+    "op": "sum",
+    "equals": 14
+   },
+   {
+    "service": "palletizer-stack-case",
+    "param": "count",
+    "op": "sum",
+    "equals": 14
+   }
+  ],
+  "twin": {
+   "status": "SUCCESS",
+   "final_state": [
+    {
+     "station": "plant",
+     "path": "at.PALLETIZER.palletized",
+     "equals": 14
+    },
+    {
+     "station": "palletizer",
+     "path": "completed_pallets",
+     "len": 1
+    },
+    {
+     "station": "painting_robot",
+     "path": "purges",
+     "equals": 1
+    }
+   ]
+  },
+  "notes": "FIXTURE_PLATE on steel: 5/60 \u00b7 300/90 = 27.8 % per housing, three per insert (83.3 %), 14 housings -> changes after 3, 6, 9 and 12 (4). Booth filter: one purge before housing 13. Oven: 14 x 4.5 = 63 kg, one batch; door opens by hand at <= 60 \u00b0C, so the AMR can unload only after a cool-down to <= 60 \u00b0C. 63 kg <= 250 kg: one AMR trip per move, 4 trips. Pallet: 14 cases = 2 layers, 144 + 2 x 300 = 744 mm.",
+  "reference_intent": {
+   "intentId": "INTENT-END-TO-END-ORDER",
+   "title": "end-to-end order",
+   "description": "",
+   "category": "GENERIC",
+   "target": {
+    "productType": "housing",
+    "color": "red",
+    "batchSize": 1
+   },
+   "actions": [
+    {
+     "name": "machining",
+     "operations": [
+      {
+       "id": "load",
+       "service": "cnc-load-program",
+       "parameters": {
+        "program": "FIXTURE_PLATE"
+       }
+      },
+      {
+       "id": "m1",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m2",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m3",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t2",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "2"
+       }
+      },
+      {
+       "id": "m4",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m5",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m6",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t3",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "3"
+       }
+      },
+      {
+       "id": "m7",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m8",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m9",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t4",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "4"
+       }
+      },
+      {
+       "id": "m10",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m11",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m12",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t5",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "5"
+       }
+      },
+      {
+       "id": "m13",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m14",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "4.5",
+        "coolant": "true"
+       }
+      }
+     ]
+    },
+    {
+     "name": "to_paint",
+     "operations": [
+      {
+       "id": "to_paint",
+       "service": "amr-transport-load",
+       "parameters": {
+        "from": "CNC",
+        "to": "PAINT_BOOTH",
+        "payload_kg": "63",
+        "load_id": "HOUSINGS"
+       }
+      }
+     ]
+    },
+    {
+     "name": "painting",
+     "operations": [
+      {
+       "id": "s1",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s2",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s3",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s4",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s5",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s6",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s7",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s8",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s9",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s10",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s11",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s12",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "purge13",
+       "service": "paint-booth-purge",
+       "parameters": {}
+      },
+      {
+       "id": "s13",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      },
+      {
+       "id": "s14",
+       "service": "paint-spray-coat",
+       "parameters": {
+        "color": "red",
+        "coats": "3",
+        "film_thickness_um": "30",
+        "area_cm2": "800",
+        "payload_kg": "4.5"
+       }
+      }
+     ]
+    },
+    {
+     "name": "to_oven",
+     "operations": [
+      {
+       "id": "to_oven",
+       "service": "amr-transport-load",
+       "parameters": {
+        "from": "PAINT_BOOTH",
+        "to": "CURING_OVEN",
+        "payload_kg": "63",
+        "load_id": "HOUSINGS"
+       }
+      }
+     ]
+    },
+    {
+     "name": "curing",
+     "operations": [
+      {
+       "id": "cure",
+       "service": "oven-cure-batch",
+       "parameters": {
+        "coating": "solvent_paint",
+        "temperature_c": "150",
+        "dwell_min": "25",
+        "parts": "14",
+        "payload_kg": "63"
+       }
+      },
+      {
+       "id": "cool",
+       "service": "oven-cooldown",
+       "parameters": {
+        "target_c": "60"
+       }
+      }
+     ]
+    },
+    {
+     "name": "to_qa",
+     "operations": [
+      {
+       "id": "to_qa",
+       "service": "amr-transport-load",
+       "parameters": {
+        "from": "CURING_OVEN",
+        "to": "CHECKWEIGHER",
+        "payload_kg": "63",
+        "load_id": "HOUSINGS"
+       }
+      }
+     ]
+    },
+    {
+     "name": "quality",
+     "operations": [
+      {
+       "id": "weigh",
+       "service": "checkweigher-weigh-item",
+       "parameters": {
+        "nominal_kg": "4.5",
+        "tolerance_pct": "2",
+        "count": "14",
+        "fail_on_reject": "true"
+       }
+      }
+     ]
+    },
+    {
+     "name": "to_pallet",
+     "operations": [
+      {
+       "id": "to_pallet",
+       "service": "amr-transport-load",
+       "parameters": {
+        "from": "CHECKWEIGHER",
+        "to": "PALLETIZER",
+        "payload_kg": "63",
+        "load_id": "HOUSINGS"
+       }
+      }
+     ]
+    },
+    {
+     "name": "palletizing",
+     "operations": [
+      {
+       "id": "stack",
+       "service": "palletizer-stack-case",
+       "parameters": {
+        "count": "14",
+        "payload_kg": "4.5",
+        "case_height_mm": "300"
+       }
+      },
+      {
+       "id": "wrap",
+       "service": "palletizer-wrap-pallet",
+       "parameters": {
+        "film_layers": "4"
+       }
+      },
+      {
+       "id": "release",
+       "service": "palletizer-pallet-change",
+       "parameters": {}
+      }
+     ]
+    }
+   ]
+  },
+  "traps": [
+   {
+    "id": "rough_rule",
+    "error": "tool change every 2 housings (the DUCK_MOLD_ROUGH rule)",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "actions": [
+      {
+       "name": "machining",
+       "operations": [
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "FIXTURE_PLATE"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t2",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "2"
+         }
+        },
+        {
+         "id": "m3",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m4",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t3",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "3"
+         }
+        },
+        {
+         "id": "m5",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m6",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t4",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "4"
+         }
+        },
+        {
+         "id": "m7",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m8",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t5",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "5"
+         }
+        },
+        {
+         "id": "m9",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m10",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t6",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "6"
+         }
+        },
+        {
+         "id": "m11",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m12",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t7",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "7"
+         }
+        },
+        {
+         "id": "m13",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m14",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_paint",
+       "operations": [
+        {
+         "id": "to_paint",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "painting",
+       "operations": [
+        {
+         "id": "s1",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s2",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s3",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s4",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s5",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s6",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s7",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s8",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s9",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s10",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s11",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s12",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "purge13",
+         "service": "paint-booth-purge",
+         "parameters": {}
+        },
+        {
+         "id": "s13",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s14",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_oven",
+       "operations": [
+        {
+         "id": "to_oven",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "curing",
+       "operations": [
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        },
+        {
+         "id": "cool",
+         "service": "oven-cooldown",
+         "parameters": {
+          "target_c": "60"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_qa",
+       "operations": [
+        {
+         "id": "to_qa",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CURING_OVEN",
+          "to": "CHECKWEIGHER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "quality",
+       "operations": [
+        {
+         "id": "weigh",
+         "service": "checkweigher-weigh-item",
+         "parameters": {
+          "nominal_kg": "4.5",
+          "tolerance_pct": "2",
+          "count": "14",
+          "fail_on_reject": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_pallet",
+       "operations": [
+        {
+         "id": "to_pallet",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CHECKWEIGHER",
+          "to": "PALLETIZER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "palletizing",
+       "operations": [
+        {
+         "id": "stack",
+         "service": "palletizer-stack-case",
+         "parameters": {
+          "count": "14",
+          "payload_kg": "4.5",
+          "case_height_mm": "300"
+         }
+        },
+        {
+         "id": "wrap",
+         "service": "palletizer-wrap-pallet",
+         "parameters": {
+          "film_layers": "4"
+         }
+        },
+        {
+         "id": "release",
+         "service": "palletizer-pallet-change",
+         "parameters": {}
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "late_change",
+    "error": "tool change every 4 housings",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "actions": [
+      {
+       "name": "machining",
+       "operations": [
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "FIXTURE_PLATE"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m3",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m4",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t2",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "2"
+         }
+        },
+        {
+         "id": "m5",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m6",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m7",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m8",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t3",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "3"
+         }
+        },
+        {
+         "id": "m9",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m10",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m11",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m12",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t4",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "4"
+         }
+        },
+        {
+         "id": "m13",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m14",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_paint",
+       "operations": [
+        {
+         "id": "to_paint",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "painting",
+       "operations": [
+        {
+         "id": "s1",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s2",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s3",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s4",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s5",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s6",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s7",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s8",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s9",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s10",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s11",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s12",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "purge13",
+         "service": "paint-booth-purge",
+         "parameters": {}
+        },
+        {
+         "id": "s13",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s14",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_oven",
+       "operations": [
+        {
+         "id": "to_oven",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "curing",
+       "operations": [
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        },
+        {
+         "id": "cool",
+         "service": "oven-cooldown",
+         "parameters": {
+          "target_c": "60"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_qa",
+       "operations": [
+        {
+         "id": "to_qa",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CURING_OVEN",
+          "to": "CHECKWEIGHER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "quality",
+       "operations": [
+        {
+         "id": "weigh",
+         "service": "checkweigher-weigh-item",
+         "parameters": {
+          "nominal_kg": "4.5",
+          "tolerance_pct": "2",
+          "count": "14",
+          "fail_on_reject": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_pallet",
+       "operations": [
+        {
+         "id": "to_pallet",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CHECKWEIGHER",
+          "to": "PALLETIZER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "palletizing",
+       "operations": [
+        {
+         "id": "stack",
+         "service": "palletizer-stack-case",
+         "parameters": {
+          "count": "14",
+          "payload_kg": "4.5",
+          "case_height_mm": "300"
+         }
+        },
+        {
+         "id": "wrap",
+         "service": "palletizer-wrap-pallet",
+         "parameters": {
+          "film_layers": "4"
+         }
+        },
+        {
+         "id": "release",
+         "service": "palletizer-pallet-change",
+         "parameters": {}
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "no_purge",
+    "error": "no booth purge",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "actions": [
+      {
+       "name": "machining",
+       "operations": [
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "FIXTURE_PLATE"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m3",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t2",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "2"
+         }
+        },
+        {
+         "id": "m4",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m5",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m6",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t3",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "3"
+         }
+        },
+        {
+         "id": "m7",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m8",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m9",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t4",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "4"
+         }
+        },
+        {
+         "id": "m10",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m11",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m12",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t5",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "5"
+         }
+        },
+        {
+         "id": "m13",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m14",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_paint",
+       "operations": [
+        {
+         "id": "to_paint",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "painting",
+       "operations": [
+        {
+         "id": "s1",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s2",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s3",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s4",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s5",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s6",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s7",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s8",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s9",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s10",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s11",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s12",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s13",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s14",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_oven",
+       "operations": [
+        {
+         "id": "to_oven",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "curing",
+       "operations": [
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        },
+        {
+         "id": "cool",
+         "service": "oven-cooldown",
+         "parameters": {
+          "target_c": "60"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_qa",
+       "operations": [
+        {
+         "id": "to_qa",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CURING_OVEN",
+          "to": "CHECKWEIGHER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "quality",
+       "operations": [
+        {
+         "id": "weigh",
+         "service": "checkweigher-weigh-item",
+         "parameters": {
+          "nominal_kg": "4.5",
+          "tolerance_pct": "2",
+          "count": "14",
+          "fail_on_reject": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_pallet",
+       "operations": [
+        {
+         "id": "to_pallet",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CHECKWEIGHER",
+          "to": "PALLETIZER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "palletizing",
+       "operations": [
+        {
+         "id": "stack",
+         "service": "palletizer-stack-case",
+         "parameters": {
+          "count": "14",
+          "payload_kg": "4.5",
+          "case_height_mm": "300"
+         }
+        },
+        {
+         "id": "wrap",
+         "service": "palletizer-wrap-pallet",
+         "parameters": {
+          "film_layers": "4"
+         }
+        },
+        {
+         "id": "release",
+         "service": "palletizer-pallet-change",
+         "parameters": {}
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "no_oven_transport",
+    "error": "forgets the AMR move from the paint booth to the oven",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "actions": [
+      {
+       "name": "machining",
+       "operations": [
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "FIXTURE_PLATE"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m3",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t2",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "2"
+         }
+        },
+        {
+         "id": "m4",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m5",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m6",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t3",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "3"
+         }
+        },
+        {
+         "id": "m7",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m8",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m9",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t4",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "4"
+         }
+        },
+        {
+         "id": "m10",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m11",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m12",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t5",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "5"
+         }
+        },
+        {
+         "id": "m13",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m14",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_paint",
+       "operations": [
+        {
+         "id": "to_paint",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "painting",
+       "operations": [
+        {
+         "id": "s1",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s2",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s3",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s4",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s5",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s6",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s7",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s8",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s9",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s10",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s11",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s12",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "purge13",
+         "service": "paint-booth-purge",
+         "parameters": {}
+        },
+        {
+         "id": "s13",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s14",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        }
+       ]
+      },
+      {
+       "name": "curing",
+       "operations": [
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        },
+        {
+         "id": "cool",
+         "service": "oven-cooldown",
+         "parameters": {
+          "target_c": "60"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_qa",
+       "operations": [
+        {
+         "id": "to_qa",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CURING_OVEN",
+          "to": "CHECKWEIGHER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "quality",
+       "operations": [
+        {
+         "id": "weigh",
+         "service": "checkweigher-weigh-item",
+         "parameters": {
+          "nominal_kg": "4.5",
+          "tolerance_pct": "2",
+          "count": "14",
+          "fail_on_reject": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_pallet",
+       "operations": [
+        {
+         "id": "to_pallet",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CHECKWEIGHER",
+          "to": "PALLETIZER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "palletizing",
+       "operations": [
+        {
+         "id": "stack",
+         "service": "palletizer-stack-case",
+         "parameters": {
+          "count": "14",
+          "payload_kg": "4.5",
+          "case_height_mm": "300"
+         }
+        },
+        {
+         "id": "wrap",
+         "service": "palletizer-wrap-pallet",
+         "parameters": {
+          "film_layers": "4"
+         }
+        },
+        {
+         "id": "release",
+         "service": "palletizer-pallet-change",
+         "parameters": {}
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "no_cooldown",
+    "error": "no cool-down: the oven door stays locked at 150 \u00b0C",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "actions": [
+      {
+       "name": "machining",
+       "operations": [
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "FIXTURE_PLATE"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m3",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t2",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "2"
+         }
+        },
+        {
+         "id": "m4",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m5",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m6",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t3",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "3"
+         }
+        },
+        {
+         "id": "m7",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m8",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m9",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t4",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "4"
+         }
+        },
+        {
+         "id": "m10",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m11",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m12",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t5",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "5"
+         }
+        },
+        {
+         "id": "m13",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m14",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_paint",
+       "operations": [
+        {
+         "id": "to_paint",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "painting",
+       "operations": [
+        {
+         "id": "s1",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s2",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s3",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s4",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s5",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s6",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s7",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s8",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s9",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s10",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s11",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s12",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "purge13",
+         "service": "paint-booth-purge",
+         "parameters": {}
+        },
+        {
+         "id": "s13",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s14",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_oven",
+       "operations": [
+        {
+         "id": "to_oven",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "curing",
+       "operations": [
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_qa",
+       "operations": [
+        {
+         "id": "to_qa",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CURING_OVEN",
+          "to": "CHECKWEIGHER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "quality",
+       "operations": [
+        {
+         "id": "weigh",
+         "service": "checkweigher-weigh-item",
+         "parameters": {
+          "nominal_kg": "4.5",
+          "tolerance_pct": "2",
+          "count": "14",
+          "fail_on_reject": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_pallet",
+       "operations": [
+        {
+         "id": "to_pallet",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CHECKWEIGHER",
+          "to": "PALLETIZER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "palletizing",
+       "operations": [
+        {
+         "id": "stack",
+         "service": "palletizer-stack-case",
+         "parameters": {
+          "count": "14",
+          "payload_kg": "4.5",
+          "case_height_mm": "300"
+         }
+        },
+        {
+         "id": "wrap",
+         "service": "palletizer-wrap-pallet",
+         "parameters": {
+          "film_layers": "4"
+         }
+        },
+        {
+         "id": "release",
+         "service": "palletizer-pallet-change",
+         "parameters": {}
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "split_trips",
+    "error": "two half-load AMR trips per move",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "actions": [
+      {
+       "name": "machining",
+       "operations": [
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "FIXTURE_PLATE"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m3",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t2",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "2"
+         }
+        },
+        {
+         "id": "m4",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m5",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m6",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t3",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "3"
+         }
+        },
+        {
+         "id": "m7",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m8",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m9",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t4",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "4"
+         }
+        },
+        {
+         "id": "m10",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m11",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m12",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t5",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "5"
+         }
+        },
+        {
+         "id": "m13",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m14",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_paint",
+       "operations": [
+        {
+         "id": "to_paint_1",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "31.5",
+          "load_id": "HOUSINGS"
+         }
+        },
+        {
+         "id": "to_paint_2",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "31.5",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "painting",
+       "operations": [
+        {
+         "id": "s1",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s2",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s3",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s4",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s5",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s6",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s7",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s8",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s9",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s10",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s11",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s12",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "purge13",
+         "service": "paint-booth-purge",
+         "parameters": {}
+        },
+        {
+         "id": "s13",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s14",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_oven",
+       "operations": [
+        {
+         "id": "to_oven_1",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "31.5",
+          "load_id": "HOUSINGS"
+         }
+        },
+        {
+         "id": "to_oven_2",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "31.5",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "curing",
+       "operations": [
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        },
+        {
+         "id": "cool",
+         "service": "oven-cooldown",
+         "parameters": {
+          "target_c": "60"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_qa",
+       "operations": [
+        {
+         "id": "to_qa_1",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CURING_OVEN",
+          "to": "CHECKWEIGHER",
+          "payload_kg": "31.5",
+          "load_id": "HOUSINGS"
+         }
+        },
+        {
+         "id": "to_qa_2",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CURING_OVEN",
+          "to": "CHECKWEIGHER",
+          "payload_kg": "31.5",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "quality",
+       "operations": [
+        {
+         "id": "weigh",
+         "service": "checkweigher-weigh-item",
+         "parameters": {
+          "nominal_kg": "4.5",
+          "tolerance_pct": "2",
+          "count": "14",
+          "fail_on_reject": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_pallet",
+       "operations": [
+        {
+         "id": "to_pallet_1",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CHECKWEIGHER",
+          "to": "PALLETIZER",
+          "payload_kg": "31.5",
+          "load_id": "HOUSINGS"
+         }
+        },
+        {
+         "id": "to_pallet_2",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CHECKWEIGHER",
+          "to": "PALLETIZER",
+          "payload_kg": "31.5",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "palletizing",
+       "operations": [
+        {
+         "id": "stack",
+         "service": "palletizer-stack-case",
+         "parameters": {
+          "count": "14",
+          "payload_kg": "4.5",
+          "case_height_mm": "300"
+         }
+        },
+        {
+         "id": "wrap",
+         "service": "palletizer-wrap-pallet",
+         "parameters": {
+          "film_layers": "4"
+         }
+        },
+        {
+         "id": "release",
+         "service": "palletizer-pallet-change",
+         "parameters": {}
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "no_quality_gate",
+    "error": "weighs but does not stop the line on a reject",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "actions": [
+      {
+       "name": "machining",
+       "operations": [
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "FIXTURE_PLATE"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m3",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t2",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "2"
+         }
+        },
+        {
+         "id": "m4",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m5",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m6",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t3",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "3"
+         }
+        },
+        {
+         "id": "m7",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m8",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m9",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t4",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "4"
+         }
+        },
+        {
+         "id": "m10",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m11",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m12",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "t5",
+         "service": "cnc-tool-change",
+         "parameters": {
+          "tool": "5"
+         }
+        },
+        {
+         "id": "m13",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m14",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "4.5",
+          "coolant": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_paint",
+       "operations": [
+        {
+         "id": "to_paint",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "painting",
+       "operations": [
+        {
+         "id": "s1",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s2",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s3",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s4",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s5",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s6",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s7",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s8",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s9",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s10",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s11",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s12",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "purge13",
+         "service": "paint-booth-purge",
+         "parameters": {}
+        },
+        {
+         "id": "s13",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        },
+        {
+         "id": "s14",
+         "service": "paint-spray-coat",
+         "parameters": {
+          "color": "red",
+          "coats": "3",
+          "film_thickness_um": "30",
+          "area_cm2": "800",
+          "payload_kg": "4.5"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_oven",
+       "operations": [
+        {
+         "id": "to_oven",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "curing",
+       "operations": [
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        },
+        {
+         "id": "cool",
+         "service": "oven-cooldown",
+         "parameters": {
+          "target_c": "60"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_qa",
+       "operations": [
+        {
+         "id": "to_qa",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CURING_OVEN",
+          "to": "CHECKWEIGHER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "quality",
+       "operations": [
+        {
+         "id": "weigh",
+         "service": "checkweigher-weigh-item",
+         "parameters": {
+          "nominal_kg": "4.5",
+          "tolerance_pct": "2",
+          "count": "14"
+         }
+        }
+       ]
+      },
+      {
+       "name": "to_pallet",
+       "operations": [
+        {
+         "id": "to_pallet",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CHECKWEIGHER",
+          "to": "PALLETIZER",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS"
+         }
+        }
+       ]
+      },
+      {
+       "name": "palletizing",
+       "operations": [
+        {
+         "id": "stack",
+         "service": "palletizer-stack-case",
+         "parameters": {
+          "count": "14",
+          "payload_kg": "4.5",
+          "case_height_mm": "300"
+         }
+        },
+        {
+         "id": "wrap",
+         "service": "palletizer-wrap-pallet",
+         "parameters": {
+          "film_layers": "4"
+         }
+        },
+        {
+         "id": "release",
+         "service": "palletizer-pallet-change",
+         "parameters": {}
+        }
+       ]
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "O2": {
+  "id": "O2",
+  "level": "track2",
+  "expected_outcome": "ACCEPT",
+  "tags": [
+   "concurrency",
+   "shared-resource",
+   "lease",
+   "deadline"
+  ],
+  "prompt": "Run two orders at the same time; both need the AMR. Order A: bring 2 steel blanks (12 kg each) from the WAREHOUSE to the CNC, rough-machine them with DUCK_MOLD_ROUGH (coolant on) and bring them to the PAINT_BOOTH; they must arrive there within 30 minutes. Order B: bring the 14 painted housings (63 kg) from the PAINT_BOOTH to the CURING_OVEN and cure them in one batch as solvent paint at 150 \u00b0C for 25 minutes. The two orders must never use the AMR at the same time, and everything should be done as early as possible.",
+  "required_services": [
+   "resource-lease-acquire",
+   "resource-lease-release",
+   "amr-transport-load",
+   "cnc-machine-part",
+   "oven-cure-batch"
+  ],
+  "sessions": 2,
+  "exact_counts": {
+   "amr-transport-load": 3,
+   "cnc-machine-part": 2,
+   "oven-cure-batch": 1
+  },
+  "deadline": [
+   {
+    "session": "A",
+    "service": "amr-transport-load",
+    "to": "PAINT_BOOTH",
+    "max_min": 30
+   }
+  ],
+  "makespan": {
+   "max_min": 56
+  },
+  "twin": {
+   "status": "SUCCESS",
+   "final_state": [
+    {
+     "station": "cnc",
+     "path": "parts_machined",
+     "equals": 2
+    },
+    {
+     "station": "curing_oven",
+     "path": "batches_cured",
+     "equals": 1
+    }
+   ]
+  },
+  "notes": "AMR at 1 m/s plus 1 min handling per trip (schematic). Order B is bound by the oven: ramp 22 -> 150 \u00b0C at 5 \u00b0C/min (25.6 min) + 25 min dwell. With the lease released right after each trip, order A reaches the paint booth after ~17 min and the last step ends after ~54 min. Holding the lease through the cure delays A beyond its 30-minute deadline; holding it for the whole order A delays B by ~15 min.",
+  "reference_intent": {
+   "intentId": "INTENT-TWO-ORDERS",
+   "title": "two orders",
+   "description": "",
+   "category": "GENERIC",
+   "target": {
+    "productType": "housing",
+    "color": "red",
+    "batchSize": 1
+   },
+   "sessions": [
+    {
+     "name": "A",
+     "operations": [
+      {
+       "id": "lease_in",
+       "service": "resource-lease-acquire",
+       "parameters": {
+        "resource": "amr"
+       }
+      },
+      {
+       "id": "blanks_in",
+       "service": "amr-transport-load",
+       "parameters": {
+        "from": "WAREHOUSE",
+        "to": "CNC",
+        "payload_kg": "24",
+        "load_id": "BLANKS-A"
+       }
+      },
+      {
+       "id": "free_in",
+       "service": "resource-lease-release",
+       "parameters": {
+        "resource": "amr"
+       }
+      },
+      {
+       "id": "load",
+       "service": "cnc-load-program",
+       "parameters": {
+        "program": "DUCK_MOLD_ROUGH"
+       }
+      },
+      {
+       "id": "m1",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "m2",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "lease_out",
+       "service": "resource-lease-acquire",
+       "parameters": {
+        "resource": "amr"
+       }
+      },
+      {
+       "id": "parts_out",
+       "service": "amr-transport-load",
+       "parameters": {
+        "from": "CNC",
+        "to": "PAINT_BOOTH",
+        "payload_kg": "24",
+        "load_id": "PARTS-A"
+       }
+      },
+      {
+       "id": "free_out",
+       "service": "resource-lease-release",
+       "parameters": {
+        "resource": "amr"
+       }
+      }
+     ]
+    },
+    {
+     "name": "B",
+     "operations": [
+      {
+       "id": "lease_b",
+       "service": "resource-lease-acquire",
+       "parameters": {
+        "resource": "amr"
+       }
+      },
+      {
+       "id": "housings",
+       "service": "amr-transport-load",
+       "parameters": {
+        "from": "PAINT_BOOTH",
+        "to": "CURING_OVEN",
+        "payload_kg": "63",
+        "load_id": "HOUSINGS-B"
+       }
+      },
+      {
+       "id": "free_b",
+       "service": "resource-lease-release",
+       "parameters": {
+        "resource": "amr"
+       }
+      },
+      {
+       "id": "cure",
+       "service": "oven-cure-batch",
+       "parameters": {
+        "coating": "solvent_paint",
+        "temperature_c": "150",
+        "dwell_min": "25",
+        "parts": "14",
+        "payload_kg": "63"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "traps": [
+   {
+    "id": "no_lease",
+    "error": "no lease: both orders dispatch the AMR at once",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "sessions": [
+      {
+       "name": "A",
+       "operations": [
+        {
+         "id": "blanks_in",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "WAREHOUSE",
+          "to": "CNC",
+          "payload_kg": "24",
+          "load_id": "BLANKS-A"
+         }
+        },
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "DUCK_MOLD_ROUGH"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "parts_out",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "24",
+          "load_id": "PARTS-A"
+         }
+        }
+       ]
+      },
+      {
+       "name": "B",
+       "operations": [
+        {
+         "id": "housings",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS-B"
+         }
+        },
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "lease_through_cure",
+    "error": "order B holds the AMR lease until its cure has finished",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "sessions": [
+      {
+       "name": "B",
+       "operations": [
+        {
+         "id": "lease_b",
+         "service": "resource-lease-acquire",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "housings",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS-B"
+         }
+        },
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        },
+        {
+         "id": "free_b",
+         "service": "resource-lease-release",
+         "parameters": {
+          "resource": "amr"
+         }
+        }
+       ]
+      },
+      {
+       "name": "A",
+       "operations": [
+        {
+         "id": "lease_in",
+         "service": "resource-lease-acquire",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "blanks_in",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "WAREHOUSE",
+          "to": "CNC",
+          "payload_kg": "24",
+          "load_id": "BLANKS-A"
+         }
+        },
+        {
+         "id": "free_in",
+         "service": "resource-lease-release",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "DUCK_MOLD_ROUGH"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "lease_out",
+         "service": "resource-lease-acquire",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "parts_out",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "24",
+          "load_id": "PARTS-A"
+         }
+        },
+        {
+         "id": "free_out",
+         "service": "resource-lease-release",
+         "parameters": {
+          "resource": "amr"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "release_forgotten",
+    "error": "order B never releases the lease",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "sessions": [
+      {
+       "name": "A",
+       "operations": [
+        {
+         "id": "lease_in",
+         "service": "resource-lease-acquire",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "blanks_in",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "WAREHOUSE",
+          "to": "CNC",
+          "payload_kg": "24",
+          "load_id": "BLANKS-A"
+         }
+        },
+        {
+         "id": "free_in",
+         "service": "resource-lease-release",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "DUCK_MOLD_ROUGH"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "lease_out",
+         "service": "resource-lease-acquire",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "parts_out",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "24",
+          "load_id": "PARTS-A"
+         }
+        },
+        {
+         "id": "free_out",
+         "service": "resource-lease-release",
+         "parameters": {
+          "resource": "amr"
+         }
+        }
+       ]
+      },
+      {
+       "name": "B",
+       "operations": [
+        {
+         "id": "lease_b",
+         "service": "resource-lease-acquire",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "housings",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS-B"
+         }
+        },
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "lease_whole_order",
+    "error": "order A holds the lease for its whole order",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "sessions": [
+      {
+       "name": "A",
+       "operations": [
+        {
+         "id": "lease_in",
+         "service": "resource-lease-acquire",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "blanks_in",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "WAREHOUSE",
+          "to": "CNC",
+          "payload_kg": "24",
+          "load_id": "BLANKS-A"
+         }
+        },
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "DUCK_MOLD_ROUGH"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "parts_out",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "24",
+          "load_id": "PARTS-A"
+         }
+        },
+        {
+         "id": "free_out",
+         "service": "resource-lease-release",
+         "parameters": {
+          "resource": "amr"
+         }
+        }
+       ]
+      },
+      {
+       "name": "B",
+       "operations": [
+        {
+         "id": "lease_b",
+         "service": "resource-lease-acquire",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "housings",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS-B"
+         }
+        },
+        {
+         "id": "free_b",
+         "service": "resource-lease-release",
+         "parameters": {
+          "resource": "amr"
+         }
+        },
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "one_session",
+    "error": "both orders in one session, one after the other",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "sessions": [
+      {
+       "name": "A+B",
+       "operations": [
+        {
+         "id": "blanks_in",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "WAREHOUSE",
+          "to": "CNC",
+          "payload_kg": "24",
+          "load_id": "BLANKS-A"
+         }
+        },
+        {
+         "id": "load",
+         "service": "cnc-load-program",
+         "parameters": {
+          "program": "DUCK_MOLD_ROUGH"
+         }
+        },
+        {
+         "id": "m1",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "m2",
+         "service": "cnc-machine-part",
+         "parameters": {
+          "material": "steel",
+          "payload_kg": "12",
+          "coolant": "true"
+         }
+        },
+        {
+         "id": "parts_out",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "CNC",
+          "to": "PAINT_BOOTH",
+          "payload_kg": "24",
+          "load_id": "PARTS-A"
+         }
+        },
+        {
+         "id": "housings",
+         "service": "amr-transport-load",
+         "parameters": {
+          "from": "PAINT_BOOTH",
+          "to": "CURING_OVEN",
+          "payload_kg": "63",
+          "load_id": "HOUSINGS-B"
+         }
+        },
+        {
+         "id": "cure",
+         "service": "oven-cure-batch",
+         "parameters": {
+          "coating": "solvent_paint",
+          "temperature_c": "150",
+          "dwell_min": "25",
+          "parts": "14",
+          "payload_kg": "63"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "O3": {
+  "id": "O3",
+  "level": "track2",
+  "expected_outcome": "ACCEPT",
+  "tags": [
+   "runtime-state",
+   "resume",
+   "tool-wear"
+  ],
+  "prompt": "The rough-machining order of 5 steel duck-mould blanks (12 kg each, coolant on, DUCK_MOLD_ROUGH) stopped after a power cut. Finish the order with no unnecessary tool changes and read the spindle status at the end.",
+  "initial_state": {
+   "cnc": {
+    "program": "DUCK_MOLD_ROUGH",
+    "activeTool": 3,
+    "wear": [
+     0,
+     66.67,
+     66.67,
+     33.33,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "parts_machined": 2
+   }
+  },
+  "runtime_note": "Cell state reported by the CNC after the restart: program DUCK_MOLD_ROUGH still loaded; 2 of 5 blanks machined; active insert T3 at 33.3 % wear; T1 and T2 at 66.7 %; T4\u2013T8 fresh.",
+  "required_services": [
+   "cnc-machine-part",
+   "cnc-tool-change",
+   "cnc-spindle-status"
+  ],
+  "exact_counts": {
+   "cnc-machine-part": 3,
+   "cnc-tool-change": 1,
+   "cnc-spindle-status": 1
+  },
+  "params_all": {
+   "cnc-machine-part": {
+    "material": "steel",
+    "payload_kg": "12",
+    "coolant": "true"
+   }
+  },
+  "strict_order": [
+   [
+    "cnc-machine-part",
+    "cnc-spindle-status"
+   ]
+  ],
+  "twin": {
+   "status": "SUCCESS",
+   "final_state": [
+    {
+     "station": "cnc",
+     "path": "parts_machined",
+     "equals": 5
+    }
+   ]
+  },
+  "notes": "The plan must start from the reported state: 3 blanks are left; T3 can take one more (33.3 + 33.3 = 66.7 %), then one change to a fresh pocket (T4) for the last two blanks: 1 tool change. A plan written for a fresh machine fails at the second blank.",
+  "reference_intent": {
+   "intentId": "INTENT-RESUME",
+   "title": "resume",
+   "description": "",
+   "category": "GENERIC",
+   "target": {
+    "productType": "housing",
+    "color": "red",
+    "batchSize": 1
+   },
+   "operations": [
+    {
+     "id": "blank1",
+     "service": "cnc-machine-part",
+     "parameters": {
+      "material": "steel",
+      "payload_kg": "12",
+      "coolant": "true"
+     }
+    },
+    {
+     "id": "t4",
+     "service": "cnc-tool-change",
+     "parameters": {
+      "tool": "4"
+     }
+    },
+    {
+     "id": "blank2",
+     "service": "cnc-machine-part",
+     "parameters": {
+      "material": "steel",
+      "payload_kg": "12",
+      "coolant": "true"
+     }
+    },
+    {
+     "id": "blank3",
+     "service": "cnc-machine-part",
+     "parameters": {
+      "material": "steel",
+      "payload_kg": "12",
+      "coolant": "true"
+     }
+    },
+    {
+     "id": "status",
+     "service": "cnc-spindle-status",
+     "parameters": {}
+    }
+   ]
+  },
+  "traps": [
+   {
+    "id": "from_scratch",
+    "error": "replans the whole order as if the machine were fresh",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "operations": [
+      {
+       "id": "load",
+       "service": "cnc-load-program",
+       "parameters": {
+        "program": "DUCK_MOLD_ROUGH"
+       }
+      },
+      {
+       "id": "blank1",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "blank2",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t2",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "2"
+       }
+      },
+      {
+       "id": "blank3",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "blank4",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t3",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "3"
+       }
+      },
+      {
+       "id": "blank5",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "status",
+       "service": "cnc-spindle-status",
+       "parameters": {}
+      }
+     ]
+    }
+   },
+   {
+    "id": "ignores_wear",
+    "error": "machines the 3 remaining blanks on T3 without a change",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "operations": [
+      {
+       "id": "blank1",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "blank2",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "blank3",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "status",
+       "service": "cnc-spindle-status",
+       "parameters": {}
+      }
+     ]
+    }
+   },
+   {
+    "id": "change_first",
+    "error": "changes the tool before the first blank (2 changes)",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "operations": [
+      {
+       "id": "t4",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "4"
+       }
+      },
+      {
+       "id": "blank1",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "blank2",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t5",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "5"
+       }
+      },
+      {
+       "id": "blank3",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "status",
+       "service": "cnc-spindle-status",
+       "parameters": {}
+      }
+     ]
+    }
+   },
+   {
+    "id": "five_more",
+    "error": "machines 5 more blanks (ignores the 2 already done)",
+    "intent": {
+     "intentId": "INTENT-T",
+     "title": "t",
+     "description": "",
+     "category": "GENERIC",
+     "target": {
+      "productType": "housing",
+      "color": "red",
+      "batchSize": 1
+     },
+     "operations": [
+      {
+       "id": "blank1",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t4",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "4"
+       }
+      },
+      {
+       "id": "blank2",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "blank3",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "t5",
+       "service": "cnc-tool-change",
+       "parameters": {
+        "tool": "5"
+       }
+      },
+      {
+       "id": "blank4",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "blank5",
+       "service": "cnc-machine-part",
+       "parameters": {
+        "material": "steel",
+        "payload_kg": "12",
+        "coolant": "true"
+       }
+      },
+      {
+       "id": "status",
+       "service": "cnc-spindle-status",
+       "parameters": {}
+      }
+     ]
+    }
+   }
+  ]
+ }
+}

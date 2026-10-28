@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Duck Cell Orders</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: same control-room HMI as the forklift page. Cell map on top, then the scenario (prompt, derivation,
+   translations), then one or two plan players (plan chips, station view, event log, validation ladder). */
+:root{
+  --bg:#eceee9; --panel:#f8f9f5; --ink:#1c2225; --muted:#5b6569; --line:#c7cdc8;
+  --safety:#d99c00; --safety-ink:#1c2225; --steel:#2c6c8c; --ok:#2e7b4e; --bad:#bf3a2e; --idle:#dfe3de;
+  --band1:rgba(44,108,140,.16); --band2:rgba(217,156,0,.18); --band3:rgba(46,123,78,.28);
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181a; --panel:#1c2225; --ink:#e4e8e5; --muted:#97a2a5; --line:#323b3e;
+  --safety:#f0b51e; --safety-ink:#14181a; --steel:#5ea7c8; --ok:#4fb67b; --bad:#e8675b; --idle:#262e31;
+  --band1:rgba(94,167,200,.18); --band2:rgba(240,181,30,.16); --band3:rgba(79,182,123,.30); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181a; --panel:#1c2225; --ink:#e4e8e5; --muted:#97a2a5; --line:#323b3e;
+  --safety:#f0b51e; --safety-ink:#14181a; --steel:#5ea7c8; --ok:#4fb67b; --bad:#e8675b; --idle:#262e31;
+  --band1:rgba(94,167,200,.18); --band2:rgba(240,181,30,.16); --band3:rgba(79,182,123,.30); color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body)}
+.wrap{max-width:1320px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:3px solid var(--ink);padding-bottom:10px}
+h1{font:700 clamp(28px,4vw,40px)/1 var(--f-display);letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+h2{font:700 18px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.05em;margin:0}
+h3{font:700 15px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.05em;margin:0}
+a{color:var(--steel)}
+.lbl{font:500 11px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;display:grid;gap:10px;min-width:0;align-content:start}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+p{margin:0;max-width:75ch}
+p.note{color:var(--muted);font-size:13px}
+button,select{font:500 13px/1 var(--f-body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 11px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button:focus-visible,select:focus-visible,input:focus-visible,.tile:focus-visible{outline:2px solid var(--steel);outline-offset:2px}
+button.primary{background:var(--safety);color:var(--safety-ink);border-color:var(--safety);font-weight:600}
+button.on{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--safety);font-weight:600}
+.toggle{display:flex;gap:6px;align-items:center;font-size:13px}
+.pill{font:500 11px/1 var(--f-mono);padding:4px 7px;border-radius:2px;background:var(--idle);color:var(--ink);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.pill.ok{background:var(--ok);color:var(--bg)} .pill.bad{background:var(--bad);color:var(--bg)}
+.pill.safe{background:var(--steel);color:var(--bg)} .pill.run{background:var(--safety);color:var(--safety-ink)}
+/* map */
+.map{border:1px solid var(--line);border-radius:3px;overflow-x:auto;background:
+  repeating-linear-gradient(-45deg,var(--safety) 0 10px,var(--ink) 10px 20px) top/100% 6px no-repeat,var(--bg)}
+.map svg{display:block;width:100%;min-width:680px;height:auto}
+.tile{cursor:pointer}
+.tile rect.box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.tile:hover rect.box{stroke:var(--ink)}
+.tile.used rect.box{stroke:var(--safety);stroke-width:3}
+.tile.sel rect.box{fill:var(--idle)}
+.tile.active rect.box{fill:var(--safety)}
+.card dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:0;font-size:13px}
+.card dt{color:var(--muted)} .card dd{margin:0;overflow-wrap:anywhere}
+.card ul{margin:0;padding-left:18px;font:12px/1.5 var(--f-mono)}
+/* scenario */
+.prompt{font-size:15px;line-height:1.6;max-width:85ch}
+.prompt mark{background:var(--band2);color:inherit;padding:0 2px;border-radius:2px;font-family:var(--f-mono);font-size:13.5px}
+.derive{border-left:4px solid var(--safety);padding:6px 0 6px 12px;font-size:13.5px;display:grid;gap:6px}
+.derive svg{max-width:520px;width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:grid;gap:4px;text-align:left;padding:8px 10px;min-width:0;max-width:280px;line-height:1.25}
+.chip b{font:600 13px/1.2 var(--f-mono)}
+.chip span.e{font-size:12px;color:var(--muted)}
+/* players */
+.players{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.players.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:1100px){.players.two{grid-template-columns:minmax(0,1fr)}}
+.ctl{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line)}
+.player{border-top:6px solid var(--idle)}
+.player.ok{border-top-color:var(--ok)} .player.bad{border-top-color:var(--bad)} .player.safe{border-top-color:var(--steel)}
+.phead{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between}
+.phead b{font:700 20px/1 var(--f-display);letter-spacing:.03em}
+.steps{display:flex;flex-wrap:wrap;gap:6px;align-items:stretch}
+.st{border:1px solid var(--line);border-left:5px solid var(--idle);border-radius:3px;padding:5px 7px;font:11.5px/1.3 var(--f-mono);min-width:0;max-width:min(100%,250px)}
+.st i{font-style:normal;color:var(--muted);display:block;overflow-wrap:anywhere}
+.st.done{border-left-color:var(--ok)} .st.cur{border-left-color:var(--safety);background:var(--band2)}
+.st.fail{border-left-color:var(--bad);color:var(--bad)} .st.flag{border-color:var(--bad)}
+.arrow{align-self:center;color:var(--muted);font-family:var(--f-mono)}
+.lane{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.hop{border:1px dashed var(--line);border-radius:3px;padding:6px 8px;font:11.5px/1.35 var(--f-mono);color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.hop.on{border-style:solid;border-color:var(--safety);color:var(--ink);background:var(--band2)}
+.hop.err{border-color:var(--bad);color:var(--bad);background:transparent}
+@media (max-width:560px){.lane{grid-template-columns:minmax(0,1fr)}}
+.view{border:1px solid var(--line);border-radius:3px;background:var(--bg);overflow-x:auto}
+.view svg{display:block;width:100%;min-width:440px;height:auto}
+.log{max-height:220px;overflow:auto;font:12px/1.45 var(--f-mono);border-top:1px solid var(--line)}
+.log div{display:grid;grid-template-columns:2.4em 7.5em minmax(0,1fr);gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.log .err{color:var(--bad)}
+.ladder{display:grid;gap:4px}
+.lad{display:grid;grid-template-columns:2.6em 11em minmax(0,1fr) auto;gap:8px;align-items:baseline;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line)}
+.lad .k{font:600 12px var(--f-mono)} .lad .r{font:12px/1.4 var(--f-mono);color:var(--muted);overflow-wrap:anywhere;min-width:0}
+.lad.skip{opacity:.5}
+@media (max-width:560px){.lad{grid-template-columns:2.6em minmax(0,1fr) auto}.lad .r{grid-column:1/-1}}
+.checks{display:grid;gap:2px;font:12px/1.45 var(--f-mono)}
+.checks div{display:grid;grid-template-columns:1.4em minmax(0,1fr);gap:6px;overflow-wrap:anywhere}
+.checks .y{color:var(--ok)} .checks .n{color:var(--bad)}
+.verdict{font:700 22px/1.1 var(--f-display);letter-spacing:.03em;text-transform:uppercase}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+pre{font:11.5px/1.4 var(--f-mono);background:var(--idle);padding:8px;border-radius:3px;overflow-x:auto;margin:6px 0 0}
+footer{color:var(--muted);font-size:13px;display:grid;gap:6px}
+@keyframes pulse{50%{opacity:.45}}
+.pulse{animation:pulse 1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+/* svg text */
+svg text{fill:var(--ink);font-family:var(--f-body)}
+svg .m{font-family:var(--f-mono)} svg .mut{fill:var(--muted)} svg .bad{fill:var(--bad)} svg .okc{fill:var(--ok)}
+/* scenario groups and trap overview */
+.groups{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.grp{display:grid;gap:6px;align-content:start}
+.grp .row button{padding:7px 9px;font-size:12.5px}
+.over{display:grid;gap:12px;align-items:start;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.bin{border:1px solid var(--line);border-top:5px solid var(--idle);border-radius:3px;padding:10px;display:grid;gap:8px;align-content:start;min-width:0}
+.bin.l3{border-top-color:var(--steel)} .bin.l4{border-top-color:var(--safety)} .bin.l6{border-top-color:var(--bad)}
+.bin h3 span{font-family:var(--f-mono);font-weight:500}
+.tchips{display:flex;flex-wrap:wrap;gap:5px}
+.tchips button{font:11.5px/1.2 var(--f-mono);padding:5px 7px}
+.stack{display:grid;gap:6px}
+.stack .bar{display:flex;height:22px;border-radius:2px;overflow:hidden;border:1px solid var(--line)}
+.stack .bar span{display:flex;align-items:center;justify-content:center;font:600 11px var(--f-mono);color:var(--bg);min-width:0;overflow:hidden}
+.stack .lab{display:grid;grid-template-columns:11em minmax(0,1fr);gap:8px;align-items:center;font-size:13px}
+@media (max-width:560px){.stack .lab{grid-template-columns:minmax(0,1fr)}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.plan{display:grid;gap:8px}
+.view svg{max-width:880px}
+.grp2{display:grid;gap:4px;min-width:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div style="display:grid;gap:6px">
+    <span class="lbl">Arrowhead Workflow · TDK 2026 rubber-duck cell · track 2: orders across stations</span>
+    <h1>Duck Cell Orders</h1>
+  </div>
+  <div class="row"><a href="./">All examples</a><a href="duck-cell">Duck Cell (expert tier)</a><a href="forklift">Forklift</a></div>
+</header>
+
+<p>The expert tier of the benchmark tests one station at a time, one session, one Action. These three intents go beyond it:
+an order that crosses six stations as a plan of several Actions, with every housing tracked from station to station (O1); two orders
+that run as concurrent Workflow Sessions and share the AMR through a lease (O2); and an order that has to be resumed from the state the cell
+reports after a stop (O3). Each comes with a reference plan and plausible wrong translations, played through the same checks:
+static validation, a digital-twin dry run, and the benchmark oracle.</p>
+
+<section class="grid">
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><h2>The cell</h2><span class="lbl">select a station</span></div>
+    <div class="map" id="map"></div>
+  </div>
+  <div class="panel card" id="card" aria-live="polite"></div>
+</section>
+
+<section class="panel" id="scenario"></section>
+
+<div class="ctl" id="ctl">
+  <div class="row">
+    <button class="primary" id="play">Play</button>
+    <button id="step">Step</button>
+    <button id="reset">Reset</button>
+    <button id="end">Jump to result</button>
+    <label class="toggle" for="speed">Speed <select id="speed"><option value="900">0.5×</option><option value="450" selected>1×</option><option value="220">2×</option><option value="90">5×</option></select></label>
+    <label class="toggle" for="cmp"><input type="checkbox" id="cmp" checked> Compare with reference</label>
+    <span class="lbl" id="tick"></span>
+  </div>
+</div>
+
+<section class="players" id="players"></section>
+
+<section class="panel" id="overview"></section>
+
+<footer>
+  <p><b>How this page works.</b> This page is a copy of <a href="duck-cell">Duck Cell</a> with an extended model. New here: plans with several
+  Actions (the Choreographer's plan hierarchy), a material-flow check that tracks every housing by station and stage and refuses a step whose
+  parts are not there, the oven-door interlock for the AMR (door opens by hand only at ≤ 60 °C), concurrent sessions run on one time line with
+  nominal durations (AMR 1 m/s plus 1 min handling, CNC cycle times, oven ramp 5 °C/min), a resource-lease service (a new system, not part of the
+  TDK cell) with double-booking and deadlock detection, and a twin that starts from the state the cell reports (O3). Durations, floor
+  coordinates and the lease service are schematic. It is an illustration and not the cell's own digital twin; the reviewer (L5) and the human
+  gate (L7) are not modelled.</p>
+  <p>Scenarios O1–O3 are written in the format of <span class="mono">intent_benchmark.json</span> v2.0, extended with <span class="mono">actions</span>,
+  <span class="mono">sessions</span>, <span class="mono">flow</span>, <span class="mono">initial_state</span>, <span class="mono">deadline</span> and
+  <span class="mono">makespan</span>. Source: <a href="https://github.com/palvarga/arrowhead-workflows">github.com/palvarga/arrowhead-workflows</a> (folder <span class="mono">duck-orders/</span>).</p>
+</footer>
+</div>
+
+<script>/*@MODEL@*/</script>
+<script>
+"use strict";
+const M = window.DuckModel;
+const SPECS = /*@DATA@*/;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fx = (v, d = 1) => (Math.round(v * 10 ** d) / 10 ** d).toFixed(d);
+
+/* ------------------------------------------------------------------ stations (Table 3.1 + generator system prompt) */
+const STATIONS = [
+ {n:1,key:"camera",name:"Camera",sys:"vision-camera-workstation",load:"5 kg",fn:"Chromatic recognition, 2D inspection, QR decoding",lim:"Defect tolerance down to 0.02 mm."},
+ {n:2,key:"dobot",name:"Dobot SCARA",sys:"dobot-magician-workstation",load:"0.5 kg",fn:"4-axis pick-and-place, alignment, cell transfer",
+  svc:["dobot-move-tray-a / -tray-b","dobot-pick-and-align","dobot-lift-arm-reject","dobot-moveboxservice","robot1/robot2 handover"],lim:"Reach √(X²+Y²) ≤ 320 mm, −50 ≤ Z ≤ 200 mm."},
+ {n:3,key:"conveyor",name:"Conveyor belt",sys:"conveyor-belt-workstation",load:"10 kg",fn:"Continuous transfer (50–300 mm/s), index tracking",
+  svc:["conveyor-feed-item","conveyor-transfer-to-station","conveyor-speed-control","conveyor-e-stop"],lim:"1200 mm belt, five light barriers, 10–300 mm/s, 30 kg on the belt."},
+ {n:4,key:"laser",name:"Laser scanner",sys:"laser-scanner-workstation",load:"10 kg",fn:"3D profilometry, roughness Ra, laser engraving",lim:"Resolution 0.5 µm; text ≤ 64 characters; power 1–100 %."},
+ {n:5,key:"warehouse",name:"Smart ASRS",sys:"smart-warehouse-workstation",load:"25 kg",fn:"Storage/retrieval, raw material dispensing, scrap isolation",lim:"Stock: yellow, blue, red; finite, depletes."},
+ {n:6,key:"painting_robot",name:"Painting robot",sys:"painting-robot-workstation",load:"13 kg",fn:"6-axis spray coating, color flushing, booth purging",lim:"Filter saturates after 12 spray jobs; 1–5 coats of 10–200 µm each."},
+ {n:7,key:"amr",name:"AMR logistics",sys:"amr-logistics-workstation",load:"250 kg",fn:"Heavy horizontal SLAM intralogistics (0.8–1.5 m/s)",lim:"11 floor locations; keeps a 15 % battery reserve."},
+ {n:8,key:"drone",name:"Inspection drone",sys:"inspection-drone-workstation",load:"2.5 kg",fn:"High-bay aerial visual audit, urgent part transport",lim:"Altitude 1–8 m, wind ≤ 8 m/s, 20 % battery reserve, swaps only on HOME."},
+ {n:9,key:"delta_robot",name:"Delta robot",sys:"delta-picker-workstation",load:"3 kg",fn:"High-speed packaging (120 picks/min), tray packing",lim:"One step = one tray; rows · cols ≤ 48; tray mass ≤ tray capacity (default 5 kg)."},
+ {n:10,key:"cartesian_robot",name:"Cartesian gantry",sys:"cartesian-gantry-workstation",load:"50 kg",fn:"3-axis heavy linear transfer (X 2000, Y 1000, Z 500 mm)",lim:"Homing required once before any motion; no homing while holding a load."},
+ {n:11,key:"cnc",name:"CNC machining",sys:"cnc-machining-workstation",load:"300 kg",fn:"3-axis precision milling, 8-tool ATC, tool-life models",lim:"Wear per part = cycle/60 · 300/Vc (steel Vc 90, stainless 60 m/min); a part is refused if wear would exceed 90 %. Steel and stainless need coolant."},
+ {n:12,key:"curing_oven",name:"Curing oven",sys:"curing-oven-workstation",load:"100 kg",fn:"Thermal coating polymerization (20–220 °C)",lim:"Windows: solvent paint 120–160 °C ≥ 20 min, clear coat 110–140 °C ≥ 25 min, powder, waterborne, silicone. Door opens by hand only at ≤ 60 °C."},
+ {n:13,key:"palletizer",name:"Palletizer",sys:"robotic-palletizer-workstation",load:"25 kg",fn:"EUR-pallet case stacking (1000 kg total), stretch wrap",lim:"8 cases per layer; 144 mm + layers · case height ≤ 1800 mm; ≤ 1000 kg; a loaded pallet must be wrapped before release."},
+ {n:15,key:"lease_manager",name:"Resource lease (new)",sys:"resource-lease-manager",load:"–",fn:"Grants one session at a time the use of a shared resource (here the AMR)",lim:"Not part of the TDK cell: added for track 2. A lease is held until the session releases it."},
+ {n:14,key:"checkweigher",name:"Checkweigher",sys:"checkweigher-workstation",load:"6 kg",fn:"Dynamic inline gravimetric tolerance verification (0.1 g)",lim:"Load-cell drift +0.02 g per item; refused once drift > 2 g."},
+];
+STATIONS.forEach(s => { s.svc = s.svc || M.STATION_SERVICES[s.key] || (s.key === "camera" ? ["vision-duck-color-detector","vision-defect-inspection","vision-qr-barcode-reader","camera-stream-snapshot"] : []); });
+const ST_BY_KEY = Object.fromEntries(STATIONS.map(s => [s.key, s]));
+
+/* ------------------------------------------------------------------ scenarios (groups of Table 5.3) */
+const GROUPS = [["Orders across stations", ["O1","O2","O3"]]];
+const SCEN = {
+  O1:{title:"End-to-end order", st:["cnc","amr","painting_robot","curing_oven","checkweigher","palletizer"], view:lineView,
+      derive:`FIXTURE_PLATE on steel wears <b class="mono">5/60 · 300/90 = 27.8 %</b> per housing: three per insert, so tool changes after housings 3, 6, 9 and 12 (<b>4</b>). The booth needs <b>one purge</b>, before housing 13. One oven batch of 14 × 4.5 = <b class="mono">63 kg</b>; the AMR can take the housings out only after a cool-down to <b class="mono">≤ 60 °C</b> (door interlock). 63 kg fits one AMR trip, so <b>4 trips</b> between the five islands. The plan has nine Actions; every housing has to be at the station that works on it.`},
+  O2:{title:"Two orders, one AMR", st:["amr","cnc","curing_oven","lease_manager"], view:timeView,
+      derive:`Order B is bound by the oven: ramp 22 → 150 °C at 5 °C/min (25.6 min) plus 25 min dwell. Order A needs the AMR twice, before and after machining (2 × 6 min). If each order takes the AMR lease only for the length of a trip, A reaches the paint booth after about <b class="mono">17 min</b> (due: 30) and everything ends after about <b class="mono">54 min</b>. A lease held through the cure, or for a whole order, delays the other order.`},
+  O3:{title:"Resume after a stop", st:["cnc"], view:cncView,
+      derive:`3 blanks are left. The active insert T3 is at 33.3 % and can take <b>one</b> more blank (66.7 %); then <b>one change</b> to a fresh pocket (T4) for the last two. A plan written for a fresh machine (load, change after 2 and 4) fails at the second blank, because the twin starts from the state the cell reports.`},
+};
+const ORDER = GROUPS.flatMap(g => g[1]);
+const RESULTS = {};
+ORDER.forEach(id => {
+  const spec = SPECS[id], refLabel = spec.expected_outcome === "REJECT" ? "Faithful translation" : spec.expected_outcome === "LIMITATION" ? "Gated translation" : "Reference translation";
+  const refNote = spec.expected_outcome === "REJECT" ? "keeps the user's values; must be refused" : spec.expected_outcome === "LIMITATION" ? "quality gate instead of a branch" : "certified reference plan";
+  RESULTS[id] = [{name:"gold", label:refLabel, error:refNote, intent:spec.reference_intent}]
+    .concat((spec.traps || []).map(t => ({name:t.id, label:t.id.replace(/_/g," "), error:t.error, intent:t.intent})))
+    .map(t => Object.assign(t, {res: M.evaluate(spec, t.intent)}));
+});
+
+/* ------------------------------------------------------------------ state */
+let cur = {id:"X01", tr:"gold", sel:"cnc"}, tick = 0, timer = null;
+const tr = name => RESULTS[cur.id].find(t => t.name === name);
+const totalTicks = r => (r.run ? 1 + 3 * r.run.trace.length + 1 : 2);
+
+/* ------------------------------------------------------------------ outcome labels */
+function outcomeInfo(r) {
+  switch (r.outcome) {
+    case "SUCCESS": return {pill:`<span class="pill ok">success</span>`, cls:"ok", head:"SUCCESS", text:"approved, executed, meets the intent"};
+    case "WRONG_PLAN": return {pill:`<span class="pill bad">silent · wrong plan</span>`, cls:"bad", head:"WRONG_PLAN · silent failure", text:"every machine step reported SUCCESS; only the oracle sees that the plan is wrong"};
+    case "NOT_ACCEPTED": return {pill:`<span class="pill safe">refused at ${r.layer}</span>`, cls:"safe", head:"Refused before dispatch · safe failure", text:`caught at ${r.layer}; nothing reached a machine`};
+    case "CORRECT_REFUSAL": return {pill:`<span class="pill ok">correct refusal · ${r.layer}</span>`, cls:"ok", head:"CORRECT_REFUSAL", text:`the infeasible request was refused at ${r.layer}; ${r.note}`};
+    case "FALSE_ACCEPT": return {pill:`<span class="pill bad">false accept</span>`, cls:"bad", head:"FALSE_ACCEPT · silent failure", text:"the request is infeasible, yet a plan was dispatched: it changes what the operator asked for"};
+    case "ACCEPTABLE_PLAN": return {pill:`<span class="pill ok">acceptable plan</span>`, cls:"ok", head:"ACCEPTABLE_PLAN", text:"the branch is replaced by a quality gate; the oracle accepts it (in the real pipeline the request is also flagged for review)"};
+    case "CORRECT_FLAG": return {pill:`<span class="pill ok">refused / flagged</span>`, cls:"ok", head:"CORRECT_FLAG", text:"not dispatched"};
+    default: return {pill:"", cls:"", head:r.outcome, text:""};
+  }
+}
+
+/* ------------------------------------------------------------------ cell map */
+function mapSvg() {
+  const used = SCEN[cur.id].st, act = activeStationNow();
+  const tile = (s, x, y, w = 128, h = 58) => `<g class="tile ${used.includes(s.key) ? "used" : ""} ${s.key === cur.sel ? "sel" : ""} ${s.key === act ? "active" : ""}" data-k="${s.key}" tabindex="0" role="button" aria-label="${esc(s.name)}">
+    <rect class="box" x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>
+    <text x="${x + 8}" y="${y + 20}" class="m mut" font-size="11">#${s.n}</text>
+    <text x="${x + 30}" y="${y + 20}" font-size="14" font-weight="600">${esc(s.name)}</text>
+    <text x="${x + 8}" y="${y + 42}" class="m mut" font-size="11">max ${esc(s.load)}</text></g>`;
+  const S = k => ST_BY_KEY[k];
+  let g = `<svg viewBox="0 0 1000 452" role="img" aria-label="Floor plan of the fourteen workstations">
+  <rect x="16" y="18" width="968" height="52" rx="3" fill="none" stroke="var(--steel)" stroke-width="1.5"/>
+  <text x="28" y="40" class="m mut" font-size="11">ARROWHEAD 4.6 LOCAL CLOUD</text>
+  ${["Service Registry","Authorization","Orchestrator","Workflow Choreographer"].map((t, i) => `<rect x="${210 + i * 148}" y="28" width="140" height="32" rx="3" fill="var(--panel)" stroke="var(--steel)"/><text x="${280 + i * 148}" y="48" text-anchor="middle" font-size="11">${t}</text>`).join("")}
+  <g class="tile ${used.includes("lease_manager") ? "used" : ""} ${cur.sel === "lease_manager" ? "sel" : ""} ${act === "lease_manager" ? "active" : ""}" data-k="lease_manager" tabindex="0" role="button" aria-label="Resource lease (new system)"><rect class="box" x="812" y="28" width="164" height="32" rx="3" style="stroke-dasharray:4 3"/><text x="894" y="49" text-anchor="middle" font-size="12" font-weight="600">Resource lease (new)</text></g>
+  <text x="28" y="58" class="mut" font-size="11">every station: provider + Executor</text>
+  <text x="28" y="100" class="m mut" font-size="11">DUCK CELL · STATIONS 1–5</text>
+  <text x="470" y="100" class="m mut" font-size="11">EXTENSION · STATIONS 6–14 · AMR ROUTES</text>
+  <line x1="452" y1="88" x2="452" y2="440" stroke="var(--line)" stroke-dasharray="4 4"/>`;
+  g += tile(S("camera"), 150, 116) + tile(S("dobot"), 296, 116) + tile(S("laser"), 296, 196) + tile(S("warehouse"), 20, 300, 116, 112);
+  g += `<g class="tile ${"conveyor" === cur.sel ? "sel" : ""} ${"conveyor" === act ? "active" : ""}" data-k="conveyor" tabindex="0" role="button" aria-label="Conveyor belt">
+    <rect class="box" x="150" y="330" width="274" height="54" rx="3"/>
+    <text x="158" y="350" class="m mut" font-size="11">#3</text><text x="180" y="350" font-size="14" font-weight="600">Conveyor belt</text>
+    ${["ENTRY","A","B","C","EXIT"].map((t, i) => `<line x1="${168 + i * 60}" y1="358" x2="${168 + i * 60}" y2="376" stroke="var(--safety)" stroke-width="3"/><text x="${168 + i * 60}" y="400" text-anchor="middle" class="m mut" font-size="10">${t}</text>`).join("")}</g>
+  <text x="150" y="430" class="mut" font-size="11">items flow ENTRY → EXIT; 10 kg per item, 30 kg on the belt</text>
+  <path d="M136 356 H150" stroke="var(--line)" stroke-width="2"/>`;
+  const pos = {painting_robot:[470,116], curing_oven:[640,116], checkweigher:[810,116], cnc:[470,216], cartesian_robot:[640,216], delta_robot:[810,216], amr:[470,316], drone:[640,316], palletizer:[810,316]};
+  const c = k => [pos[k][0] + 75, pos[k][1] + 29];
+  const route = [["amr","cnc"],["cnc","painting_robot"],["painting_robot","curing_oven"],["curing_oven","checkweigher"],["checkweigher","delta_robot"],["delta_robot","palletizer"],["cnc","cartesian_robot"],["amr","palletizer"]];
+  g += route.map(([a, b]) => `<line x1="${c(a)[0]}" y1="${c(a)[1]}" x2="${c(b)[0]}" y2="${c(b)[1]}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="6 5"/>`).join("");
+  g += Object.entries(pos).map(([k, [x, y]]) => tile(S(k), x, y, 150)).join("");
+  g += `<text x="470" y="404" class="mut" font-size="11">dashed: AMR floor routes (schematic) · drone pads: HOME, HIGH_BAY_RACK, ROOF_TRUSS, …</text></svg>`;
+  return g;
+}
+function activeStationNow() {
+  const r = tr(cur.tr).res; if (!r.run) return null;
+  const k = Math.floor((tick - 1) / 3), rec = r.run.trace[k];
+  return tick >= 1 && rec && tick < totalTicks(r) - 1 ? rec.station : null;
+}
+function renderMap() {
+  const host = document.getElementById("map"); host.innerHTML = mapSvg();
+  host.querySelectorAll(".tile").forEach(t => {
+    const pick = () => { cur.sel = t.dataset.k; renderMap(); renderCard(); };
+    t.addEventListener("click", pick);
+    t.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+  });
+}
+function renderCard() {
+  const s = ST_BY_KEY[cur.sel];
+  document.getElementById("card").innerHTML = `<span class="lbl">Station #${s.n}${SCEN[cur.id].st.includes(s.key) ? " · used by " + cur.id : ""}</span>
+    <h2>${esc(s.name)}</h2>
+    <dl><dt>System</dt><dd class="mono">${esc(s.sys)}</dd><dt>Max load</dt><dd class="mono">${esc(s.load)}</dd><dt>Function</dt><dd>${esc(s.fn)}</dd><dt>Limits</dt><dd>${esc(s.lim)}</dd></dl>
+    <div><span class="lbl">Services (registered in the Service Registry)</span><ul>${s.svc.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+}
+
+/* ------------------------------------------------------------------ scenario panel */
+function highlight(text) {
+  return esc(text).replace(/(\b\d+(?:[.,]\d+)?(?:\s?x\s?\d+)?\s?(?:kg|g|mm|%|°C|minutes|min|µm|lb|m\/s|m|cm²|trays?)?(?![\w]))/g, "<mark>$1</mark>");
+}
+function renderScenario() {
+  const spec = SPECS[cur.id], sc = SCEN[cur.id];
+  const exp = spec.expected_outcome === "ACCEPT" ? "feasible: a faithful plan must be produced" : spec.expected_outcome === "REJECT" ? "infeasible: the pipeline must refuse" : "not expressible: flag, or a plan the oracle accepts";
+  document.getElementById("scenario").innerHTML = `
+    <div class="groups" role="tablist" aria-label="Scenario">${GROUPS.map(([gname, ids]) => `<div class="grp"><span class="lbl">${gname}</span><div class="row">${ids.map(id =>
+      `<button role="tab" aria-selected="${id === cur.id}" class="${id === cur.id ? "on" : ""}" data-id="${id}">${id} · ${esc(SCEN[id].title)}${SPECS[id].expected_outcome !== "ACCEPT" ? " (" + SPECS[id].expected_outcome[0] + ")" : ""}</button>`).join("")}</div></div>`).join("")}</div>
+    <div class="row" style="justify-content:space-between"><h2>${cur.id} · ${esc(sc.title)}</h2><span class="lbl">expected: ${esc(spec.expected_outcome)} · ${esc(exp)}</span></div>
+    <div class="prompt">“${highlight(spec.prompt)}”</div>
+    ${spec.runtime_note ? `<div class="derive" style="border-left-color:var(--steel)"><span class="lbl">State reported by the cell at the restart (runtime context)</span><div>${esc(spec.runtime_note)}</div></div>` : ""}
+    <div class="derive"><span class="lbl">What a correct answer must derive</span>${typeof sc.derive === "function" ? sc.derive() : `<div>${sc.derive}</div>`}</div>
+    <div><span class="lbl">Translations</span></div>
+    <div class="chips">${RESULTS[cur.id].map(t => `<button class="chip ${t.name === cur.tr ? "on" : ""}" data-tr="${t.name}"><b>${esc(t.label)}</b><span class="e">${esc(t.error)}</span>${outcomeInfo(t.res).pill}</button>`).join("")}</div>`;
+  document.querySelectorAll("#scenario [data-id]").forEach(b => b.addEventListener("click", () => selectScenario(b.dataset.id)));
+  document.querySelectorAll("#scenario [data-tr]").forEach(b => b.addEventListener("click", () => { cur.tr = b.dataset.tr; restart(); }));
+}
+function selectScenario(id, trName) {
+  cur = {id, tr: trName || "gold", sel: SCEN[id].st[0]};
+  try { history.replaceState(null, "", "#" + id.toLowerCase()); } catch (e) {}
+  renderCard(); restart();
+}
+
+/* X08 derivation: cure windows as rectangles in (temperature, dwell); every cure step of every translation as a point */
+function windowMap() {
+  const W = 520, H = 210, x0 = 48, x1 = W - 14, y0 = 16, y1 = H - 34;
+  const X = t => x0 + (t - 100) / 70 * (x1 - x0), Y = d => y1 - (d - 15) / 20 * (y1 - y0);
+  const rect = (lo, hi, dmin, fill, label, lx, ly) => `<rect x="${X(lo)}" y="${Y(35)}" width="${X(hi) - X(lo)}" height="${Y(dmin) - Y(35)}" fill="${fill}" stroke="var(--line)"/><text x="${lx}" y="${ly}" font-size="11" class="mut">${label}</text>`;
+  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cure windows of clear coat and solvent paint and the plans' cure settings">`;
+  for (let t = 100; t <= 170; t += 10) g += `<line x1="${X(t)}" y1="${y0}" x2="${X(t)}" y2="${y1}" stroke="var(--line)" stroke-width=".6"/><text x="${X(t)}" y="${y1 + 14}" font-size="10" class="m mut" text-anchor="middle">${t}</text>`;
+  for (let d = 15; d <= 35; d += 5) g += `<line x1="${x0}" y1="${Y(d)}" x2="${x1}" y2="${Y(d)}" stroke="var(--line)" stroke-width=".6"/><text x="${x0 - 6}" y="${Y(d) + 3}" font-size="10" class="m mut" text-anchor="end">${d}</text>`;
+  g += rect(110, 140, 25, "var(--band1)", "clear coat 110–140 °C, ≥ 25 min", X(110) + 4, Y(35) + 12);
+  g += rect(120, 160, 20, "var(--band2)", "solvent paint 120–160 °C, ≥ 20 min", X(141) + 4, Y(21) - 4);
+  g += `<rect x="${X(120)}" y="${Y(35)}" width="${X(140) - X(120)}" height="${Y(25) - Y(35)}" fill="var(--band3)" stroke="var(--ok)" stroke-width="1.5"/><text x="${X(130)}" y="${Y(29)}" text-anchor="middle" font-size="11" font-weight="600">both cured</text>`;
+  const groups = [];
+  RESULTS.X08.forEach(t => t.intent.operations.filter(o => o.service === "oven-cure-batch").forEach(o => {
+    const T = +o.parameters.temperature_c, D = +o.parameters.dwell_min;
+    let gr = groups.find(q => q.t === T && q.d === D);
+    if (!gr) groups.push(gr = {t: T, d: D, items: []});
+    gr.items.push({n: t.label, coat: o.parameters.coating, gold: t.name === "gold", sel: t.name === cur.tr});
+  }));
+  groups.forEach((p, i) => { p.i = i + 1; p.gold = p.items.some(x => x.gold); p.sel = p.items.some(x => x.sel);
+    g += `<circle cx="${X(p.t)}" cy="${Y(p.d)}" r="${p.sel ? 9 : 8}" fill="${p.gold ? "var(--ok)" : "var(--bad)"}" stroke="var(--ink)" stroke-width="${p.sel ? 2.5 : 0}"/><text x="${X(p.t)}" y="${Y(p.d) + 4}" text-anchor="middle" font-size="10" font-weight="700" class="m" style="fill:var(--bg)">${p.i}</text>`; });
+  g += `<text x="${(x0 + x1) / 2}" y="${H - 4}" text-anchor="middle" font-size="11" class="mut">temperature °C</text><text x="12" y="${(y0 + y1) / 2}" font-size="11" class="mut" transform="rotate(-90 12 ${(y0 + y1) / 2})" text-anchor="middle">dwell min</text></svg>`;
+  const legend = `<div class="checks">${groups.map(p => `<div><span class="${p.gold ? "y" : "n"}">${p.i}</span><span>${p.t} °C · ${p.d} min: ${p.items.map(x => esc(x.n) + " (" + esc(x.coat) + ")").join(", ")}</span></div>`).join("")}</div>`;
+  return `<div>The batch holds both coatings, so the plan needs a temperature inside both windows and the longer dwell: <b class="mono">120–140 °C, ≥ 25 min</b>, clear-coat profile, batch 10 × 3 kg = 30 kg. Each numbered point is the cure step of one or more translations; position alone does not decide the outcome (coating and batch mass count too).</div>` + g + legend;
+}
+
+/* ------------------------------------------------------------------ players */
+function players() {
+  const t = tr(cur.tr), cmp = document.getElementById("cmp").checked && cur.tr !== "gold";
+  return cmp ? [tr("gold"), t] : [t];
+}
+function renderPlayers() {
+  const ps = players(), host = document.getElementById("players");
+  host.className = "players" + (ps.length > 1 ? " two" : "");
+  host.innerHTML = ps.map((t, i) => playerHtml(t, i, ps.length)).join("");
+  const T = Math.max(...ps.map(t => totalTicks(t.res)));
+  document.getElementById("tick").textContent = `step ${Math.min(tick, T)} / ${T}`;
+  document.getElementById("play").textContent = timer ? "Pause" : tick >= T ? "Replay" : "Play";
+  const a = activeStationNow();
+  document.querySelectorAll("#map .tile").forEach(t => t.classList.toggle("active", t.dataset.k === a));
+}
+
+function playerHtml(t, idx, count) {
+  const r = t.res, T = totalTicks(r), k = Math.min(tick, T), done = k >= T, plan = r.plan, q = plan.sessionQuantity;
+  const n = r.run ? r.run.trace.length : 0;
+  const si = k >= 1 && r.run ? Math.min(Math.floor((k - 1) / 3), n - 1) : -1, ph = k >= 1 ? (k - 1) % 3 : -1;
+  const execd = r.run ? (k <= 0 ? 0 : k >= T - 1 ? n : si + (ph === 2 ? 1 : 0)) : 0;
+  const running = r.run && si >= 0 && k < T - 1 && ph < 2 ? r.run.trace[si] : null;
+  const info = outcomeInfo(r);
+
+  // failing step (shown once the run reached it, or for a static refusal once the result is shown)
+  let failing = null;
+  if (r.run && r.run.failed && execd >= n) failing = r.run.failed;
+  if (!r.run && k >= 1) { const e = r.static[0], st = plan.actions.flatMap(a => a.steps).find(s => s.name === e.step);
+    failing = {step: e.step, service: e.service, params: st ? st.staticParameters : {}, message: e.msg, static: true}; }
+
+  // plan chips, grouped by Action or by session
+  const stepBy = Object.fromEntries(plan.actions.flatMap(a => a.steps).map(s => [s.name, s]));
+  const statusOf = name => {
+    if (!r.run) return failing && failing.step === name ? "fail flag" : "";
+    if (running && running.key === name) return "cur";
+    const recs = r.run.trace.slice(0, execd).filter(x => x.key === name);
+    if (recs.length && recs[recs.length - 1].status !== "SUCCESS") return "fail";
+    if (r.run.failed && r.run.failed.key === name && execd >= n) return "fail";
+    if (recs.length) return recs.length >= q ? "done" : "cur";
+    return "";
+  };
+  const pkeys = ["count","material","tool","program","coating","temperature_c","dwell_min","payload_kg","parts","target_c","from","to","resource","coats","film_thickness_um","nominal_kg","fail_on_reject","case_height_mm","film_layers"];
+  const chipOf = (s, prev) => {
+    const p = s.staticParameters, pr = plan.preds[s.name] || [];
+    const same = prev && M.svcOf(prev) === M.svcOf(s) && JSON.stringify(prev.staticParameters) === JSON.stringify(p);
+    const ks = same ? [] : pkeys.filter(x => x in p).slice(0, 3);
+    const sep = !prev ? "" : pr.length === 1 && pr[0] === prev.name ? "→" : pr.length === 0 ? "∥" : "↳";
+    const nm = s.name.includes("/") ? s.name.split("/")[1] : s.name;
+    return (sep ? `<span class="arrow" aria-hidden="true">${sep}</span>` : "") +
+      `<div class="st ${statusOf(s.name)}"><b>${esc(nm)}</b><i>${same ? "same as before" : esc(M.svcOf(s))}</i>${ks.length ? `<i>${ks.map(x => esc(x + "=" + p[x])).join(" ")}</i>` : ""}</div>`;
+  };
+  const chips = plan.groups.map(gr => `<div class="grp2">${gr.label ? `<span class="lbl">${esc(gr.label)}</span>` : ""}<div class="steps">${gr.steps.map((nm, i) => chipOf(stepBy[nm], i ? stepBy[gr.steps[i - 1]] : null)).join("")}</div></div>`).join("");
+
+  // message lane
+  let hops = ["", "", ""], herr = -1;
+  if (k === 0) hops = ["POST /mgmt/plan (upload)", "", ""];
+  else if (!r.run) { hops = ["POST /mgmt/plan (upload)", `static validator: plan refused (${r.layer})`, "nothing is dispatched"]; herr = 1; }
+  else if (running || (si >= 0 && k < T - 1)) {
+    const rec = r.run.trace[si];
+    const who = rec.session ? `session ${rec.session} · ` : rec.action && plan.actions.length > 1 ? `${rec.action} · ` : "";
+    hops = [`${who}Choreographer → Orchestrator: provider for ${rec.service}?`, `Choreographer → ${ST_BY_KEY[rec.station].name} Executor: start ${rec.step}${rec.start !== undefined ? " at " + rec.start.toFixed(1) + " min" : ""}`,
+      `Executor → Choreographer: notify-step-done ${rec.status}`].map((h, i) => (i <= ph ? h : ""));
+    if (ph === 2 && rec.status !== "SUCCESS") herr = 2;
+  } else hops = ["session finished", r.run.status === "SUCCESS" ? "dry run: all steps SUCCESS" : "dry run: session aborted", r.oracle ? "oracle compares with the intent" : r.dispatched ? "executed, although the request is infeasible" : "plan refused before dispatch"];
+  if (r.run && r.run.status !== "SUCCESS" && k >= T - 1) herr = 1;
+  const lane = `<div class="lane">${hops.map((h, i) => `<div class="hop ${h ? "on" : ""} ${i === herr ? "err" : ""}">${esc(h || "·")}</div>`).join("")}</div>`;
+
+  // station view: all station states after the last visible record
+  const lastRec = r.run && execd > 0 ? r.run.trace[execd - 1] : null;
+  const snap = lastRec && lastRec.snapshot ? lastRec.snapshot : {};
+  const S = key => snap[key] || M.initialState(SPECS[cur.id], key);
+  const view = SCEN[cur.id].view({S, failing, running, r, plan, execd, done});
+
+  const log = r.run ? r.run.trace.slice(0, execd).map(x => `<div class="${x.status !== "SUCCESS" ? "err" : ""}"><span>${x.session ? esc(x.session) : ""}</span><span>${esc(x.step)}</span><span>${esc(x.status)} · ${esc(x.message)}</span></div>`).reverse().join("")
+    : (k >= 1 ? r.static.map(e => `<div class="err"><span>${e.layer}</span><span>${esc(e.step || "")}</span><span>${esc(e.msg)}</span></div>`).join("") : "");
+
+  return `<article class="panel player ${done ? info.cls : ""}" aria-label="${esc(t.label)}">
+    <div class="phead"><div><span class="lbl">${idx === 0 && count > 1 ? "reference" : "translation"}</span><br><b>${esc(t.label)}</b></div>
+      <span class="mono" style="font-size:12px;color:var(--muted)">${esc(t.error)} · ${plan.multi ? plan.sessions.length + " sessions" : plan.actions.length + " Action(s)"}</span></div>
+    <div class="plan" aria-label="Compiled Choreographer plan">${chips}</div>
+    ${lane}
+    <div class="view">${view}</div>
+    <div class="log" aria-label="Execution log">${log || `<div><span></span><span></span><span style="color:var(--muted)">press Play or Step</span></div>`}</div>
+    ${done ? resultHtml(r, info) : `<p class="note">The result appears when the run ends.</p>`}
+    <details><summary>Compiled plan (Choreographer JSON)</summary><pre>${esc(JSON.stringify(plan.multi ? plan.sessions.map(x => ({session: x.name, name: x.plan.name, firstActionName: x.plan.firstActionName, actions: x.plan.actions})) : {name: plan.name, firstActionName: plan.firstActionName, actions: plan.actions}, null, 1))}</pre></details>
+  </article>`;
+}
+
+function resultHtml(r, info) {
+  const layers = [["L1","Platform","Choreographer graph rules"],["L2","Capability","services exist in the cell"],["L3","Physical, static","each step within station limits"],
+    ["L4","Physical, stateful","digital-twin dry run"],["L5","Intent fidelity","reviewer (not modelled here)"],["L6","Outcome","benchmark oracle"]];
+  const order = layers.map(l => l[0]), stopAt = r.dispatched ? null : r.layer;
+  const rows = layers.map(([k, name, what]) => {
+    if (k === "L5") return `<div class="lad skip"><span class="k">${k}</span><span>${name}</span><span class="r">${what}</span><span class="pill">n/a</span></div>`;
+    const reached = !stopAt || order.indexOf(k) <= order.indexOf(stopAt);
+    let pill, note = what;
+    if (!reached) pill = `<span class="pill">not reached</span>`;
+    else if (k === stopAt) { pill = `<span class="pill ${r.good ? "ok" : "safe"}">refused</span>`; note = r.reason; }
+    else if (k === "L6") {
+      if (r.oracle) { pill = `<span class="pill ${r.good ? "ok" : "bad"}">S = ${r.oracle.score.toFixed(2)}</span>`; note = `${r.oracle.passed} of ${r.oracle.total} checks`; }
+      else { pill = `<span class="pill bad">false accept</span>`; note = "an infeasible request was executed"; }
+    } else pill = `<span class="pill ok">pass</span>`;
+    return `<div class="lad ${reached ? "" : "skip"}"><span class="k">${k}</span><span>${name}</span><span class="r">${esc(note)}</span>${pill}</div>`;
+  }).join("");
+  const color = info.cls === "ok" ? "var(--ok)" : info.cls === "bad" ? "var(--bad)" : "var(--steel)";
+  const checks = r.oracle ? `<details ${r.good ? "" : "open"}><summary>Oracle checks (${r.oracle.passed}/${r.oracle.total})</summary><div class="checks">${r.oracle.checks.map(c => `<div><span class="${c.ok ? "y" : "n"}">${c.ok ? "✓" : "✗"}</span><span>${esc(c.label)}${c.detail ? ` <span style="color:var(--muted)">(${esc(c.detail)})</span>` : ""}</span></div>`).join("")}</div></details>` : "";
+  return `<div style="display:grid;gap:6px"><div class="verdict" style="color:${color}">${esc(info.head)}</div><p class="note">${esc(info.text)}</p>
+    <div class="ladder">${rows}</div>${checks}</div>`;
+}
+
+/* ------------------------------------------------------------------ station views (each gets {S, failing, running, r, plan, execd, done}) */
+const svgOpen = (W, H, label) => `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">`;
+const T = (x, y, s, cls = "", size = 11, anchor = "start", extra = "") => `<text x="${x}" y="${y}" font-size="${size}" class="${cls}" text-anchor="${anchor}" ${extra}>${s}</text>`;
+const failText = (f, x, y, max = 78, size = 11) => f ? T(x, y, esc(f.message.length > max ? f.message.slice(0, max - 2) + "…" : f.message), "bad m", size) : "";
+function planSteps(plan, svc) { return plan.actions.flatMap(a => a.steps).filter(s => M.svcOf(s) === svc); }
+
+function cncView({S, failing, running, plan}) {
+  const s = S("cnc"), W = 600, H = 268, cx = 92, cy = 126, R = 66;
+  const mp = planSteps(plan, "cnc-machine-part"), prog = (planSteps(plan, "cnc-load-program")[0] || {staticParameters:{}}).staticParameters.program || "DUCK_MOLD_ROUGH";
+  const mat = mp.length ? mp[0].staticParameters.material : "steel", per = M.wearPerPart(prog, mat), before = (M.initialState(SPECS[cur.id], "cnc") || {}).parts_machined || 0, nBlanks = before + mp.length * plan.sessionQuantity;
+  let g = svgOpen(W, H, "CNC tool magazine, active insert wear and machined blanks") + T(16, 22, "TOOL MAGAZINE (8 POCKETS)", "m mut");
+  g += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--line)" stroke-width="10"/>`;
+  for (let i = 1; i <= 8; i++) {
+    const a = -Math.PI / 2 + (i - 1) * Math.PI / 4, x = cx + R * Math.cos(a), y = cy + R * Math.sin(a), w = s.wear[i], act = s.activeTool === i, circ = 2 * Math.PI * 14;
+    g += `<circle cx="${x}" cy="${y}" r="17" fill="var(--panel)" stroke="${act ? "var(--safety)" : "var(--line)"}" stroke-width="${act ? 4 : 1.5}"/>`;
+    if (w > 0) g += `<circle cx="${x}" cy="${y}" r="14" fill="none" stroke="${w > 60 ? "var(--bad)" : "var(--steel)"}" stroke-width="4" stroke-dasharray="${circ * Math.min(1, w / 100)} ${circ}" transform="rotate(-90 ${x} ${y})"/>`;
+    g += T(x, y + 4, "T" + i, "m", 11, "middle", act ? 'font-weight="700"' : "");
+  }
+  g += T(cx, cy - 4, "active", "mut", 11, "middle") + T(cx, cy + 14, "T" + s.activeTool, "m", 18, "middle", 'font-weight="600"') + T(cx, cy + R + 36, "program " + esc(s.program || "– not loaded"), "m mut", 11, "middle");
+  const bx = 210, by = 34, bh = 180, bw = 40, Yw = w => by + bh - Math.min(w, 110) / 100 * bh, wNow = s.wear[s.activeTool];
+  g += T(bx - 20, 22, "WEAR OF ACTIVE INSERT", "m mut") + `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="var(--panel)" stroke="var(--line)"/>`;
+  const segs = Math.round(wNow / per);
+  for (let j = 0; j < segs; j++) g += `<rect x="${bx + 2}" y="${Yw((j + 1) * per) + 1}" width="${bw - 4}" height="${per / 100 * bh - 2}" fill="var(--steel)"/>`;
+  if (failing && failing.service === "cnc-machine-part") {
+    g += `<rect x="${bx + 2}" y="${Yw(wNow + per)}" width="${bw - 4}" height="${Math.min(per, 110 - wNow) / 100 * bh - 2}" fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"/>`;
+    g += T(bx + bw / 2, by + bh + 34, `next blank: ${fx(wNow + per)} % · refused`, "bad m", 11, "middle");
+  }
+  g += `<line x1="${bx - 6}" y1="${Yw(90)}" x2="${bx + bw + 6}" y2="${Yw(90)}" stroke="var(--bad)" stroke-width="2"/>` + T(bx + bw + 8, Yw(90) + 4, "90 % limit", "bad m");
+  [0, 50, 100].forEach(v => (g += T(bx - 6, Yw(v) + 4, v, "m mut", 10, "end")));
+  g += T(bx + bw / 2, by + bh + 18, fx(wNow) + " %", "m", 12, "middle", 'font-weight="600"');
+  g += T(390, 22, `${mat.toUpperCase()} BLANKS · ${fx(per)} % WEAR EACH`, "m mut");
+  const rowH = Math.min(36, 196 / Math.max(1, nBlanks));
+  for (let i = 0; i < nBlanks; i++) {
+    const x = 390, y = 34 + i * rowH, isFail = failing && failing.service === "cnc-machine-part" && i === s.parts_machined, isRun = running && running.service === "cnc-machine-part" && i === s.parts_machined;
+    g += `<rect x="${x}" y="${y}" width="44" height="${rowH - 10}" rx="2" fill="${i < s.parts_machined ? "var(--steel)" : "var(--panel)"}" stroke="${isFail ? "var(--bad)" : isRun ? "var(--safety)" : "var(--line)"}" stroke-width="${isFail || isRun ? 3 : 1.5}" ${isRun ? 'class="pulse"' : ""}/>`;
+    g += T(x + 54, y + rowH / 2, `blank ${i + 1}${i < before ? " · done before" : i < s.parts_machined ? " · machined" : isFail ? " · refused" : ""}${i >= 5 ? " (not ordered)" : ""}`, `m ${isFail || i >= 5 ? "bad" : i < s.parts_machined ? "" : "mut"}`, 12);
+  }
+  return g + T(390, H - 14, `tool changes ${s.tool_changes} · status reads ${s.spindle_reads}`, "m mut") + "</svg>";
+}
+
+function deltaView({S, failing, running}) {
+  const s = S("delta_robot"), W = 600, H = 250, cell = 11;
+  let g = svgOpen(W, H, "Delta robot trays and picks") + T(16, 20, "PICKS", "m mut");
+  const bx = 70, bw = 500, Xp = v => bx + Math.min(v, 130) / 130 * bw;
+  g += `<rect x="${bx}" y="10" width="${bw}" height="14" fill="var(--panel)" stroke="var(--line)"/><rect x="${bx}" y="10" width="${Xp(Math.min(s.total_picks, 100)) - bx}" height="14" fill="var(--steel)"/>`;
+  if (s.total_picks > 100) g += `<rect x="${Xp(100)}" y="10" width="${Xp(s.total_picks) - Xp(100)}" height="14" fill="var(--bad)"/>`;
+  g += `<line x1="${Xp(100)}" y1="4" x2="${Xp(100)}" y2="30" stroke="var(--ink)" stroke-width="2"/>` + T(Xp(100), 42, "100 ordered", "m", 10, "middle") + T(bx, 42, `${s.total_picks} picked`, `m ${s.total_picks > 100 ? "bad" : ""}`, 11, "start", 'font-weight="600"');
+  const trays = s.trays.slice(); if (failing && failing.service === "delta-tray-pack") trays.push({rows: +failing.params.rows, cols: +failing.params.cols, ghost: true});
+  if (running && running.service === "delta-tray-pack") trays.push({rows: +running.params.rows, cols: +running.params.cols, run: true});
+  trays.forEach((t, i) => {
+    const x = 16 + i * 116, y = 64, w = t.cols * cell + 8, h = t.rows * cell + 8;
+    g += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="var(--panel)" stroke="${t.ghost ? "var(--bad)" : t.run ? "var(--safety)" : "var(--ink)"}" stroke-width="${t.ghost || t.run ? 2 : 1}" ${t.ghost ? 'stroke-dasharray="4 3"' : ""} ${t.run ? 'class="pulse"' : ""}/>`;
+    if (!t.ghost && !t.run) for (let rr = 0; rr < t.rows; rr++) for (let cc = 0; cc < t.cols; cc++) g += `<circle cx="${x + 4 + cell / 2 + cc * cell}" cy="${y + 4 + cell / 2 + rr * cell}" r="${cell / 2 - 1}" fill="var(--safety)"/>`;
+    g += T(x, y + h + 16, `tray ${i + 1}: ${t.rows}×${t.cols}`, "m", 11) + (t.mass !== undefined ? T(x, y + h + 30, `${t.mass} / 5 kg`, `m ${t.mass > 5 ? "bad" : "mut"}`, 11) : "");
+  });
+  if (failing) g += failText(failing, 16, H - 12);
+  return g + "</svg>";
+}
+
+function palView({S, failing, running}) {
+  const s = S("palletizer"), W = 520, H = 300, base = 144, maxMM = 2700, y0 = H - 30, top = 22, Y = mm => y0 - mm / maxMM * (y0 - top), px = mm => mm / maxMM * (y0 - top);
+  let g = svgOpen(W, H, "Palletizer side view with stack height, pallet load and released pallets");
+  for (let mm = 0; mm <= 2600; mm += 200) g += `<line x1="44" y1="${Y(mm)}" x2="50" y2="${Y(mm)}" stroke="var(--muted)"/>` + T(40, Y(mm) + 3, mm, "m mut", 9, "end");
+  g += `<line x1="50" y1="${Y(0)}" x2="50" y2="${Y(2600)}" stroke="var(--muted)"/><line x1="50" y1="${Y(1800)}" x2="244" y2="${Y(1800)}" stroke="var(--bad)" stroke-width="2"/>` + T(246, Y(1800) + 4, "1800 mm", "bad m");
+  const x = 70, w = 150, n = s.cases.length, h = n ? s.cases[0].h : 250, layers = Math.ceil(n / 8);
+  g += T(x, 14, "CURRENT PALLET", "m mut") + `<rect x="${x}" y="${Y(base)}" width="${w}" height="${px(base)}" fill="var(--muted)"/>`;
+  for (let L = 0; L < layers; L++) { const inLayer = Math.min(8, n - L * 8), yL = Y(base + (L + 1) * h);
+    for (let c = 0; c < 4; c++) g += `<rect x="${x + 2 + c * (w - 4) / 4}" y="${yL + 1}" width="${(w - 4) / 4 - 3}" height="${px(h) - 2}" fill="${c < Math.ceil(inLayer / 2) ? "var(--safety)" : "none"}" stroke="var(--ink)" stroke-width=".8"/>`; }
+  if (s.wrapped && n) g += `<rect x="${x - 3}" y="${Y(base + layers * h) - 3}" width="${w + 6}" height="${px(layers * h) + 3}" fill="var(--band1)" stroke="var(--steel)" stroke-width="2" stroke-dasharray="2 3"/>` + T(x + w / 2, Y(base + layers * h) - 7, `wrapped · ${s.film_layers} film layers`, "m", 10, "middle");
+  if (failing && failing.service === "palletizer-stack-case") {
+    const c = +failing.params.count, hh = +failing.params.case_height_mm || 200, L2 = Math.ceil((n + c) / 8);
+    for (let L = layers; L < L2; L++) g += `<rect x="${x + 2}" y="${Y(base + (L + 1) * hh) + 1}" width="${w - 4}" height="${px(hh) - 2}" fill="none" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+    g += T(x, Y(base + L2 * hh) - 6, `${base + L2 * hh} mm > 1800 mm: refused`, "bad m");
+  }
+  if (running && running.service === "palletizer-stack-case") g += `<rect x="${x - 2}" y="${Y(1800)}" width="${w + 4}" height="${Y(base) - Y(1800)}" fill="none" stroke="var(--safety)" stroke-width="2" class="pulse"/>`;
+  g += T(x + w / 2, y0 + 16, `${n} cases · ${layers} layers · ${n ? base + layers * h : base} mm`, "m", 11, "middle");
+  const mass = s.cases.reduce((a, c) => a + c.m, 0), gx = 300, gw = 200;
+  g += T(gx, 14, "PALLET LOAD", "m mut") + `<rect x="${gx}" y="22" width="${gw}" height="12" fill="var(--panel)" stroke="var(--line)"/><rect x="${gx}" y="22" width="${Math.min(1, mass / 1000) * gw}" height="12" fill="var(--steel)"/>` + T(gx + gw, 48, `${mass} / 1000 kg`, "m", 11, "end");
+  g += T(gx, 70, `RELEASED PALLETS (${s.completed_pallets.length})`, "m mut");
+  s.completed_pallets.forEach((p, i) => { const hp = px(p.height), x0 = gx + i * 50;
+    g += `<rect x="${x0}" y="${y0 - hp}" width="40" height="${hp}" fill="var(--safety)" stroke="var(--ink)" stroke-width=".8"/><rect x="${x0}" y="${y0 - hp}" width="40" height="${hp}" fill="var(--band1)" stroke="var(--steel)" stroke-dasharray="2 3"/>` + T(x0 + 20, y0 - hp - 6, p.cases, "m", 10, "middle"); });
+  return g + T(gx, y0 + 16, `cases placed ${s.cases_total} / 150`, "m mut") + "</svg>";
+}
+
+function amrView({S, failing, running}) {
+  const s = S("amr"), W = 600, H = 292, fx0 = 16, fy0 = 24, sc = 4.2, P = k => [fx0 + M.FLOOR[k][0] * sc, fy0 + (40 - M.FLOOR[k][1]) * sc];
+  let g = svgOpen(W, H, "AMR floor map, trips and battery") + T(fx0, 14, "FLOOR (SCHEMATIC)", "m mut");
+  g += `<rect x="${fx0}" y="${fy0}" width="${90 * sc}" height="${40 * sc}" fill="var(--panel)" stroke="var(--line)"/>`;
+  s.path.forEach(([a, b, kg]) => { const [x1, y1] = P(a), [x2, y2] = P(b);
+    g += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${kg ? (kg > 220 ? "var(--bad)" : "var(--steel)") : "var(--muted)"}" stroke-width="${kg ? 3 : 1.5}" ${kg ? "" : 'stroke-dasharray="5 4"'} opacity=".8"/>`; });
+  const SHORT = {CONVEYOR_ENTRY:"CONV. IN", CONVEYOR_EXIT:"CONV. OUT", PAINT_BOOTH:"PAINT", CURING_OVEN:"OVEN", CHECKWEIGHER:"WEIGHER", PALLETIZER:"PALLETIZER"};
+  Object.keys(M.FLOOR).forEach(k => { const [x, y] = P(k), hot = k === "WAREHOUSE" || k === "CNC";
+    g += `<circle cx="${x}" cy="${y}" r="${hot ? 6 : 4}" fill="${hot ? "var(--safety)" : "var(--muted)"}"/>` + T(x, y + 20, SHORT[k] || k, hot ? "m" : "m mut", 9, "middle", hot ? 'font-weight="700"' : ""); });
+  const [ax, ay] = P(s.location);
+  g += `<rect x="${ax - 9}" y="${ay - 9}" width="18" height="18" rx="3" fill="var(--steel)" stroke="var(--ink)" ${running && running.station === "amr" ? 'class="pulse"' : ""}/>` + T(ax, ay + 4, "A", "m", 10, "middle", 'style="fill:var(--bg)" font-weight="700"');
+  // trips panel
+  const tx = 408, ty0 = 40, th = 150, Yk = kg => ty0 + th - kg / 260 * th;
+  g += T(tx, 14, "PAYLOAD PER TRIP", "m mut");
+  g += `<line x1="${tx}" y1="${Yk(220)}" x2="${W - 10}" y2="${Yk(220)}" stroke="var(--bad)" stroke-width="2"/>` + T(W - 10, Yk(220) - 4, "CNC bay 220 kg", "bad m", 10, "end");
+  g += `<line x1="${tx}" y1="${Yk(250)}" x2="${W - 10}" y2="${Yk(250)}" stroke="var(--muted)" stroke-dasharray="4 3"/>` + T(W - 10, Yk(250) - 4, "AMR 250 kg", "m mut", 10, "end");
+  s.trips.forEach((t, i) => { const x = tx + 6 + i * 40;
+    g += `<rect x="${x}" y="${Yk(t.kg)}" width="28" height="${ty0 + th - Yk(t.kg)}" fill="${t.kg > 220 ? "var(--bad)" : "var(--steel)"}"/>` + T(x + 14, ty0 + th + 14, t.kg, "m", 10, "middle"); });
+  g += `<line x1="${tx}" y1="${ty0 + th}" x2="${W - 10}" y2="${ty0 + th}" stroke="var(--muted)"/>`;
+  g += T(tx, ty0 + th + 32, `delivered ${s.delivered_kg} / 600 kg`, `m ${s.delivered_kg > 600 ? "bad" : ""}`, 11) + T(tx, ty0 + th + 46, `${s.missions} trip(s)`, "m mut", 11);
+  const bw = 170; g += T(tx, H - 26, `BATTERY ${fx(s.battery_pct)} % · at ${s.location}`, "m mut", 10) + `<rect x="${tx}" y="${H - 20}" width="${bw}" height="10" fill="var(--panel)" stroke="var(--line)"/><rect x="${tx}" y="${H - 20}" width="${bw * s.battery_pct / 100}" height="10" fill="${s.battery_pct < 30 ? "var(--bad)" : "var(--ok)"}"/><line x1="${tx + bw * .15}" y1="${H - 24}" x2="${tx + bw * .15}" y2="${H - 6}" stroke="var(--bad)"/>`;
+  g += T(fx0, H - 30, "solid: loaded trip · dashed: empty drive", "mut", 10);
+  if (failing) g += failText(failing, fx0, H - 12);
+  return g + "</svg>";
+}
+
+function droneView({S, failing, running}) {
+  const s = S("drone"), W = 600, H = 260, x0 = 40, x1 = W - 16, y0 = 210, y1 = 50, N = 22, X = i => x0 + i / N * (x1 - x0), Y = p => y0 - p / 100 * (y0 - y1);
+  let g = svgOpen(W, H, "Drone battery over the mission with the 20 % reserve");
+  for (let p = 0; p <= 100; p += 20) g += `<line x1="${x0}" y1="${Y(p)}" x2="${x1}" y2="${Y(p)}" stroke="var(--line)" stroke-width=".6"/>` + T(x0 - 6, Y(p) + 3, p, "m mut", 10, "end");
+  g += `<rect x="${x0}" y="${Y(20)}" width="${x1 - x0}" height="${Y(0) - Y(20)}" fill="var(--bad)" opacity=".12"/><line x1="${x0}" y1="${Y(20)}" x2="${x1}" y2="${Y(20)}" stroke="var(--bad)" stroke-width="2"/>` + T(x1, Y(20) - 4, "20 % reserve", "bad m", 10, "end");
+  const L = s.log; let pts = [];
+  L.forEach((e, i) => { if (e.k === "swap") pts.push([i - 0.001, e.prev]); pts.push([i, e.pct]); });
+  g += `<polyline fill="none" stroke="var(--ink)" stroke-width="2" points="${pts.map(([i, p]) => X(i) + "," + Y(p)).join(" ")}"/>`;
+  L.forEach((e, i) => {
+    const col = e.k === "insp" ? "var(--steel)" : e.k === "swap" ? "var(--ok)" : e.k === "rth" ? "var(--safety)" : "var(--muted)";
+    g += `<circle cx="${X(i)}" cy="${Y(e.pct)}" r="4" fill="${col}"/>`;
+    if (e.k === "swap") g += T(X(i), Y(100) - 6, "swap", "m okc", 9, "middle");
+    if (e.k === "insp") g += T(X(i), y0 + 14, e.loc[0], "m mut", 9, "middle");
+  });
+  if (failing && failing.service === "drone-aerial-inspection") { const i = L.length, cost = M.DRONE.inspect[failing.params.zone] || 6.4, last = L[L.length - 1].pct;
+    g += `<line x1="${X(i - 1)}" y1="${Y(last)}" x2="${X(i)}" y2="${Y(last - cost)}" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"/><circle cx="${X(i)}" cy="${Y(last - cost)}" r="5" fill="none" stroke="var(--bad)" stroke-width="2"/>`; }
+  g += T(x0, 14, `BATTERY · ${s.inspections.length} inspections · at ${s.location} · ${fx(s.battery_pct)} %`, "m mut", 11);
+  g += T(x0, H - 8, "letters: zone of each inspection (H high-bay rack, R roof truss, P palletizer, C CNC)", "mut", 10);
+  if (failing) g += failText(failing, x0, 32);
+  return g + "</svg>";
+}
+
+function deliveryView({S, failing, plan}) {
+  const s = S("drone"), W = 560, H = 200, bx = 150, bw = 360, X = kg => bx + kg / 3 * bw;
+  let g = svgOpen(W, H, "Drone flights in the plan against the 2.5 kg payload limit") + T(16, 18, "PAYLOAD PER FLIGHT IN THE PLAN", "m mut");
+  const fl = planSteps(plan, "drone-aerial-delivery");
+  g += `<line x1="${X(2.5)}" y1="26" x2="${X(2.5)}" y2="${36 + fl.length * 34}" stroke="var(--bad)" stroke-width="2"/>` + T(X(2.5) + 4, 34, "2.5 kg limit", "bad m", 10);
+  fl.forEach((f, i) => { const kg = +f.staticParameters.payload_kg, y = 44 + i * 34, flown = s.log.filter(e => e.k === "deliv").length > i;
+    g += T(16, y + 14, `${esc(f.name)}`, "m", 11) + `<rect x="${bx}" y="${y}" width="${X(kg) - bx}" height="20" fill="${kg > 2.5 ? "var(--bad)" : "var(--steel)"}" opacity="${flown || kg > 2.5 ? 1 : .45}"/>` + T(X(kg) + 6, y + 14, `${kg} kg${flown ? " · flown" : ""}`, "m", 11); });
+  g += T(16, H - 36, "requested: sensor 1.8 kg + bracket 0.9 kg together, in one flight", "mut", 11);
+  if (failing) g += failText(failing, 16, H - 14);
+  return g + "</svg>";
+}
+
+function paintView({S, failing, running}) {
+  const p = S("painting_robot"), o = S("curing_oven"), W = 600, H = 250;
+  let g = svgOpen(W, H, "Paint booth filter, painted housings and the oven batch") + T(16, 18, `BOOTH FILTER ${p.filter_jobs} / 12 JOBS · ${p.purges} PURGE(S)`, "m mut");
+  for (let i = 0; i < 12; i++) g += `<rect x="${16 + i * 22}" y="28" width="18" height="22" fill="${i < p.filter_jobs ? (p.filter_jobs >= 12 ? "var(--bad)" : "var(--safety)") : "var(--panel)"}" stroke="var(--line)"/>`;
+  if (failing && failing.service === "paint-spray-coat") g += T(16, 66, "filter saturated: 13th spray job refused", "bad m");
+  g += T(16, 92, `HOUSINGS PAINTED ${p.painted_parts} / 14`, "m mut");
+  const coats = p.jobs.length ? p.jobs[p.jobs.length - 1] : null;
+  for (let i = 0; i < 14; i++) { const x = 16 + (i % 7) * 40, y = 100 + Math.floor(i / 7) * 40, done = i < p.painted_parts, fail = failing && failing.service === "paint-spray-coat" && i === p.painted_parts;
+    g += `<rect x="${x}" y="${y}" width="32" height="30" rx="3" fill="${done ? "var(--bad)" : "var(--panel)"}" opacity="${done ? .85 : 1}" stroke="${fail ? "var(--bad)" : "var(--line)"}" stroke-width="${fail ? 3 : 1}" ${fail ? 'stroke-dasharray="4 3"' : ""}/>` + T(x + 16, y + 19, i + 1, "m", 10, "middle", done ? 'style="fill:var(--bg)"' : ""); }
+  if (coats) g += T(16, 196, `last job: ${coats.coats} coat(s) × ${coats.film} µm`, `m ${coats.coats === 3 && coats.film === 30 ? "" : "bad"}`);
+  const gx = 330, gw = 250, b = o.batches[o.batches.length - 1];
+  g += T(gx, 18, `CURING OVEN · ${o.batches_cured} BATCH(ES)`, "m mut") + `<rect x="${gx}" y="28" width="${gw}" height="14" fill="var(--panel)" stroke="var(--line)"/>`;
+  const tot = o.batches.reduce((a, x) => a + x.payload_kg, 0);
+  g += `<rect x="${gx}" y="28" width="${Math.min(1, tot / 100) * gw}" height="14" fill="var(--steel)"/><line x1="${gx + .63 * gw}" y1="22" x2="${gx + .63 * gw}" y2="48" stroke="var(--ink)" stroke-width="2"/>` + T(gx + .63 * gw, 60, "63 kg = 14 × 4.5", "m", 10, "middle") + T(gx + gw, 78, `${tot} / 100 kg loaded`, "m", 11, "end");
+  if (b) g += T(gx, 104, `${b.coating} · ${b.temperature_c} °C · ${b.dwell_min} min`, "m") + T(gx, 120, `${b.parts} parts · ${b.payload_kg} kg declared`, `m ${b.payload_kg === 63 ? "" : "bad"}`);
+  if (running) g += T(gx, 150, esc(running.service) + "…", "m pulse");
+  if (failing) g += failText(failing, 16, H - 12);
+  return g + "</svg>";
+}
+
+function gantryView({S, failing, plan}) {
+  const s = S("cartesian_robot"), W = 600, H = 270, x0 = 40, y0 = 30, sc = 0.2, P = (x, y) => [x0 + x * sc, y0 + (1000 - y) * sc];
+  let g = svgOpen(W, H, "Gantry workspace top view with the move of the die") + T(x0, 18, "WORKSPACE TOP VIEW · X 0–2000 · Y 0–1000 mm", "m mut");
+  g += `<rect x="${x0}" y="${y0}" width="${2000 * sc}" height="${1000 * sc}" fill="var(--panel)" stroke="var(--line)"/>`;
+  for (let x = 0; x <= 2000; x += 500) g += T(P(x, 0)[0], y0 + 1000 * sc + 14, x, "m mut", 9, "middle");
+  const [rx, ry] = P(1750, 700); g += `<circle cx="${rx}" cy="${ry}" r="11" fill="none" stroke="var(--ok)" stroke-width="2" stroke-dasharray="3 3"/>` + T(rx, ry - 16, "requested place 1750, 700", "m okc", 9, "middle");
+  const [px0, py0] = P(250, 300); g += `<rect x="${px0 - 7}" y="${py0 - 7}" width="14" height="14" fill="none" stroke="var(--safety)" stroke-width="2"/>` + T(px0, py0 + 22, "die at 250, 300", "m", 9, "middle");
+  const pts = [{x: 0, y: 0}].concat(s.path.filter(p => p.k !== "home"));
+  if (s.path.length) g += `<polyline fill="none" stroke="var(--steel)" stroke-width="2.5" points="${pts.map(p => P(p.x, p.y).join(",")).join(" ")}"/>`;
+  s.path.filter(p => p.k === "place").forEach(p => { const [x, y] = P(p.x, p.y); g += `<rect x="${x - 7}" y="${y - 7}" width="14" height="14" fill="var(--safety)"/>` + T(x, y + 22, `placed ${p.x}, ${p.y}`, `m ${p.x === 1750 && p.y === 700 ? "" : "bad"}`, 9, "middle"); });
+  const [cx, cy] = P(s.position.x, s.position.y); g += `<circle cx="${cx}" cy="${cy}" r="6" fill="var(--ink)"/>`;
+  const gx = 470, mp = planSteps(plan, "gantry-pick-place")[0], kg = mp ? +mp.staticParameters.payload_kg : 0;
+  g += T(gx, 44, `homed: ${s.homed ? "yes" : "no"}`, `m ${s.homed ? "okc" : "mut"}`) + T(gx, 62, `at ${s.position.x}, ${s.position.y}, ${s.position.z}`, "m") + T(gx, 80, `travel ${Math.round(s.travel_mm)} mm`, "m mut");
+  g += T(gx, 112, "PAYLOAD IN THE PLAN", "m mut", 10) + `<rect x="${gx}" y="120" width="110" height="12" fill="var(--panel)" stroke="var(--line)"/><rect x="${gx}" y="120" width="${Math.min(1, kg / 100) * 110}" height="12" fill="${kg > 50 ? "var(--bad)" : "var(--steel)"}"/><line x1="${gx + 55}" y1="114" x2="${gx + 55}" y2="138" stroke="var(--bad)" stroke-width="2"/>` + T(gx + 55, 152, "50 kg limit", "bad m", 9, "middle") + T(gx, 172, `${kg} kg in the plan`, `m ${Math.abs(kg - 42) <= .1 ? "" : "bad"}`, 10) + T(gx, 188, "92.6 lb = 42.0 kg", "m mut", 10);
+  if (failing) g += failText(failing, x0, H - 10);
+  return g + "</svg>";
+}
+
+function ovenView({S, failing, running, r}) {
+  const s = S("curing_oven"), W = 560, H = 250, x0 = 44, x1 = 360, y0 = 210, y1 = 24;
+  const fin = r.run && r.run.trace.length ? r.run.trace[r.run.trace.length - 1].snapshot : null, fo = fin && fin.curing_oven;
+  const tMax = Math.max(60, fo ? fo.profile[fo.profile.length - 1].t : 60) * 1.05, X = t => x0 + t / tMax * (x1 - x0), Y = c => y0 - c / 180 * (y0 - y1);
+  let g = svgOpen(W, H, "Oven chamber temperature over time with the cure windows");
+  g += `<rect x="${x0}" y="${Y(140)}" width="${x1 - x0}" height="${Y(110) - Y(140)}" fill="var(--band1)"/><rect x="${x0}" y="${Y(160)}" width="${x1 - x0}" height="${Y(120) - Y(160)}" fill="var(--band2)"/><rect x="${x0}" y="${Y(140)}" width="${x1 - x0}" height="${Y(120) - Y(140)}" fill="var(--band3)"/>`;
+  g += T(x1 - 4, Y(156), "solvent paint 120–160", "mut", 10, "end") + T(x1 - 4, Y(112), "clear coat 110–140", "mut", 10, "end");
+  for (let c = 0; c <= 180; c += 30) g += `<line x1="${x0}" y1="${Y(c)}" x2="${x1}" y2="${Y(c)}" stroke="var(--line)" stroke-width=".6"/>` + T(x0 - 6, Y(c) + 3, c, "m mut", 10, "end");
+  g += `<line x1="${x0}" y1="${Y(60)}" x2="${x1}" y2="${Y(60)}" stroke="var(--muted)" stroke-dasharray="4 4"/>` + T(x0 + 4, Y(60) - 4, "door opens by hand ≤ 60 °C", "mut", 10);
+  g += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="var(--muted)"/>` + T((x0 + x1) / 2, y0 + 28, "minutes (ramps schematic)", "mut", 10, "middle");
+  for (let t = 0; t <= tMax; t += 20) g += T(X(t), y0 + 13, t, "m mut", 9, "middle");
+  const pr = s.profile;
+  if (pr.length > 1) { g += `<polyline fill="none" stroke="var(--ink)" stroke-width="2" points="${pr.map(p => X(p.t) + "," + Y(p.c)).join(" ")}"/>`;
+    pr.forEach((p, i) => { if (p.dwell) g += `<line x1="${X(pr[i - 1].t)}" y1="${Y(p.c)}" x2="${X(p.t)}" y2="${Y(p.c)}" stroke="var(--safety)" stroke-width="5"/>`; }); }
+  if (failing) g += failText(failing, x0 + 8, y1 + 4);
+  const gx = 384;
+  g += T(gx, 30, "CHAMBER", "m mut") + T(gx, 58, s.chamber_c + " °C", "m", 26, "start", 'font-weight="600"') + T(gx, 80, "door " + (s.door_locked ? "locked" : "free"), "m " + (s.door_locked ? "bad" : "okc"), 12);
+  g += T(gx, 108, "BATCHES " + s.batches.length, "m mut");
+  s.batches.forEach((b, i) => { const y = 126 + i * 46; g += T(gx, y, `${esc(b.coating)} · ${b.temperature_c} °C`, "m") + T(gx, y + 14, `${b.dwell_min} min · ${b.parts} parts`, "m mut") + T(gx, y + 28, `batch ${b.payload_kg} kg`, "m mut"); });
+  if (running) g += T(gx, H - 14, esc(running.service) + "…", "m pulse");
+  return g + "</svg>";
+}
+
+function branchView({S, plan, failing}) {
+  const cw = S("checkweigher"), p = S("painting_robot"), pal = S("palletizer"), W = 600, H = 216;
+  const has = svc => planSteps(plan, svc).length > 0, gate = planSteps(plan, "checkweigher-weigh-item").some(s => String(s.staticParameters.fail_on_reject) === "true");
+  const box = (x, y, w, label, sub, on, ran, bad) => `<rect x="${x}" y="${y}" width="${w}" height="44" rx="3" fill="${ran ? "var(--band2)" : "var(--panel)"}" stroke="${bad ? "var(--bad)" : on ? "var(--ink)" : "var(--line)"}" stroke-width="${on ? 2 : 1}" ${on ? "" : 'stroke-dasharray="4 3"'}/>` + T(x + 10, y + 18, label, "m", 11) + T(x + 10, y + 34, sub, "m mut", 10);
+  let g = svgOpen(W, H, "What the request asks for versus what a plan can express");
+  g += T(16, 18, "REQUESTED: A RUN-TIME DECISION", "m mut");
+  g += box(16, 30, 170, "weigh housing", cw.readings.length ? `reading: ${cw.readings[cw.readings.length - 1]}` : "nominal 4.5 kg ± 2 %", has("checkweigher-weigh-item"), cw.weighed > 0);
+  g += `<path d="M186 52 L230 32 M186 52 L230 92" stroke="var(--muted)" fill="none"/>` + T(200, 30, "under", "m mut", 9) + T(200, 96, "ok", "m mut", 9);
+  g += box(232, 12, 190, "repaint one coat", `${p.painted_parts} part(s) painted`, has("paint-spray-coat"), p.painted_parts > 0, has("paint-spray-coat") && has("palletizer-stack-case"));
+  g += box(232, 72, 190, "palletize as case", `${pal.cases_total} case(s) stacked`, has("palletizer-stack-case"), pal.cases_total > 0, has("paint-spray-coat") && has("palletizer-stack-case"));
+  g += T(16, 150, "A Choreographer plan has no branch and no data passing: solid boxes are the steps this plan contains.", "", 11);
+  const both = has("paint-spray-coat") && has("palletizer-stack-case");
+  g += T(16, 170, both ? "This plan runs both branches for every housing: repaint AND palletize." : gate ? "This plan gates instead: fail_on_reject stops the session" : "", both ? "bad m" : "okc m", 11);
+  if (!both && gate) g += T(16, 186, "for an off-tolerance housing, before it is palletized.", "okc m", 11);
+  g += T(16, 206, "Simulated reading: nominal + load-cell drift (no real scale data).", "mut", 10);
+  return g + "</svg>";
+}
+
+function ganttView({S, plan, execd, r}) {
+  const steps = plan.actions[0].steps, q = plan.sessionQuantity, preds = plan.preds;
+  const depth = {}; const d = n => depth[n] !== undefined ? depth[n] : (depth[n] = (preds[n] || []).length ? 1 + Math.max(...preds[n].map(d)) : 0);
+  steps.forEach(s => d(s.name));
+  const maxD = Math.max(...Object.values(depth)) + 1, cols = maxD * q, lanes = [["warehouse", "Warehouse"], ["laser", "Laser"], ["drone", "Drone"]];
+  const W = 640, H = 230, x0 = 90, cw = Math.min(52, (W - x0 - 20) / cols), lh = 40;
+  const done = new Set((r.run ? r.run.trace.slice(0, execd) : []).map(x => x.iteration + "/" + x.step));
+  let g = svgOpen(W, H, "Steps by station lane and dependency depth") + T(16, 16, "STEPS BY STATION AND DEPENDENCY DEPTH (LEFT = EARLIER)", "m mut");
+  lanes.forEach(([k, name], i) => g += T(16, 46 + i * lh, name, "m", 11) + `<line x1="${x0}" y1="${50 + i * lh + 8}" x2="${W - 10}" y2="${50 + i * lh + 8}" stroke="var(--line)"/>`);
+  for (let it = 1; it <= q; it++) steps.forEach(s => {
+    const st = M.SERVICE_STATION[M.svcOf(s)], li = lanes.findIndex(l => l[0] === st); if (li < 0) return;
+    const x = x0 + ((it - 1) * maxD + depth[s.name]) * cw, y = 30 + li * lh, ok = done.has(it + "/" + s.name);
+    const lab = s.staticParameters.text || s.staticParameters.item_id || (M.svcOf(s).includes("dispense") ? "disp" : M.svcOf(s).includes("inspection") ? "insp" : "");
+    g += `<rect x="${x + 1}" y="${y}" width="${cw - 3}" height="26" rx="2" fill="${ok ? "var(--steel)" : "var(--panel)"}" stroke="var(--ink)" stroke-width=".8"/>` + T(x + cw / 2, y + 17, esc(String(lab).replace("SN-00", "")), "m", 9, "middle", ok ? 'style="fill:var(--bg)"' : "");
+  });
+  const wh = S("warehouse");
+  g += T(16, 168, `engraved in order: ${S("laser").engraved.join(", ") || "–"}`, "m", 11);
+  g += T(16, 186, `rack: ${wh.finished_goods_rack.map(x => x.itemId || "(no id)").join(", ") || "–"} · blue stock ${wh.raw_inventory.blue.length}`, "m", 11);
+  g += T(16, 206, q > 1 ? `session quantity ${q}: the same steps, same serial, every iteration` : "a box further right waits for more predecessors; the drone should start at depth 0", "mut", 10);
+  return g + "</svg>";
+}
+
+/* ------------------------------------------------------------------ trap overview (all 43 traps of the expert tier) */
+function renderOverview() {
+  const traps = []; ORDER.forEach(id => RESULTS[id].filter(t => t.name !== "gold").forEach(t => traps.push({id, t})));
+  const bins = [["l3", "Refused by the static validator (L3)", x => !x.t.res.dispatched && x.t.res.layer !== "L4"],
+    ["l4", "Refused in the twin dry run (L4)", x => !x.t.res.dispatched && x.t.res.layer === "L4"],
+    ["l6", "Executed without error: only the oracle (L6) sees it", x => x.t.res.dispatched]];
+  document.getElementById("overview").innerHTML = `<div class="row" style="justify-content:space-between"><h2>All ${traps.length} traps of the three orders</h2><span class="lbl">click a trap to play it</span></div>
+    <p class="note">The new checks of this track do most of the catching: material flow and the oven-door interlock (O1), double booking and deadlock between sessions (O2), and a twin that starts from the reported state (O3). What is left in the right-hand column are plans that run but are not what was asked: suboptimal schedules, an extra trip, a missing quality gate, or an order that misses its deadline.</p>
+    <div class="over">${bins.map(b => { const list = traps.filter(b[2]); return `<div class="bin ${b[0]}"><h3>${b[1]} <span>${list.length}</span></h3><div class="tchips">${list.length ? list.map(x =>
+      `<button data-goto="${x.id}|${x.t.name}" title="${esc(x.t.error)}">${x.id} ${esc(x.t.label)}</button>`).join("") : `<span class="note">none</span>`}</div></div>`; }).join("")}</div>`;
+  document.querySelectorAll("#overview [data-goto]").forEach(b => b.addEventListener("click", () => {
+    const [id, name] = b.dataset.goto.split("|"); selectScenario(id, name);
+    document.getElementById("scenario").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+  }));
+}
+
+/* ------------------------------------------------------------------ track 2 views */
+const STAGE_COL = {raw: "none", machined: "var(--steel)", painted: "var(--bad)", cured: "var(--safety)", weighed: "var(--ok)", palletized: "var(--ink)"};
+function lineView({S, failing, running}) {
+  const pl = S("plant"), W = 660, H = 300, bw = 112, gap = 20, x0 = 10, y0 = 34, bh = 176;
+  const isl = [["CNC", "CNC", "cnc"], ["PAINT_BOOTH", "Paint booth", "painting_robot"], ["CURING_OVEN", "Curing oven", "curing_oven"], ["CHECKWEIGHER", "Checkweigher", "checkweigher"], ["PALLETIZER", "Palletizer", "palletizer"]];
+  const amr = S("amr"), cnc = S("cnc"), pb = S("painting_robot"), ov = S("curing_oven"), cw = S("checkweigher"), pal = S("palletizer");
+  let g = svgOpen(W, H, "Housings by station and stage along the order") + T(x0, 18, "HOUSINGS BY STATION AND STAGE · AMR MOVES BETWEEN THE ISLANDS", "m mut");
+  isl.forEach(([loc, name, st], i) => {
+    const x = x0 + i * (bw + gap), act = running && running.station === st;
+    g += `<rect x="${x}" y="${y0}" width="${bw}" height="${bh}" rx="3" fill="var(--panel)" stroke="${act ? "var(--safety)" : "var(--line)"}" stroke-width="${act ? 3 : 1}"/>` + T(x + 8, y0 + 18, name, "", 12, "start", 'font-weight="600"');
+    const c = pl ? pl.at[loc] : null; let k = 0;
+    if (c) M.STAGES.forEach(stg => { for (let j = 0; j < c[stg]; j++, k++) { const cx = x + 14 + (k % 7) * 14, cy = y0 + 36 + Math.floor(k / 7) * 14;
+      g += `<circle cx="${cx}" cy="${cy}" r="5.5" fill="${STAGE_COL[stg]}" stroke="var(--ink)" stroke-width="${stg === "raw" ? 1 : .5}"/>`; } });
+    const lines = st === "cnc" ? [`T${cnc.activeTool} wear ${fx(cnc.wear[cnc.activeTool])} %`, `${cnc.tool_changes} tool change(s)`, `${cnc.parts_machined} machined`]
+      : st === "painting_robot" ? [`filter ${pb.filter_jobs} / 12`, `${pb.purges} purge(s)`, `${pb.painted_parts} painted`]
+      : st === "curing_oven" ? [`${ov.chamber_c} °C`, `door ${ov.door_locked || ov.chamber_c > 60 ? "locked" : "free"}`, `${ov.batches_cured} batch(es)`]
+      : st === "checkweigher" ? [`${cw.weighed} weighed`, `drift ${fx(cw.drift_g, 2)} g`, cw.readings.length ? `last: ${cw.readings[cw.readings.length - 1]}` : ""]
+      : [`${pal.cases.length} on the pallet`, `${pal.completed_pallets.length} released`, pal.wrapped ? "wrapped" : ""];
+    lines.forEach((l, j) => (g += T(x + 8, y0 + 98 + j * 16, esc(l), j === 1 && st === "curing_oven" && l.includes("locked") ? "m bad" : "m", 11)));
+    if (i < isl.length - 1) { const ax = x + bw + 2, last = amr.trips.length && amr.trips[amr.trips.length - 1], on = last && last.from === loc;
+      g += `<path d="M${ax} ${y0 + 60} h${gap - 4}" stroke="${on ? "var(--steel)" : "var(--muted)"}" stroke-width="${on ? 3 : 1.5}" marker-end="url(#ah)"/>`; }
+  });
+  g = g.replace(svgOpen(W, H, "Housings by station and stage along the order"), svgOpen(W, H, "Housings by station and stage along the order") + `<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker></defs>`);
+  const ai = isl.findIndex(x => x[0] === amr.location), axx = ai >= 0 ? x0 + ai * (bw + gap) + bw / 2 : x0 + 20;
+  g += `<rect x="${axx - 22}" y="${y0 + bh + 8}" width="44" height="18" rx="3" fill="var(--steel)" ${running && running.station === "amr" ? 'class="pulse"' : ""}/>` + T(axx, y0 + bh + 21, "AMR", "m", 10, "middle", 'style="fill:var(--bg)" font-weight="700"');
+  g += T(W - 10, y0 + bh + 21, `AMR at ${amr.location} · ${amr.missions} trip(s)`, "m mut", 11, "end");
+  const leg = M.STAGES.map((stg, i) => `<circle cx="${x0 + 6 + i * 100}" cy="${H - 34}" r="5" fill="${STAGE_COL[stg]}" stroke="var(--ink)" stroke-width="${stg === "raw" ? 1 : .5}"/>` + T(x0 + 15 + i * 100, H - 30, stg, "mut", 10)).join("");
+  g += leg;
+  if (failing) g += failText(failing, x0, H - 10);
+  return g + "</svg>";
+}
+
+function timeView({r, execd, running}) {
+  const W = 660, H = 270, x0 = 92, x1 = W - 14, tMax = 72, X = t => x0 + Math.min(t, tMax) / tMax * (x1 - x0);
+  const ses = r.plan.multi ? r.plan.sessions.map(s => s.name) : ["-"], SC = ["var(--steel)", "var(--safety)", "var(--ok)"];
+  const lanes = ses.map(n => ["s:" + n, `Session ${n}`]).concat([["st:amr", "AMR"], ["st:cnc", "CNC"], ["st:curing_oven", "Oven"], ["lease", "AMR lease"]]);
+  const lh = 28, ly = i => 30 + i * lh, li = k => lanes.findIndex(l => l[0] === k);
+  let g = svgOpen(W, H, "Time line of the sessions, the shared stations and the AMR lease") + T(x0, 16, "TIME LINE (MIN) · SESSIONS, SHARED STATIONS, AMR LEASE", "m mut");
+  lanes.forEach(([k, name], i) => (g += T(8, ly(i) + 17, name, "m", 11) + `<line x1="${x0}" y1="${ly(i) + lh - 2}" x2="${x1}" y2="${ly(i) + lh - 2}" stroke="var(--line)"/>`));
+  for (let t = 0; t <= tMax; t += 10) g += `<line x1="${X(t)}" y1="${ly(0)}" x2="${X(t)}" y2="${ly(lanes.length)}" stroke="var(--line)" stroke-width=".5"/>` + T(X(t), ly(lanes.length) + 12, t, "m mut", 9, "middle");
+  const recs = r.run ? r.run.trace.slice(0, execd) : [];
+  const col = s => SC[Math.max(0, ses.indexOf(s)) % SC.length];
+  recs.forEach(rc => {
+    if (rc.waited) g += `<line x1="${X(rc.start - rc.waited)}" y1="${ly(li("s:" + rc.session)) + 13}" x2="${X(rc.start)}" y2="${ly(li("s:" + rc.session)) + 13}" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="3 3"/>` + (rc.waited > 8 ? T(X(rc.start - rc.waited) + 2, ly(li("s:" + rc.session)) + 9, "waits for the lease", "bad m", 9) : "");
+    if (!(rc.end > rc.start)) return;
+    const w = Math.max(2, X(rc.end) - X(rc.start)), si = li("s:" + rc.session), sti = li("st:" + rc.station), lab = rc.step.length * 6 < w ? esc(rc.step) : "";
+    g += `<rect x="${X(rc.start)}" y="${ly(si) + 4}" width="${w}" height="${lh - 10}" fill="${col(rc.session)}" opacity=".85"/>` + (lab ? T(X(rc.start) + 3, ly(si) + 17, lab, "m", 9, "start", 'style="fill:var(--bg)"') : "");
+    if (sti >= 0) g += `<rect x="${X(rc.start)}" y="${ly(sti) + 4}" width="${w}" height="${lh - 10}" fill="${col(rc.session)}" opacity=".85"/>` + (w > 14 ? T(X(rc.start) + 3, ly(sti) + 17, esc(rc.session), "m", 9, "start", 'style="fill:var(--bg)" font-weight="700"') : "");
+  });
+  // lease intervals
+  const open = {}; const now = recs.length ? Math.max(...recs.map(x => x.start)) : 0;
+  recs.forEach(rc => { if (rc.service === "resource-lease-acquire" && rc.status === "SUCCESS") open[rc.session] = rc.start;
+    if (rc.service === "resource-lease-release" && open[rc.session] !== undefined) { g += `<rect x="${X(open[rc.session])}" y="${ly(li("lease")) + 6}" width="${Math.max(2, X(rc.start) - X(open[rc.session]))}" height="${lh - 14}" fill="${col(rc.session)}" opacity=".5" stroke="${col(rc.session)}"/>`; delete open[rc.session]; } });
+  const fin = r.run && execd >= r.run.trace.length ? Math.max(now, r.run.makespan || 0) : now;
+  Object.entries(open).forEach(([sname, t0]) => (g += `<rect x="${X(t0)}" y="${ly(li("lease")) + 6}" width="${Math.max(2, X(fin) - X(t0))}" height="${lh - 14}" fill="${col(sname)}" opacity=".5" stroke="${col(sname)}" stroke-dasharray="3 2"/>` + T(X(fin) + 3, ly(li("lease")) + 17, `held by ${esc(sname)}`, "m", 9)));
+  // deadline and markers
+  g += `<line x1="${X(30)}" y1="${ly(0) - 4}" x2="${X(30)}" y2="${ly(lanes.length)}" stroke="var(--bad)" stroke-dasharray="5 3"/>` + T(X(30) + 3, ly(0) - 6, "order A due (30 min)", "bad m", 9);
+  if (running) g += `<line x1="${X(running.start)}" y1="${ly(0)}" x2="${X(running.start)}" y2="${ly(lanes.length)}" stroke="var(--ink)" stroke-width="1.5"/>`;
+  if (r.run && execd >= r.run.trace.length && r.run.status === "SUCCESS") g += T(X(r.run.makespan), ly(lanes.length) + 24, `done ${r.run.makespan.toFixed(1)} min`, "m", 10, "middle", 'font-weight="600"');
+  const f = r.run && r.run.failed && execd >= r.run.trace.length ? r.run.failed : null;
+  if (f) { const yy = ly(Math.max(0, f.station === "lease_manager" ? li("lease") : li("st:" + f.station))) + 14;
+    g += `<path d="M${X(f.start) - 6} ${yy - 6} l12 12 m0 -12 l-12 12" stroke="var(--bad)" stroke-width="3"/>` + failText(f, 8, H - 8, 120, 10); }
+  return g + "</svg>";
+}
+
+/* ------------------------------------------------------------------ playback */
+const maxT = () => Math.max(...players().map(t => totalTicks(t.res)));
+function stop() { if (timer) { clearInterval(timer); timer = null; } }
+function restart() { stop(); tick = 0; renderScenario(); renderMap(); renderPlayers(); }
+function advance() { if (tick < maxT()) { tick++; renderPlayers(); } if (tick >= maxT()) { stop(); renderPlayers(); } }
+document.getElementById("play").addEventListener("click", () => {
+  if (timer) { stop(); renderPlayers(); return; }
+  if (tick >= maxT()) tick = 0;
+  timer = setInterval(advance, +document.getElementById("speed").value); advance();
+});
+document.getElementById("step").addEventListener("click", () => { stop(); advance(); });
+document.getElementById("reset").addEventListener("click", () => { stop(); tick = 0; renderPlayers(); });
+document.getElementById("end").addEventListener("click", () => { stop(); tick = maxT(); renderPlayers(); });
+document.getElementById("speed").addEventListener("change", () => { if (timer) { stop(); timer = setInterval(advance, +document.getElementById("speed").value); } });
+document.getElementById("cmp").addEventListener("change", () => renderPlayers());
+
+const fromHash = () => { const h = (location.hash || "").slice(1).toUpperCase(); return ORDER.includes(h) ? h : null; };
+window.addEventListener("hashchange", () => { const h = fromHash(); if (h && h !== cur.id) selectScenario(h); });
+cur = {id: fromHash() || "O1", tr: "gold", sel: null}; cur.sel = SCEN[cur.id].st[0];
+renderCard(); renderOverview(); restart();
+</script>
+</body>
+</html>
