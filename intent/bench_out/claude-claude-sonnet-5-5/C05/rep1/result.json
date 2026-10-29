@@ -1,0 +1,88 @@
+{
+ "intent": "C05",
+ "cat": "C",
+ "expected": "clarify",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 5.5,
+ "llm_only": {
+  "admitted": false,
+  "validator_would_flag": [
+   "I1"
+  ],
+  "omit_services": [],
+  "requested_capabilities": []
+ },
+ "llm_val": {
+  "verdict": "clarify",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "TightenVariantFastenersLine4",
+    "scope": {
+     "line": 4,
+     "station": "unknown",
+     "tool": "NR7",
+     "variant": "unknown"
+    },
+    "goal": "Use the shared nutrunner NR7 to tighten the variant-specific fasteners at line 4.",
+    "constraints": [
+     "Line 4 is not defined in the current plant state (only lines 1, 2 and 3 are known), so its station and variant cannot be determined. No Recipe is proposed until the operator or MES supplies them.",
+     "Once the station and variant are known, the tool must be reserved, moved to the station and released afterwards.",
+     "Every tightening must be evaluated and recorded for traceability."
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "Applies once line 4 is defined with a station and a variant.",
+    "requested_capabilities": [],
+    "omit_services": []
+   },
+   "recipe": null,
+   "source": "claude-sonnet-5-5, response id msg_011CgWEHvUbCeL2bh1111TMr",
+   "usage": {
+    "input_tokens": 2159,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 554,
+    "output_tokens_details": {
+     "thinking_tokens": 220
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "clarify",
+   "failed": [
+    "I1"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": true,
+     "message": "all requested capabilities are grounded in sigma_i"
+    },
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "scope line 4 unknown in K_runtime",
+     "severity": "clarify",
+     "fact": "E7"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    }
+   ]
+  }
+ ]
+}

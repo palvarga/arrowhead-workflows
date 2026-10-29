@@ -1,0 +1,297 @@
+{
+ "intent": "P01",
+ "cat": "P",
+ "expected": "accept",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 18.7,
+ "llm_only": {
+  "admitted": true,
+  "validator_would_flag": [],
+  "omit_services": [],
+  "requested_capabilities": [],
+  "kit": {
+   "status": "completed",
+   "completed": 3,
+   "failed": 0,
+   "summary": [
+    "  1.47s  L2  #37  == L2 session 12 completed after 37 transitions",
+    "  2.72s  L1  #37  == L1 session 11 completed after 37 transitions",
+    "  4.46s  L3  #37  == L3 session 13 completed after 37 transitions"
+   ]
+  }
+ },
+ "llm_val": {
+  "verdict": "accept",
+  "rounds": 1,
+  "kit": {
+   "status": "completed",
+   "completed": 3,
+   "failed": 0,
+   "summary": [
+    "  1.47s  L2  #37  == L2 session 12 completed after 37 transitions",
+    "  2.72s  L1  #37  == L1 session 11 completed after 37 transitions",
+    "  4.46s  L3  #37  == L3 session 13 completed after 37 transitions"
+   ]
+  },
+  "preference": {
+   "tool_hold_s": 249.0,
+   "makespan_s": 250.0,
+   "unit": "s (nominal durations, E9)"
+  }
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "Line1NutrunnerTighteningAndReturn",
+    "scope": {
+     "line": 1,
+     "station": "st1",
+     "tool": "NR7",
+     "variant": "F25"
+    },
+    "goal": "Reserve the shared nutrunner NR7, bring it to station st1, tighten the F25 fasteners per the MES program, evaluate and record the result, then return the tool to the crib and release it.",
+    "constraints": [
+     "The tool is reserved exclusively for line 1 and released only after it is back in the crib",
+     "The tool must be at the station before configure-tool and tighten-fasteners",
+     "The tightening program comes only from get-program; no numeric process values in the Recipe",
+     "Every tightening is evaluated and recorded for traceability",
+     "transport-tool is delegated to the Executor agvexecutor",
+     "Every tool-using Step renews the lease and depends on reserve-tool; each Step is shorter than the 120 s lease"
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "This request only, executed once now",
+    "requested_capabilities": [],
+    "omit_services": []
+   },
+   "recipe": {
+    "name": "line1-nr7-tightening-with-return",
+    "first_action": "prepare",
+    "actions": [
+     {
+      "name": "prepare",
+      "next": "bring-tool",
+      "steps": [
+       {
+        "name": "reserve-nr7",
+        "service": "reserve-tool",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "fetch-program",
+        "service": "get-program",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "bring-tool",
+      "next": "tighten",
+      "steps": [
+       {
+        "name": "transport-to-station",
+        "service": "transport-tool",
+        "next": [],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "station"
+        }
+       }
+      ]
+     },
+     {
+      "name": "tighten",
+      "next": "quality",
+      "steps": [
+       {
+        "name": "configure-nr7",
+        "service": "configure-tool",
+        "next": [
+         "tighten-nr7"
+        ],
+        "dep": [
+         "fetch-program",
+         "reserve-nr7",
+         "transport-to-station"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "tighten-nr7",
+        "service": "tighten-fasteners",
+        "next": [],
+        "dep": [
+         "configure-nr7",
+         "reserve-nr7",
+         "transport-to-station"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "quality",
+      "next": "return-tool",
+      "steps": [
+       {
+        "name": "evaluate-result",
+        "service": "evaluate-tightening",
+        "next": [],
+        "dep": [
+         "tighten-nr7",
+         "fetch-program"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "record-result",
+        "service": "record-tightening",
+        "next": [],
+        "dep": [
+         "tighten-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "return-tool",
+      "next": null,
+      "steps": [
+       {
+        "name": "transport-to-crib",
+        "service": "transport-tool",
+        "next": [
+         "release-nr7"
+        ],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "crib"
+        }
+       },
+       {
+        "name": "release-nr7",
+        "service": "release-tool",
+        "next": [],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     }
+    ]
+   },
+   "source": "claude-sonnet-5-5, response id msg_011CgWDJcZjAxWPjzoM2umCd",
+   "usage": {
+    "input_tokens": 2173,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 1942,
+    "output_tokens_details": {
+     "thinking_tokens": 738
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "accept",
+   "failed": [],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": true,
+     "message": "all requested capabilities are grounded in sigma_i"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    },
+    {
+     "check": "V1",
+     "ok": true,
+     "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+    },
+    {
+     "check": "V2",
+     "ok": true,
+     "message": "all 9 Steps use services of sigma_i"
+    },
+    {
+     "check": "V3",
+     "ok": true,
+     "message": "dry-run orchestration succeeds for every Step",
+     "fact": "E2"
+    },
+    {
+     "check": "V4",
+     "ok": true,
+     "message": "tool reaches the station before it is configured or used",
+     "fact": "E3"
+    },
+    {
+     "check": "V5",
+     "ok": true,
+     "message": "program parameters come only from get-program",
+     "fact": "E4"
+    },
+    {
+     "check": "V6",
+     "ok": true,
+     "message": "tightening, evaluation and recording covered in order",
+     "fact": "E5"
+    },
+    {
+     "check": "V7",
+     "ok": true,
+     "message": "every tool use lies between reserve and release; tool returned",
+     "fact": "E1"
+    },
+    {
+     "check": "V8",
+     "ok": true,
+     "message": "lease declared; every tool-using Step depends on the reservation",
+     "fact": "E6"
+    },
+    {
+     "check": "V9",
+     "ok": true,
+     "message": "every Step depends on the Steps whose results its input needs",
+     "fact": "interface"
+    },
+    {
+     "check": "V10",
+     "ok": true,
+     "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+     "fact": "E9"
+    }
+   ]
+  }
+ ]
+}

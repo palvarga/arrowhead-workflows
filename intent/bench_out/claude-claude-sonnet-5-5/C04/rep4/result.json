@@ -1,0 +1,91 @@
+{
+ "intent": "C04",
+ "cat": "C",
+ "expected": "clarify",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 7.5,
+ "llm_only": {
+  "admitted": false,
+  "validator_would_flag": [
+   "I1"
+  ],
+  "omit_services": [
+   "get-program"
+  ],
+  "requested_capabilities": [
+   "fixed-torque program override"
+  ]
+ },
+ "llm_val": {
+  "verdict": "reject",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "TightenLine2WithOperatorFixedTorque",
+    "scope": {
+     "line": 2,
+     "station": "st2",
+     "tool": "NR7",
+     "variant": "F30"
+    },
+    "goal": "Use the shared nutrunner NR7 at line 2 (station st2) with a fixed operator-specified target torque of 210 N*m instead of the MES tightening program.",
+    "constraints": [
+     "Operator requests a fixed target torque of 210 N*m instead of the MES program for variant F30",
+     "E4: tightening programs come only from get-program; torque and tolerance must not appear as literals in a Recipe",
+     "E5: every tightening must be evaluated against its program and recorded",
+     "The tool must be reserved, transported to the station and its lease renewed before use"
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "current request",
+    "requested_capabilities": [
+     "fixed-torque program override"
+    ],
+    "omit_services": [
+     "get-program"
+    ]
+   },
+   "recipe": null,
+   "source": "claude-sonnet-5-5, response id msg_011CgWEHNLKKZo47HSVmq99X",
+   "usage": {
+    "input_tokens": 2174,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 929,
+    "output_tokens_details": {
+     "thinking_tokens": 574
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "reject",
+   "failed": [
+    "I1"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "requested capabilities not exposed by the Local Cloud: ['fixed-torque program override']",
+     "severity": "reject"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    }
+   ]
+  }
+ ]
+}

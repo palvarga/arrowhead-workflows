@@ -1,0 +1,87 @@
+{
+ "intent": "R01",
+ "cat": "R",
+ "expected": "reject",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 8.0,
+ "llm_only": {
+  "admitted": false,
+  "validator_would_flag": [
+   "I1"
+  ],
+  "omit_services": [],
+  "requested_capabilities": [
+   "manual torque wrench tightening"
+  ]
+ },
+ "llm_val": {
+  "verdict": "reject",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "TightenLine2WithManualTorqueWrench",
+    "scope": {
+     "line": 2,
+     "station": "st2",
+     "tool": "manual-torque-wrench",
+     "variant": "F30"
+    },
+    "goal": "Tighten the fasteners of the F30 forklift variant at station st2 on line 2 using a manual torque wrench.",
+    "constraints": [
+     "Use a manual torque wrench, as the operator explicitly requested",
+     "Do not substitute the nutrunner NR7 for the manual torque wrench without operator confirmation",
+     "The tightening program (bolt count, torque, tolerance) must come from get-program at run time",
+     "Every tightening must be evaluated against its program and recorded for traceability"
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "immediate, single execution",
+    "requested_capabilities": [
+     "manual torque wrench tightening"
+    ],
+    "omit_services": []
+   },
+   "recipe": null,
+   "source": "claude-sonnet-5-5, response id msg_011CgWEJUhZn7TppUGeeg6es",
+   "usage": {
+    "input_tokens": 2158,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 862,
+    "output_tokens_details": {
+     "thinking_tokens": 523
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "reject",
+   "failed": [
+    "I1"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "requested capabilities not exposed by the Local Cloud: ['manual torque wrench tightening']",
+     "severity": "reject"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    }
+   ]
+  }
+ ]
+}

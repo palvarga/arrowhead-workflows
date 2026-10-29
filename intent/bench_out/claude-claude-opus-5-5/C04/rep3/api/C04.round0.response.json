@@ -1,0 +1,38 @@
+{
+ "model": "claude-opus-5-5",
+ "id": "msg_011CgWBqot1KYLLuyZyDw82L",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "thinking",
+   "thinking": "",
+   "signature": "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"
+  },
+  {
+   "type": "text",
+   "text": "{\"interpretation\":{\"name\":\"TightenWithFixedTorqueOverride\",\"scope\":{\"line\":2,\"station\":\"st2\",\"tool\":\"NR7\",\"variant\":\"F30\"},\"goal\":\"Bring the shared nutrunner NR7 from the crib to station st2 and tighten the F30 fasteners on line 2 with a fixed target torque instead of the MES tightening program.\",\"constraints\":[\"CONFLICT E4: the operator requests a literal target torque (210 N*m), but target torque and tolerance must never appear as literals in a Recipe and are obtained only through get-program.\",\"CONFLICT: no listed service accepts a manually specified torque; configure-tool takes only the result of get-program as the program.\",\"CONFLICT E5: evaluate-tightening needs the result of get-program, so the result cannot be evaluated against its program if get-program is left out.\",\"E1: NR7 must be reserved with reserve-tool before use and released with release-tool afterwards.\",\"E2: transport-tool must be delegated to agvexecutor.\",\"E3: NR7 must be transported to station st2 before configure-tool or tighten-fasteners.\",\"E6: every tool-using Step depends on the reserve-tool Step.\",\"E5: every tightening must be evaluated and recorded.\"],\"preference\":\"\",\"priority\":\"normal\",\"horizon\":\"current request for line 2 (variant F30)\",\"requested_capabilities\":[\"manual fixed target torque override for the nutrunner program (no listed service provides this)\"],\"omit_services\":[\"get-program\"]},\"recipe\":null}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2174,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 1029,
+  "output_tokens_details": {
+   "thinking_tokens": 524
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "diagnostics": null
+}

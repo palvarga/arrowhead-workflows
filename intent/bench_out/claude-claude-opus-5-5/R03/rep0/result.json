@@ -1,0 +1,283 @@
+{
+ "intent": "R03",
+ "cat": "R",
+ "expected": "reject",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-opus-5-5",
+ "seconds": 20.5,
+ "llm_only": {
+  "admitted": true,
+  "validator_would_flag": [
+   "I1"
+  ],
+  "omit_services": [],
+  "requested_capabilities": [
+   "weld-bracket (welding of the mounting bracket)"
+  ],
+  "kit": {
+   "status": "completed",
+   "completed": 3,
+   "failed": 0,
+   "summary": [
+    "  1.44s  L2  #33  == L2 session 12 completed after 33 transitions",
+    "  2.63s  L1  #33  == L1 session 11 completed after 33 transitions",
+    "  3.82s  L3  #33  == L3 session 13 completed after 33 transitions"
+   ]
+  }
+ },
+ "llm_val": {
+  "verdict": "reject",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "WeldAndTightenMountingBracket",
+    "scope": {
+     "line": 1,
+     "station": "st1",
+     "tool": "NR7",
+     "variant": "F25"
+    },
+    "goal": "Weld the mounting bracket at station st1 of line 1, then tighten its fasteners with the shared nutrunner NR7 using the F25 program, evaluated and recorded.",
+    "constraints": [
+     "Welding must be completed before tightening starts. No welding service is available, so welding must be done and confirmed outside this Recipe before it runs.",
+     "NR7 must be reserved before any use and released afterwards (E1, E6).",
+     "NR7 must be at the station before configure-tool or tighten-fasteners (E3).",
+     "transport-tool Steps must run on Executor agvexecutor (E2).",
+     "The tightening program must come only from get-program for variant F25, with no literal torque or tolerance values (E4).",
+     "Every tightening must be evaluated against its program and recorded (E5).",
+     "Every tool-using Step depends on reserve-tool for lease renewal (E6)."
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "single execution for the current bracket at line 1",
+    "requested_capabilities": [
+     "weld-bracket (welding of the mounting bracket)"
+    ],
+    "omit_services": []
+   },
+   "recipe": {
+    "name": "tighten-bracket-line1-nr7",
+    "first_action": "PrepareTool",
+    "actions": [
+     {
+      "name": "PrepareTool",
+      "next": "Tighten",
+      "steps": [
+       {
+        "name": "reserve-nr7",
+        "service": "reserve-tool",
+        "next": [
+         "transport-nr7-to-station"
+        ],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "get-f25-program",
+        "service": "get-program",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "transport-nr7-to-station",
+        "service": "transport-tool",
+        "next": [],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "station"
+        }
+       }
+      ]
+     },
+     {
+      "name": "Tighten",
+      "next": "ReturnTool",
+      "steps": [
+       {
+        "name": "configure-nr7",
+        "service": "configure-tool",
+        "next": [
+         "tighten-bracket"
+        ],
+        "dep": [
+         "get-f25-program",
+         "reserve-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "tighten-bracket",
+        "service": "tighten-fasteners",
+        "next": [
+         "evaluate-bracket",
+         "record-bracket"
+        ],
+        "dep": [
+         "configure-nr7",
+         "reserve-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "evaluate-bracket",
+        "service": "evaluate-tightening",
+        "next": [],
+        "dep": [
+         "tighten-bracket",
+         "get-f25-program"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "record-bracket",
+        "service": "record-tightening",
+        "next": [],
+        "dep": [
+         "tighten-bracket"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "ReturnTool",
+      "next": null,
+      "steps": [
+       {
+        "name": "transport-nr7-to-crib",
+        "service": "transport-tool",
+        "next": [
+         "release-nr7"
+        ],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "crib"
+        }
+       },
+       {
+        "name": "release-nr7",
+        "service": "release-tool",
+        "next": [],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     }
+    ]
+   },
+   "source": "claude-opus-5-5, response id msg_011CgWBtS3RxJXmpFbXq6eXn",
+   "usage": {
+    "input_tokens": 2169,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 1781,
+    "output_tokens_details": {
+     "thinking_tokens": 708
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "reject",
+   "failed": [
+    "I1"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "requested capabilities not exposed by the Local Cloud: ['weld-bracket (welding of the mounting bracket)']",
+     "severity": "reject"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    },
+    {
+     "check": "V1",
+     "ok": true,
+     "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+    },
+    {
+     "check": "V2",
+     "ok": true,
+     "message": "all 9 Steps use services of sigma_i"
+    },
+    {
+     "check": "V3",
+     "ok": true,
+     "message": "dry-run orchestration succeeds for every Step",
+     "fact": "E2"
+    },
+    {
+     "check": "V4",
+     "ok": true,
+     "message": "tool reaches the station before it is configured or used",
+     "fact": "E3"
+    },
+    {
+     "check": "V5",
+     "ok": true,
+     "message": "program parameters come only from get-program",
+     "fact": "E4"
+    },
+    {
+     "check": "V6",
+     "ok": true,
+     "message": "tightening, evaluation and recording covered in order",
+     "fact": "E5"
+    },
+    {
+     "check": "V7",
+     "ok": true,
+     "message": "every tool use lies between reserve and release; tool returned",
+     "fact": "E1"
+    },
+    {
+     "check": "V8",
+     "ok": true,
+     "message": "lease declared; every tool-using Step depends on the reservation",
+     "fact": "E6"
+    },
+    {
+     "check": "V9",
+     "ok": true,
+     "message": "every Step depends on the Steps whose results its input needs",
+     "fact": "interface"
+    },
+    {
+     "check": "V10",
+     "ok": true,
+     "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+     "fact": "E9"
+    }
+   ]
+  }
+ ]
+}

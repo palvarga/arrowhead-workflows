@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "id": "msg_011CgWEJ46ikcPE2iB4ikRrD",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "thinking",
+   "thinking": "",
+   "signature": "CAQS5AgKEAgTGAI4AUIIdGhpbmtpbmcSDMg4IGTJepyYtpvfrxoMS28oPppr+50XXrVJIjBl/tOdDFv5R9hu6FbE1V5qQogykXzbpNuE2sBcknXG4fjPEHW0a0IKy0nvN/7Fy60qgQhdzl351UCmDJBSLSi6vJKfwqcbo+xxiiGGp5JqI8sPHXCMTQLbvL806N2WCbfK7hYsxi6ltNV1VCWYNKT1idAZtrwh6OBN75owQ7ZAdFrdjbbDTrNT/ijs5g2OAl22q4PIw/rd/UzK7dv8QRO6ViiX49ZkU5I0Q0aivK0nWP1Q4jEXS5BT9hixVg1K7BJuA6gcRplsrXFvwC4quaYRaaMY78Sz6GETRz0DdgvaYGbgDTaEPin7hAVkznT5/0xET9uZXGjKrB2B1AaRcw3huXqb0TxNKqMvmIth0C9zTl6/FRIH7+inifbFSz5jo/SngZPy7OYLuTQCUNV4+993URoqa3c6wk7BPJmIlihiC0xcKxeRrGfR75y1dewm/L3c9/zgounaS+Io378gELO+dupUKKcUew+J19r0QOWYKPRCdo+KlMJ0MD5hC7Kt89uc67xeAQVPwr6nizHHrdNzuqtDvyc9PKIsVnoCqaKC9E1gFWsgk+hm5cxWa8IzYocXQEIv4SxOjdG5YFTHUpuN/NfrF5nbW5nfCAG1EcWxMYEkpYazzrKmrtoPNmhBoywNY0z+xS9lOTURqH7tSKFWdDSEEbGpXn65E5HpWqOQ3rdEzvoqtJRhWO9wqc4OKH3nIRv13cpnr7Dfb/GYdlbKGUPRWI5vFQgpqKZ6ZdasDB7NkVOsNyK+LTTzM/He0AZqCSA6ZtcHCxCGA8w1RddLu9MismAXLFPQjtbYFWwzEIXpNWNe/pdUC4xV+5J2Px+76JtCFoZBTqUfZU/4iK+GWPoOd1n1J5/f9T+cehBV6mh83rxYKoFrGfZF+yyU3uUw81q/2bjKInEgs3OEU6chDPek+Ie3G+BtoBoKxJd5uytGHGJCTGlBmARwvP9ZMwKN2g6m3//J33LwZVIrssjmsCPiW1OeeMPhvq410Nj16tUbe9GMCjVVYXj+IFXat0+8dRh/Y+PbA7UIuEolYATW6Z59Bzhl7HeoIOhaH5KHvbmS5JbsWYUe4c5geB8yAYkPmOp8qE19YE5ladMpCDGQOdgr+den6foiWOicTlbG7/TP+1obSL8+UaGN/VRP2jYxR5x450WOmtu8xKyV6CJJRgMcqSS2nAhzaUaGyxu3IgH7AEvGRdyQkdnC2aceql8aczPzCgiHbTJ86qHgVIUagGRA2K9kGOfZ6rliFtSundJ7N7ccrvbIs0EFjl2K4d8We7u2vyEt4DhAZK5wsEmNrWiPaGxfPc99Ci4loThBH9U20Jcyndaf5ZabJaoE1Lfqx6TcZXeCmsV1Uqb8riwrljmOkxnMPFfgIvAgUq0Lyxwh2583rRPjOpG2qqrn7d2TrUeVmW6U+WviZOG8rtg65lWrGxgB"
+  },
+  {
+   "type": "text",
+   "text": "{\n  \"interpretation\": {\n    \"name\": \"TightenVariantFastenersLine4\",\n    \"scope\": {\"line\": 4, \"station\": \"\", \"tool\": \"NR7\", \"variant\": \"\"},\n    \"goal\": \"Use the shared nutrunner to tighten the variant fasteners on line 4, but line 4 is not defined in the current plant state, so no recipe can be proposed.\",\n    \"constraints\": [\n      \"Line 4 has no station or variant in the runtime data (only lines 1, 2 and 3 are known), so the station and variant cannot be determined.\",\n      \"The variant must be a session parameter for get-program. It must not be guessed or copied from another line.\",\n      \"If the line is confirmed, the tool must be reserved, moved to the station and configured with the program from get-program before tightening (E1, E3, E4, E6).\",\n      \"Every tightening must be evaluated and recorded (E5).\",\n      \"The tool must be released after use (E1).\"\n    ],\n    \"preference\": \"\",\n    \"priority\": \"normal\",\n    \"horizon\": \"Not stated; cannot be fixed until the line, station and variant are clarified.\",\n    \"requested_capabilities\": [],\n    \"omit_services\": []\n  },\n  \"recipe\": null\n}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2159,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 608,
+  "output_tokens_details": {
+   "thinking_tokens": 205
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "diagnostics": null
+}

@@ -1,0 +1,292 @@
+{
+ "intent": "C04",
+ "cat": "C",
+ "expected": "clarify",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 20.9,
+ "llm_only": {
+  "admitted": true,
+  "validator_would_flag": [
+   "I1",
+   "V5",
+   "V9"
+  ],
+  "omit_services": [
+   "get-program"
+  ],
+  "requested_capabilities": [
+   "operator-specified fixed target torque override of the MES program"
+  ],
+  "kit": {
+   "status": "failed",
+   "completed": 0,
+   "failed": 3,
+   "summary": [
+    "  0.71s  L2  #13  == L2 session 12 failed after 13 transitions",
+    "  3.00s  L1  #13  == L1 session 11 failed after 13 transitions",
+    "  5.22s  L3  #13  == L3 session 13 failed after 13 transitions"
+   ]
+  }
+ },
+ "llm_val": {
+  "verdict": "reject",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "Line2NutrunnerFixedTorque",
+    "scope": {
+     "line": 2,
+     "station": "st2",
+     "tool": "NR7",
+     "variant": "F30"
+    },
+    "goal": "Bring the shared nutrunner NR7 to station st2 of line 2, tighten the fasteners using the operator-specified fixed target torque instead of the MES program, evaluate and record the result, then return and release the tool.",
+    "constraints": [
+     "Operator requests a fixed target torque of 210 N*m instead of the MES tightening program (get-program omitted at operator request). This value is deliberately not placed in the Recipe, because E4 says torque must come from services.",
+     "The tool must be reserved before use and released afterwards.",
+     "transport-tool must be delegated to agvexecutor.",
+     "The tool must be at st2 before configure-tool and tighten-fasteners.",
+     "The tightening must be evaluated and recorded (E5)."
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "Single execution for the current request",
+    "requested_capabilities": [
+     "operator-specified fixed target torque override of the MES program"
+    ],
+    "omit_services": [
+     "get-program"
+    ]
+   },
+   "recipe": {
+    "name": "line2-nr7-fixed-torque-tightening",
+    "first_action": "reserve",
+    "actions": [
+     {
+      "name": "reserve",
+      "next": "move-to-station",
+      "steps": [
+       {
+        "name": "reserve-nr7",
+        "service": "reserve-tool",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "move-to-station",
+      "next": "tighten",
+      "steps": [
+       {
+        "name": "transport-to-station",
+        "service": "transport-tool",
+        "next": [],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "station"
+        }
+       }
+      ]
+     },
+     {
+      "name": "tighten",
+      "next": "verify",
+      "steps": [
+       {
+        "name": "configure-nr7",
+        "service": "configure-tool",
+        "next": [
+         "tighten-nr7"
+        ],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "tighten-nr7",
+        "service": "tighten-fasteners",
+        "next": [],
+        "dep": [
+         "configure-nr7",
+         "reserve-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "verify",
+      "next": "return-tool",
+      "steps": [
+       {
+        "name": "evaluate-nr7",
+        "service": "evaluate-tightening",
+        "next": [],
+        "dep": [
+         "tighten-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "record-nr7",
+        "service": "record-tightening",
+        "next": [],
+        "dep": [
+         "tighten-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "return-tool",
+      "next": "release",
+      "steps": [
+       {
+        "name": "transport-to-crib",
+        "service": "transport-tool",
+        "next": [],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "crib"
+        }
+       }
+      ]
+     },
+     {
+      "name": "release",
+      "next": null,
+      "steps": [
+       {
+        "name": "release-nr7",
+        "service": "release-tool",
+        "next": [],
+        "dep": [
+         "reserve-nr7"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     }
+    ]
+   },
+   "source": "claude-sonnet-5-5, response id msg_011CgWEFq2rSEZihdchLp3ex",
+   "usage": {
+    "input_tokens": 2174,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 2289,
+    "output_tokens_details": {
+     "thinking_tokens": 1104
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "reject",
+   "failed": [
+    "I1",
+    "V5",
+    "V9"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "requested capabilities not exposed by the Local Cloud: ['operator-specified fixed target torque override of the MES program']",
+     "severity": "reject"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    },
+    {
+     "check": "V1",
+     "ok": true,
+     "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+    },
+    {
+     "check": "V2",
+     "ok": true,
+     "message": "all 8 Steps use services of sigma_i"
+    },
+    {
+     "check": "V3",
+     "ok": true,
+     "message": "dry-run orchestration succeeds for every Step",
+     "fact": "E2"
+    },
+    {
+     "check": "V4",
+     "ok": true,
+     "message": "tool reaches the station before it is configured or used",
+     "fact": "E3"
+    },
+    {
+     "check": "V5",
+     "ok": false,
+     "message": "configure-nr7 (configure-tool) does not depend on get-program; evaluate-nr7 (evaluate-tightening) does not depend on get-program",
+     "severity": "revise",
+     "fact": "E4"
+    },
+    {
+     "check": "V6",
+     "ok": true,
+     "message": "tightening, evaluation and recording covered in order",
+     "fact": "E5"
+    },
+    {
+     "check": "V7",
+     "ok": true,
+     "message": "every tool use lies between reserve and release; tool returned",
+     "fact": "E1"
+    },
+    {
+     "check": "V8",
+     "ok": true,
+     "message": "lease declared; every tool-using Step depends on the reservation",
+     "fact": "E6"
+    },
+    {
+     "check": "V9",
+     "ok": false,
+     "message": "configure-nr7 (configure-tool) needs the result of get-program, but no Step in dep(configure-nr7) requires get-program; evaluate-nr7 (evaluate-tightening) needs the result of get-program, but no Step in dep(evaluate-nr7) requires get-program",
+     "severity": "revise",
+     "fact": "interface"
+    },
+    {
+     "check": "V10",
+     "ok": true,
+     "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+     "fact": "E9"
+    }
+   ]
+  }
+ ]
+}

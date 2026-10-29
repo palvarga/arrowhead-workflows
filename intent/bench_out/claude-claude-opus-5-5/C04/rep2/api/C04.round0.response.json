@@ -1,0 +1,38 @@
+{
+ "model": "claude-opus-5-5",
+ "id": "msg_011CgWBqWKZfhcSww91E5kbH",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "thinking",
+   "thinking": "",
+   "signature": "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"
+  },
+  {
+   "type": "text",
+   "text": "{\"interpretation\":{\"name\":\"TightenWithFixedTorqueOverride\",\"scope\":{\"line\":2,\"station\":\"st2\",\"tool\":\"NR7\",\"variant\":\"F30\"},\"goal\":\"Bring the shared nutrunner NR7 from the crib to station st2 and tighten variant F30 using a fixed target torque of 210 N*m instead of the MES tightening program.\",\"constraints\":[\"Operator requests a fixed target torque of 210 N*m in place of the get-program result\",\"E4: tightening programs must be obtained only through get-program; target torque must never appear as a literal in a Recipe\",\"E5: every tightening must be evaluated against its program and recorded\",\"E2: transport-tool must be executed by agvexecutor\",\"E3: tool must be at the station before configure-tool or tighten-fasteners\",\"E6: tool-using Steps depend on reserve-tool; the reservation must be released\"],\"preference\":\"\",\"priority\":\"normal\",\"horizon\":\"current request for line 2 (variant F30)\",\"requested_capabilities\":[\"manual fixed-torque program override (target torque 210 N*m) bypassing the MES program\"],\"omit_services\":[\"get-program\"]},\"recipe\":null}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2174,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 901,
+  "output_tokens_details": {
+   "thinking_tokens": 516
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "diagnostics": null
+}

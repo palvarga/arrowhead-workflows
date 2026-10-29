@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "id": "msg_011CgWEJpaQcGz48VXs1SZ4B",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "thinking",
+   "thinking": "",
+   "signature": "CAQSgwoKEAgTGAI4AUIIdGhpbmtpbmcSDIyJaUF0pKhJf9M9TxoMo3qIK1MdZZ+SaD7cIjCnYE5Tk7pBvKQfhbh4zO+q00/6hwI+bCcJnQVY3bIDtzAf6KQrxAvF4koOtMeCMucqoAkHNVu9td++nRoocmM3OhcaDFhov6aLFsJIh1QwPvCcV/grjmWWsoVxqZSK2wgl2SxyzA7EDvLBDp5oZzwwo1RpPCf1pfJetr92n8fiW+DdTWGCQUb6UKkQT58Sgy79gCKE2RDdt1iLt4vFRmcxVd5VTjvCQ0XRJ2M4pBdjLuNPq+dKvBOmgl8i9FAbu/9n5zdoUmE34vkZ2E2qNrbpk/7ZsTVb4a4yUGubydveoiniNG+c30+/PtGbVig+rf4uxLIp8nw5GxIIFj4Bvye0kJznSvrLh3gdjDPbTRzjibYRhBDL8Qun+HdP3e9jgRBjtSh0rIJnA4LEQS2XnWHhfKH44NiuD3dF12T/0TXBIrYgCkDjqinV5DcQkG5wFtuZMhE7004YUeatD5Wf/dMeNwWjOczpZozk3FHuMIPMyq8wAV7i8y1ba2yLHKPdz89Qb3162dgzKjs31gOLk3YFliiRB9Xh+8k+d6KGgW9LIs+v6+s3IQpekyUpKYX7plGVAbur2noxia2aL/YiByt1EbSkd+orR9zDfr/csFir8w9ibJ9QBpgm+Jnssws+srga3zupj4IXU5iB0tGHtoOB2GfTuifPp1eleeJTQZOWh00SczF84dX0hK6FLIwyPpuOc7BWLoRaJBY75sqpT7P6Re/Z01h7yZlDKWp8x4qYmuVOkpHMt86hhqBHIgtRZgR5cGbLX1fkZ2jDDcfdOj7mIBVbrbcEJXzz4x39AGZ8lLucpMlXhKKFCiGwk4zXOTjA6d/Yzzg9ny2MR0Ny4nRro+qRhl8+9AMrGQIBs8eq9RWe8tPhk8XDQbYhga+sn6l2h/4bAGsYQcnI80xkZ9cMDrUJw6k0zkw+w8u7s7qQbQB4ozSDW92dXPSAnJ5tNCckXyNilM0kPVqB05xFwbdatFvrqUTJ6tmv8mtvKQ58wUGWgEFo09HDOzbGHJmlCsCd2W9MzOYOPXq5u7IZKazWdjSZOTw/p/2uXlIbO3pyDvsBq7KCbmF1ylEMC+ENVVbpIyEMv/KdNEpXa2C0l3VyqYReUs1d4ETTPd+Q7ESWs9ALdpoCNVxyUPf/YST4V5AJPZsIlCiUaczMfbse04AXb3kCWC2vM05H5DnMW8pbe/c+YLbwsuSdfZYk7IbPys2yeqiuYJ6XUyiCercBNs11EuWIa7BCslUS25d90awvKQQJsca0ExTEHeaZDvNihGJ8tE295ysgmNw/D75TaiiUOQhSIZmnkQ4ywJFgQoSa2nmEQdmLL53PCaURKXfrCpn8S9rOvyEzrQQdX/U3C4Hn9RMaZbsfcPitphE6L7UHalMd3ndFJrqE9JBwOgvk129SvalqWRV0o5X4LnzDgEI0AnzQyyEX5S7YLnQaeLOnizv7g9K/VW2DPD0kffDNRo07JyuV2g0gTsigTDLLAddyObHt7ZoSdexUtNPI/qwBxkCrQVLW5voJnvLiUZjRqolY0xZ+8ly+HlGM0MQl1PGuHJTSUaZWyqz+y3kQgd9f/Yqj/2jZ+5NEgCoe4umHoI0tts5xjZfjGae+8JPS8TOc0uCaz0klVtVFPvizcM83bXTrSxgB"
+  },
+  {
+   "type": "text",
+   "text": "{\n  \"interpretation\": {\n    \"name\": \"TightenLine2WithManualTorqueWrench\",\n    \"scope\": {\"line\": 2, \"station\": \"st2\", \"tool\": \"manual torque wrench\", \"variant\": \"F30\"},\n    \"goal\": \"Tighten the fasteners of the F30 forklift at station st2 on line 2 using a manual torque wrench.\",\n    \"constraints\": [\n      \"The tightening must be done with a manual torque wrench, not the nutrunner NR7.\",\n      \"Target torque and tolerance must come from the MES via get-program and not appear as literals.\",\n      \"The tightening must be evaluated against its program and recorded for traceability.\"\n    ],\n    \"preference\": \"\",\n    \"priority\": \"normal\",\n    \"horizon\": \"immediate, single execution\",\n    \"requested_capabilities\": [\"manual torque wrench tightening\"],\n    \"omit_services\": []\n  },\n  \"recipe\": null\n}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2158,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 546,
+  "output_tokens_details": {
+   "thinking_tokens": 242
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "diagnostics": null
+}

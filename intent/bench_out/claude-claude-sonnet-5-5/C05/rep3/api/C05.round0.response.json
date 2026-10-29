@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "id": "msg_011CgWEJ4gD19SzcFJbAE2j7",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "thinking",
+   "thinking": "",
+   "signature": "CAQSmwkKEAgTGAI4AUIIdGhpbmtpbmcSDFWILw7438brQOA/WBoMGmdiJbTpcLPNLHHFIjDs1KUnHQsZwvF53W9QcRw3ZAKZfDk3yqo0dkKqbE1vVWYTfzs3f4XUBuOa8S7U83oquAioY//emboOSl+LW4UY2Hfzk3AAIywhHkdIZZGP9+HH2mWMweEGtR03CU/nYONWdqrZ1Qg5pKzE9kwtSFSs2vd2X+/gWajviJo60VnA0zJCyG1Og2y8wRKlD7+Iv6PCg8VqlCRqIBCcB1OowHAmpt5abS3Na5YL/hxpMDFdhkpaHbVS7YYb2YmvPM3UmqUrLnDkWz6ZMe864VaRgeQKUx4lhlnevqbLxfoL7txO9g7vBVDM8BFjsdqIJ4hq4UCIpSFB4apq+5UB1prtB7Qi3RiO/ERHEc09MkSnzE2L9xhOhvUIeYxqngyXGrIWRYA1Sm96UQvMCuKtcqd/PQ5xJJfYzXynL2i7lghfL1zuxnorQ1YP5WmCI3xlkzRHkv1G8gCzY7BuQGyqmrocQJ6X7CVzLWwWWebW0PeReNBl8NWqfy7QQg0azmkPTCrjH/4v8NjuOHvGwquIYFw35l7UiCCrHxD2spn0Dk4Eh+/I2lqH7UfSAZ40z3+SFVl62w1PQBQVzxWknc5kSr0HEzxHbdtG1FBL8GmCalVfkSXLPhPVgXUKjh48sU+scFidL54YgVKyoxaZA1F5H/THgncqi6zMFlDxHSrW6qhFIYgII2x+xzEou1c6KvBD3XYIt3k+rg+O1PocT7NUkir87YPJRPVup194gMiDa02WPwB2YNZmP3rWe5GLPKW9qNyhDCkNqZAppQIEpq/TLyQiJV9gGoGQnbrhka94z+//eV/6nY2VkxyZ09iQiaCt/qImD9dTqjNr4WclVR8alkjKQU7R45gDJtkQLnhWl80CfA/NGN6poQxX84427hFm4oSADNwNnJlS0rOVsD0/e9uVBRSInpXc4AWbRJXZh8pqxC8YYGbjbsTy00WaPL9gzQKz0NDaG5M3+uiB2AFP0f81ffAhU4xbNi8mwxTzPWJDPE3tWoCiTQTfq1bg2iYhF4xEcyMJ2n/SfurV7Bo1SAILiL3VhItsB61+8ZlCJ9WBpGOPmFSuC1y5JOugd3/wYUL3EezbDcgaMD3Loh2Y9t0bnDaKmVJt6pNtkpZuddM8JGhqSinb2QvPoIrSWrkesYkqyxPxjfh+H2iyF9NSU5xmwpXK+QeMnKvkueqNjR85WKInyBNAoRN8VK68tlX1kzxFi4Gd0CwBvkjneJF0/sXpudiz471gH2FKBUQ9OUfUnCHq9OQS3GhOoo13eaaf5Yws+L48uUUfNmWdFVLmPd4zRzvAydpZhbBamMHix5Bjnon+LJBjsXQFIGcgT0vLegz7n4Ya+8oGxSNbw+BbAXsqDtODmV8MLoDW363D62VC3Sa29IyUNqajaBGKtlEjtW6nMXJcYHHyKu165OirBgdv3h8bUrff9tulhC4smb6/0+lFY7KmKloMD9cLbhPquV4W1Q+AjmAxTbUouRSM/3+/ODugur5M2u+h/R/tB/8YAQ=="
+  },
+  {
+   "type": "text",
+   "text": "{\n  \"interpretation\": {\n    \"name\": \"TightenVariantFastenersLine4\",\n    \"scope\": {\"line\": 4, \"station\": \"unknown\", \"tool\": \"NR7\", \"variant\": \"unknown\"},\n    \"goal\": \"Use the shared nutrunner to tighten the variant fasteners on line 4, but no recipe can be proposed because line 4 is not in the plant data.\",\n    \"constraints\": [\n      \"Line 4 has no station or variant in the runtime data, which lists only lines 1, 2 and 3. The station and variant are unknown and are not guessed.\",\n      \"The only tool in the plant state is NR7, currently at the crib. It is assumed to be the shared nutrunner.\",\n      \"The tool must be reserved exclusively and moved to the station before configuring or tightening (E1, E3).\",\n      \"The program must come from get-program for the line's variant, with no literal values (E4).\",\n      \"The tightening must be evaluated and recorded (E5).\",\n      \"The operator must supply the station and variant for line 4 or correct the line number before a recipe can be drafted.\"\n    ],\n    \"preference\": \"\",\n    \"priority\": \"normal\",\n    \"horizon\": \"Immediate, for the current request, once the line 4 station and variant are known\",\n    \"requested_capabilities\": [],\n    \"omit_services\": []\n  },\n  \"recipe\": null\n}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2159,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 672,
+  "output_tokens_details": {
+   "thinking_tokens": 229
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "diagnostics": null
+}

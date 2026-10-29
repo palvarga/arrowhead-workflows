@@ -1,0 +1,38 @@
+{
+ "model": "claude-opus-5-5",
+ "id": "msg_011CgWBr7whV3yKgUeDAhsVe",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "thinking",
+   "thinking": "",
+   "signature": "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"
+  },
+  {
+   "type": "text",
+   "text": "{\"interpretation\":{\"name\":\"TightenWithFixedTorqueOverride\",\"scope\":{\"line\":2,\"station\":\"st2\",\"tool\":\"NR7\",\"variant\":\"F30\"},\"goal\":\"Bring the shared nutrunner NR7 from the crib to station st2 and tighten variant F30 with a fixed target torque of 210 N*m instead of the MES program; this conflicts with E4 and with the no-literal rule, so no Recipe is proposed.\",\"constraints\":[\"Use a fixed target torque of 210 N*m instead of the MES tightening program (operator request; conflicts with E4, which requires programs to come only from get-program and forbids torque literals in a Recipe)\",\"Only agvexecutor may run transport-tool (E2)\",\"NR7 must be at the station before configure-tool or tighten-fasteners (E3)\",\"Every tightening must be evaluated against its program and recorded (E5)\",\"Tool-using Steps depend on reserve-tool for lease renewal (E6)\",\"Release the NR7 reservation after use (E1)\"],\"preference\":\"\",\"priority\":\"normal\",\"horizon\":\"current request for line 2\",\"requested_capabilities\":[\"manual tightening-program override with a fixed target torque (210 N*m), bypassing the MES program\"],\"omit_services\":[\"get-program\"]},\"recipe\":null}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2174,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 1165,
+  "output_tokens_details": {
+   "thinking_tokens": 734
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "diagnostics": null
+}

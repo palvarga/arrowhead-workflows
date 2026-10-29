@@ -1,0 +1,291 @@
+{
+ "intent": "C04",
+ "cat": "C",
+ "expected": "clarify",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-opus-5-5",
+ "seconds": 23.1,
+ "llm_only": {
+  "admitted": true,
+  "validator_would_flag": [
+   "I1"
+  ],
+  "omit_services": [
+   "get-program"
+  ],
+  "requested_capabilities": [
+   "Manual fixed tightening program / target-torque override (210 N*m) bypassing the MES program"
+  ],
+  "kit": {
+   "status": "completed",
+   "completed": 3,
+   "failed": 0,
+   "summary": [
+    "  1.52s  L2  #35  == L2 session 12 completed after 35 transitions",
+    "  3.20s  L1  #35  == L1 session 11 completed after 35 transitions",
+    "  4.45s  L3  #35  == L3 session 13 completed after 35 transitions"
+   ]
+  }
+ },
+ "llm_val": {
+  "verdict": "reject",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "TightenWithSharedNutrunnerLine2",
+    "scope": {
+     "line": 2,
+     "station": "st2",
+     "tool": "NR7",
+     "variant": "F30"
+    },
+    "goal": "Bring the shared nutrunner NR7 from the crib to station st2 and tighten the fasteners of variant F30 on line 2 with a fixed target torque instead of the MES program.",
+    "constraints": [
+     "Operator requests a fixed target torque of 210 N*m instead of the MES program. This conflicts with E4, which requires programs to come only from get-program and forbids torque literals in a Recipe, so it is passed to the Validator for decision.",
+     "NR7 must be reserved for line 2 before use and released afterwards (E1, E6).",
+     "Every tool-using Step renews the lease with the reservation token and depends on reserve-tool (E6).",
+     "Each tool-using Step must be shorter than the 120 s lease (E9).",
+     "transport-tool must be executed by agvexecutor (E2).",
+     "NR7 must be at st2 before configure-tool and tighten-fasteners (E3).",
+     "The tightening must be evaluated against its program and recorded for traceability (E5)."
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "Current request: one tightening cycle on line 2.",
+    "requested_capabilities": [
+     "Manual fixed tightening program / target-torque override (210 N*m) bypassing the MES program"
+    ],
+    "omit_services": [
+     "get-program"
+    ]
+   },
+   "recipe": {
+    "name": "line2-nr7-tightening",
+    "first_action": "Prepare",
+    "actions": [
+     {
+      "name": "Prepare",
+      "next": "Deliver",
+      "steps": [
+       {
+        "name": "reserve",
+        "service": "reserve-tool",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "program",
+        "service": "get-program",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "Deliver",
+      "next": "Tighten",
+      "steps": [
+       {
+        "name": "transport-to-station",
+        "service": "transport-tool",
+        "next": [],
+        "dep": [
+         "reserve"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "station"
+        }
+       }
+      ]
+     },
+     {
+      "name": "Tighten",
+      "next": "Return",
+      "steps": [
+       {
+        "name": "configure",
+        "service": "configure-tool",
+        "next": [
+         "tighten"
+        ],
+        "dep": [
+         "program",
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "tighten",
+        "service": "tighten-fasteners",
+        "next": [
+         "evaluate",
+         "record"
+        ],
+        "dep": [
+         "configure",
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "evaluate",
+        "service": "evaluate-tightening",
+        "next": [],
+        "dep": [
+         "tighten",
+         "program"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "record",
+        "service": "record-tightening",
+        "next": [],
+        "dep": [
+         "tighten"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "Return",
+      "next": null,
+      "steps": [
+       {
+        "name": "transport-to-crib",
+        "service": "transport-tool",
+        "next": [
+         "release"
+        ],
+        "dep": [
+         "reserve"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "crib"
+        }
+       },
+       {
+        "name": "release",
+        "service": "release-tool",
+        "next": [],
+        "dep": [
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     }
+    ]
+   },
+   "source": "claude-opus-5-5, response id msg_011CgWBpcYqhHqmjnQz144ma",
+   "usage": {
+    "input_tokens": 2174,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 2074,
+    "output_tokens_details": {
+     "thinking_tokens": 1040
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "reject",
+   "failed": [
+    "I1"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "requested capabilities not exposed by the Local Cloud: ['Manual fixed tightening program / target-torque override (210 N*m) bypassing the MES program']",
+     "severity": "reject"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    },
+    {
+     "check": "V1",
+     "ok": true,
+     "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+    },
+    {
+     "check": "V2",
+     "ok": true,
+     "message": "all 9 Steps use services of sigma_i"
+    },
+    {
+     "check": "V3",
+     "ok": true,
+     "message": "dry-run orchestration succeeds for every Step",
+     "fact": "E2"
+    },
+    {
+     "check": "V4",
+     "ok": true,
+     "message": "tool reaches the station before it is configured or used",
+     "fact": "E3"
+    },
+    {
+     "check": "V5",
+     "ok": true,
+     "message": "program parameters come only from get-program",
+     "fact": "E4"
+    },
+    {
+     "check": "V6",
+     "ok": true,
+     "message": "tightening, evaluation and recording covered in order",
+     "fact": "E5"
+    },
+    {
+     "check": "V7",
+     "ok": true,
+     "message": "every tool use lies between reserve and release; tool returned",
+     "fact": "E1"
+    },
+    {
+     "check": "V8",
+     "ok": true,
+     "message": "lease declared; every tool-using Step depends on the reservation",
+     "fact": "E6"
+    },
+    {
+     "check": "V9",
+     "ok": true,
+     "message": "every Step depends on the Steps whose results its input needs",
+     "fact": "interface"
+    },
+    {
+     "check": "V10",
+     "ok": true,
+     "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+     "fact": "E9"
+    }
+   ]
+  }
+ ]
+}

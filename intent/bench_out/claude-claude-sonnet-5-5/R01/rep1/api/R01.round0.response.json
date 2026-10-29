@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "id": "msg_011CgWEJSfHJe7G5VVmX2xrZ",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "thinking",
+   "thinking": "",
+   "signature": "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"
+  },
+  {
+   "type": "text",
+   "text": "{\n  \"interpretation\": {\n    \"name\": \"TightenLine2WithManualTorqueWrench\",\n    \"scope\": {\"line\": 2, \"station\": \"st2\", \"tool\": \"unspecified\", \"variant\": \"F30\"},\n    \"goal\": \"Tighten the fasteners of the F30 forklift on line 2 at station st2 using a manual torque wrench.\",\n    \"constraints\": [\n      \"The operator explicitly requires a manual torque wrench as the tool.\",\n      \"The tightening program (bolt count, torque, tolerance) must come from get-program for variant F30.\",\n      \"Every tightening must be evaluated against its program and recorded for traceability.\"\n    ],\n    \"preference\": \"\",\n    \"priority\": \"normal\",\n    \"horizon\": \"immediate, single execution\",\n    \"requested_capabilities\": [\"manual torque wrench tightening\"],\n    \"omit_services\": []\n  },\n  \"recipe\": null\n}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2158,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 756,
+  "output_tokens_details": {
+   "thinking_tokens": 456
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "diagnostics": null
+}

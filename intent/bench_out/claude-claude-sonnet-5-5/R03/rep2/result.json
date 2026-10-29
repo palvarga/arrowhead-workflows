@@ -1,0 +1,289 @@
+{
+ "intent": "R03",
+ "cat": "R",
+ "expected": "reject",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 17.6,
+ "llm_only": {
+  "admitted": true,
+  "validator_would_flag": [
+   "I1"
+  ],
+  "omit_services": [],
+  "requested_capabilities": [
+   "weld mounting bracket"
+  ],
+  "kit": {
+   "status": "completed",
+   "completed": 3,
+   "failed": 0,
+   "summary": [
+    "  1.38s  L2  #37  == L2 session 12 completed after 37 transitions",
+    "  2.53s  L1  #37  == L1 session 11 completed after 37 transitions",
+    "  3.82s  L3  #37  == L3 session 13 completed after 37 transitions"
+   ]
+  }
+ },
+ "llm_val": {
+  "verdict": "reject",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "TightenBracketFastenersLine1",
+    "scope": {
+     "line": 1,
+     "station": "st1",
+     "tool": "NR7",
+     "variant": "F25"
+    },
+    "goal": "Tighten the fasteners of the mounting bracket at station st1 on line 1 with the shared nutrunner NR7, then evaluate and record the result. The welding part of the request is not covered by this Recipe.",
+    "constraints": [
+     "NR7 must be reserved before use and released afterwards",
+     "NR7 must be at st1 (transport-tool to 'station' completed) before configure-tool and tighten-fasteners",
+     "transport-tool must be delegated to agvexecutor",
+     "The tightening program comes only from get-program for variant F25, with no literal values in the Recipe",
+     "The tightening must be evaluated and recorded",
+     "Every tool-using Step renews the lease with the reservation token, so it depends on reserve-tool"
+    ],
+    "preference": "Return the shared tool to the crib after use so that other lines can use it.",
+    "priority": "normal",
+    "horizon": "current request, single execution",
+    "requested_capabilities": [
+     "weld mounting bracket"
+    ],
+    "omit_services": []
+   },
+   "recipe": {
+    "name": "tighten-bracket-fasteners-line1",
+    "first_action": "prepare",
+    "actions": [
+     {
+      "name": "prepare",
+      "next": "bring-tool",
+      "steps": [
+       {
+        "name": "reserve",
+        "service": "reserve-tool",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "program",
+        "service": "get-program",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "bring-tool",
+      "next": "tighten",
+      "steps": [
+       {
+        "name": "transport-to-station",
+        "service": "transport-tool",
+        "next": [],
+        "dep": [
+         "reserve"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "station"
+        }
+       }
+      ]
+     },
+     {
+      "name": "tighten",
+      "next": "verify",
+      "steps": [
+       {
+        "name": "configure",
+        "service": "configure-tool",
+        "next": [
+         "tighten-bolts"
+        ],
+        "dep": [
+         "program",
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "tighten-bolts",
+        "service": "tighten-fasteners",
+        "next": [],
+        "dep": [
+         "configure",
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "verify",
+      "next": "return-and-release",
+      "steps": [
+       {
+        "name": "evaluate",
+        "service": "evaluate-tightening",
+        "next": [],
+        "dep": [
+         "tighten-bolts",
+         "program"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "record",
+        "service": "record-tightening",
+        "next": [],
+        "dep": [
+         "tighten-bolts"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "return-and-release",
+      "next": null,
+      "steps": [
+       {
+        "name": "transport-to-crib",
+        "service": "transport-tool",
+        "next": [
+         "release"
+        ],
+        "dep": [
+         "reserve"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "crib"
+        }
+       },
+       {
+        "name": "release",
+        "service": "release-tool",
+        "next": [],
+        "dep": [
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     }
+    ]
+   },
+   "source": "claude-sonnet-5-5, response id msg_011CgWEMFCJ9HuJAzJ8aiJvW",
+   "usage": {
+    "input_tokens": 2169,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 1954,
+    "output_tokens_details": {
+     "thinking_tokens": 668
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "reject",
+   "failed": [
+    "I1"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "requested capabilities not exposed by the Local Cloud: ['weld mounting bracket']",
+     "severity": "reject"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    },
+    {
+     "check": "V1",
+     "ok": true,
+     "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+    },
+    {
+     "check": "V2",
+     "ok": true,
+     "message": "all 9 Steps use services of sigma_i"
+    },
+    {
+     "check": "V3",
+     "ok": true,
+     "message": "dry-run orchestration succeeds for every Step",
+     "fact": "E2"
+    },
+    {
+     "check": "V4",
+     "ok": true,
+     "message": "tool reaches the station before it is configured or used",
+     "fact": "E3"
+    },
+    {
+     "check": "V5",
+     "ok": true,
+     "message": "program parameters come only from get-program",
+     "fact": "E4"
+    },
+    {
+     "check": "V6",
+     "ok": true,
+     "message": "tightening, evaluation and recording covered in order",
+     "fact": "E5"
+    },
+    {
+     "check": "V7",
+     "ok": true,
+     "message": "every tool use lies between reserve and release; tool returned",
+     "fact": "E1"
+    },
+    {
+     "check": "V8",
+     "ok": true,
+     "message": "lease declared; every tool-using Step depends on the reservation",
+     "fact": "E6"
+    },
+    {
+     "check": "V9",
+     "ok": true,
+     "message": "every Step depends on the Steps whose results its input needs",
+     "fact": "interface"
+    },
+    {
+     "check": "V10",
+     "ok": true,
+     "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+     "fact": "E9"
+    }
+   ]
+  }
+ ]
+}

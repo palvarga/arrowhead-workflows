@@ -1,0 +1,38 @@
+{
+ "model": "claude-sonnet-5-5",
+ "id": "msg_011CgWEHhHayDr71V8MGcnvx",
+ "type": "message",
+ "role": "assistant",
+ "content": [
+  {
+   "type": "thinking",
+   "thinking": "",
+   "signature": "CAQS5wgKEAgTGAI4AUIIdGhpbmtpbmcSDBnRIORc0ZqksKtWBBoMXq9M64HJVccKuJhpIjD2j4vC7R7S5K9E516lU1f9PsyiJTudar7WurrLvWmZtW7V5+7c1sYmlgyCqPrcp4sqhAhuy3WnkMyW1RdqIH8vSaHV6TwgUTtNkYJBt1vm9x7nXP/CyD0c3VzljmuFuT2cia90SXcGt5ousSp9US25GCyqaOdIejNJigsz6xOYqMVN6VRvoEJWJQeuWKRv+y5qs9t60KDoXaLwXnGIHwvTer8qIekM28+jW6EVa8Sz7um0xFYDbj7M/SC47ZEF1+9+7VqmKj8cysbtHMG1I9KQWq2jwsQUIA/u5OfIOdkrp30eyjCWuSJZAm2IbG/b6wTKlQgSHkEiWxNY2KPwTD3iaktKLUDKQZACrVk8ZwH11IPcBelcHnI/STpnP+s2ys9JAwKcqJ4S8W99SMwiwaZLGELhd6nDUVBA0trseeWJaqtFLO/0nFYia/BUi6fXhCLXIJujOpIsY82R3VBh4VmeDSdeCfD9fi5G3uKsxjpHCpT48p/sF3fVdoOfOXPQJh00zMseVbZ9BlM9qnGHR4n+vWgBmcvpUMuuvtQ5hKzGMh6zea180HhFC6heMUP2CggKxaC0x4OHHa6Jj7HdBGbQDJVF7wlRWbOOtUCzgbhoVDVzPPLqtnfOjhSEzpfFSJR5uKumR+ggK1LikUV3J1IRD2XU76c5bGtmPaGcsyqJl5Gl5UQhGjS88R/ew9h2EZlw3bNX5o9WpI3UE61mekPlVSx4ck/hniYjAd4CopEBBWzYJ4HLK2Hx7rlZUUzcht2IUiah7rjJbj0sCx2JR3LL9VAiR2n0hGjVNkYuYNlC/ula9v5CERBEhvWEJ4P64c1eJC4zICrMDwVuLRlpfy+Ac8nCQqx3g3ISAkr2TaLhXtyBSDkl+gqGDv6nBABkNJzduiw6veCQDl4RKZbtCDGmt/iP+21B9SlW6mbJ43SpYLKuNelen+9y+G7uu+JvUTXr0/MMbsBF6RMEhFP8W1KwAPT189aDPig62qBblq83rxnlRpyM+qQxwX2GEnp/hRZcitHHYwN6XovWi3uuop0s3qZiaO8Aq7HmvEd1ymOuvEaAuXYMrAGi7DbgkmyqUpK9FGKW15aaEaJnmnfYjnqYQXQC3G74WkRYbqDpY8t8gLkgqW7vFy3z8DVwalGxVXoL6hKVm7rMDIfoDs4EBwxJs1yhwu8QmPBRbjyacn9TKwM74dij9/p4k29BLX0IG+WddGTtlzzwdC8pCRMpS8SyHhkS4td0xvDj1ZgTHcAN8GFfsu1kOpebZfK7RCEU1RnpVDdlI0iFRiPljqJrb+g0j/d9IcAS6tkctOV9IlpSbLnbSmh0TsjHtwU7FeRf6YpRFsLW6XsqQFetJOOg1dap6Lu1GWf/MK/yIegR8ep0kx8X4Yz7i0azqTHF4/K3E7hfZhm6XdYwteHaguwBqAWrJrbd4ZyeAxgB"
+  },
+  {
+   "type": "text",
+   "text": "{\n  \"interpretation\": {\n    \"name\": \"TightenVariantFastenersLine4\",\n    \"scope\": {\"line\": 4, \"station\": \"unknown\", \"tool\": \"NR7\", \"variant\": \"unknown\"},\n    \"goal\": \"Use the shared nutrunner NR7 to tighten the variant fasteners on line 4. No recipe can be proposed because line 4 does not exist in the current plant state.\",\n    \"constraints\": [\n      \"Line 4 is not in the runtime state (only lines 1, 2 and 3 are known), so its station and variant cannot be determined.\",\n      \"The tool is assumed to be NR7, the only tool in the runtime state. This is not confirmed by the operator.\",\n      \"The variant is needed to obtain the tightening program through get-program, and the station is needed as the transport destination. Neither can be guessed.\",\n      \"A recipe can be drafted once the operator confirms the line number or supplies the station and variant for line 4.\"\n    ],\n    \"preference\": \"\",\n    \"priority\": \"normal\",\n    \"horizon\": \"Not determinable until the line, station and variant are clarified.\",\n    \"requested_capabilities\": [],\n    \"omit_services\": []\n  },\n  \"recipe\": null\n}"
+  }
+ ],
+ "container": null,
+ "stop_reason": "end_turn",
+ "stop_sequence": null,
+ "stop_details": null,
+ "usage": {
+  "input_tokens": 2159,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 603,
+  "output_tokens_details": {
+   "thinking_tokens": 207
+  },
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard"
+ },
+ "diagnostics": null
+}

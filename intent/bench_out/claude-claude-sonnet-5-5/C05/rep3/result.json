@@ -1,0 +1,91 @@
+{
+ "intent": "C05",
+ "cat": "C",
+ "expected": "clarify",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 5.6,
+ "llm_only": {
+  "admitted": false,
+  "validator_would_flag": [
+   "I1"
+  ],
+  "omit_services": [],
+  "requested_capabilities": []
+ },
+ "llm_val": {
+  "verdict": "clarify",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "TightenVariantFastenersLine4",
+    "scope": {
+     "line": 4,
+     "station": "unknown",
+     "tool": "NR7",
+     "variant": "unknown"
+    },
+    "goal": "Use the shared nutrunner to tighten the variant fasteners on line 4, but no recipe can be proposed because line 4 is not in the plant data.",
+    "constraints": [
+     "Line 4 has no station or variant in the runtime data, which lists only lines 1, 2 and 3. The station and variant are unknown and are not guessed.",
+     "The only tool in the plant state is NR7, currently at the crib. It is assumed to be the shared nutrunner.",
+     "The tool must be reserved exclusively and moved to the station before configuring or tightening (E1, E3).",
+     "The program must come from get-program for the line's variant, with no literal values (E4).",
+     "The tightening must be evaluated and recorded (E5).",
+     "The operator must supply the station and variant for line 4 or correct the line number before a recipe can be drafted."
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "Immediate, for the current request, once the line 4 station and variant are known",
+    "requested_capabilities": [],
+    "omit_services": []
+   },
+   "recipe": null,
+   "source": "claude-sonnet-5-5, response id msg_011CgWEJ4gD19SzcFJbAE2j7",
+   "usage": {
+    "input_tokens": 2159,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 672,
+    "output_tokens_details": {
+     "thinking_tokens": 229
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "clarify",
+   "failed": [
+    "I1"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": true,
+     "message": "all requested capabilities are grounded in sigma_i"
+    },
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "scope line 4 unknown in K_runtime",
+     "severity": "clarify",
+     "fact": "E7"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    }
+   ]
+  }
+ ]
+}

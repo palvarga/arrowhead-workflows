@@ -1,0 +1,89 @@
+{
+ "intent": "C05",
+ "cat": "C",
+ "expected": "clarify",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 5.0,
+ "llm_only": {
+  "admitted": false,
+  "validator_would_flag": [
+   "I1"
+  ],
+  "omit_services": [],
+  "requested_capabilities": []
+ },
+ "llm_val": {
+  "verdict": "clarify",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "TightenVariantFastenersLine4",
+    "scope": {
+     "line": 4,
+     "station": "unknown",
+     "tool": "NR7",
+     "variant": "unknown"
+    },
+    "goal": "Use the shared nutrunner NR7 to tighten the variant fasteners on line 4. No recipe can be proposed because line 4 does not exist in the current plant state.",
+    "constraints": [
+     "Line 4 is not in the runtime state (only lines 1, 2 and 3 are known), so its station and variant cannot be determined.",
+     "The tool is assumed to be NR7, the only tool in the runtime state. This is not confirmed by the operator.",
+     "The variant is needed to obtain the tightening program through get-program, and the station is needed as the transport destination. Neither can be guessed.",
+     "A recipe can be drafted once the operator confirms the line number or supplies the station and variant for line 4."
+    ],
+    "preference": "",
+    "priority": "normal",
+    "horizon": "Not determinable until the line, station and variant are clarified.",
+    "requested_capabilities": [],
+    "omit_services": []
+   },
+   "recipe": null,
+   "source": "claude-sonnet-5-5, response id msg_011CgWEHhHayDr71V8MGcnvx",
+   "usage": {
+    "input_tokens": 2159,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 603,
+    "output_tokens_details": {
+     "thinking_tokens": 207
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "clarify",
+   "failed": [
+    "I1"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": true,
+     "message": "all requested capabilities are grounded in sigma_i"
+    },
+    {
+     "check": "I1",
+     "ok": false,
+     "message": "scope line 4 unknown in K_runtime",
+     "severity": "clarify",
+     "fact": "E7"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    }
+   ]
+  }
+ ]
+}

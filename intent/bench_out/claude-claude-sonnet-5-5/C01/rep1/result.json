@@ -1,0 +1,277 @@
+{
+ "intent": "C01",
+ "cat": "C",
+ "expected": "clarify",
+ "also_ok": [],
+ "translator": "claude",
+ "model": "claude-sonnet-5-5",
+ "seconds": 18.4,
+ "llm_only": {
+  "admitted": true,
+  "validator_would_flag": [
+   "I2",
+   "V6"
+  ],
+  "omit_services": [
+   "evaluate-tightening"
+  ],
+  "requested_capabilities": [],
+  "kit": {
+   "status": "completed",
+   "completed": 3,
+   "failed": 0,
+   "summary": [
+    "  1.37s  L2  #32  == L2 session 12 completed after 32 transitions",
+    "  2.47s  L1  #32  == L1 session 11 completed after 32 transitions",
+    "  3.78s  L3  #32  == L3 session 13 completed after 32 transitions"
+   ]
+  }
+ },
+ "llm_val": {
+  "verdict": "clarify",
+  "rounds": 1
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "TightenVariantFastenersLine2WithoutEvaluation",
+    "scope": {
+     "line": 2,
+     "station": "st2",
+     "tool": "NR7",
+     "variant": "F30"
+    },
+    "goal": "Tighten the fasteners of variant F30 on line 2 at station st2 with the shared nutrunner NR7 and record the result, without the evaluation step the operator asked to skip.",
+    "constraints": [
+     "The shared tool NR7 must be reserved before use and released afterwards.",
+     "NR7 must be at station st2 before configure-tool and tighten-fasteners.",
+     "The tightening program must come from get-program and must not appear as literals in the Recipe.",
+     "transport-tool must be executed by agvexecutor.",
+     "The result of tighten-fasteners must be recorded for traceability.",
+     "The operator explicitly asked to skip the quality check (evaluate-tightening). This conflicts with the quality policy that every tightening is evaluated (E5), so the omission is flagged for the validator and not silently overridden."
+    ],
+    "preference": "Minimise cycle time.",
+    "priority": "normal",
+    "horizon": "Single execution for the current request",
+    "requested_capabilities": [],
+    "omit_services": [
+     "evaluate-tightening"
+    ]
+   },
+   "recipe": {
+    "name": "tighten-line2-nr7-f30-no-evaluation",
+    "first_action": "prepare",
+    "actions": [
+     {
+      "name": "prepare",
+      "next": "bring-tool",
+      "steps": [
+       {
+        "name": "reserve",
+        "service": "reserve-tool",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "program",
+        "service": "get-program",
+        "next": [],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "bring-tool",
+      "next": "tighten",
+      "steps": [
+       {
+        "name": "transport-to-station",
+        "service": "transport-tool",
+        "next": [],
+        "dep": [
+         "reserve"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "station"
+        }
+       }
+      ]
+     },
+     {
+      "name": "tighten",
+      "next": "return-tool",
+      "steps": [
+       {
+        "name": "configure",
+        "service": "configure-tool",
+        "next": [
+         "tighten-step"
+        ],
+        "dep": [
+         "program",
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "tighten-step",
+        "service": "tighten-fasteners",
+        "next": [
+         "record"
+        ],
+        "dep": [
+         "configure",
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "record",
+        "service": "record-tightening",
+        "next": [],
+        "dep": [
+         "tighten-step"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "return-tool",
+      "next": null,
+      "steps": [
+       {
+        "name": "transport-to-crib",
+        "service": "transport-tool",
+        "next": [
+         "release"
+        ],
+        "dep": [
+         "reserve"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "crib"
+        }
+       },
+       {
+        "name": "release",
+        "service": "release-tool",
+        "next": [],
+        "dep": [
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     }
+    ]
+   },
+   "source": "claude-sonnet-5-5, response id msg_011CgWEBMAwk4TzFWmCxGGRi",
+   "usage": {
+    "input_tokens": 2173,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 1978,
+    "output_tokens_details": {
+     "thinking_tokens": 774
+    },
+    "service_tier": "standard",
+    "inference_geo": "global",
+    "speed": "standard"
+   },
+   "verdict": "clarify",
+   "failed": [
+    "I2",
+    "V6"
+   ],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": true,
+     "message": "all requested capabilities are grounded in sigma_i"
+    },
+    {
+     "check": "I2",
+     "ok": false,
+     "message": "intent asks to omit ['evaluate-tightening'], which the quality policy mandates; operator clarification needed",
+     "severity": "clarify",
+     "fact": "E5"
+    },
+    {
+     "check": "V1",
+     "ok": true,
+     "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+    },
+    {
+     "check": "V2",
+     "ok": true,
+     "message": "all 8 Steps use services of sigma_i"
+    },
+    {
+     "check": "V3",
+     "ok": true,
+     "message": "dry-run orchestration succeeds for every Step",
+     "fact": "E2"
+    },
+    {
+     "check": "V4",
+     "ok": true,
+     "message": "tool reaches the station before it is configured or used",
+     "fact": "E3"
+    },
+    {
+     "check": "V5",
+     "ok": true,
+     "message": "program parameters come only from get-program",
+     "fact": "E4"
+    },
+    {
+     "check": "V6",
+     "ok": false,
+     "message": "no Step requires evaluate-tightening",
+     "severity": "revise",
+     "fact": "E5"
+    },
+    {
+     "check": "V7",
+     "ok": true,
+     "message": "every tool use lies between reserve and release; tool returned",
+     "fact": "E1"
+    },
+    {
+     "check": "V8",
+     "ok": true,
+     "message": "lease declared; every tool-using Step depends on the reservation",
+     "fact": "E6"
+    },
+    {
+     "check": "V9",
+     "ok": true,
+     "message": "every Step depends on the Steps whose results its input needs",
+     "fact": "interface"
+    },
+    {
+     "check": "V10",
+     "ok": true,
+     "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+     "fact": "E9"
+    }
+   ]
+  }
+ ]
+}
