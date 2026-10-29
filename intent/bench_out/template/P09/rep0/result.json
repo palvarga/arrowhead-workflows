@@ -1,0 +1,261 @@
+{
+ "intent": "P09",
+ "cat": "P",
+ "expected": "accept",
+ "also_ok": [],
+ "translator": "template",
+ "model": null,
+ "seconds": 3.6,
+ "llm_only": {
+  "admitted": true,
+  "validator_would_flag": [],
+  "omit_services": [],
+  "requested_capabilities": [],
+  "kit": {
+   "status": "completed",
+   "completed": 3,
+   "failed": 0,
+   "summary": [
+    "  1.08s  L2  #33  == L2 session 12 completed after 33 transitions",
+    "  2.28s  L1  #33  == L1 session 11 completed after 33 transitions",
+    "  3.49s  L3  #33  == L3 session 13 completed after 33 transitions"
+   ]
+  }
+ },
+ "llm_val": {
+  "verdict": "accept",
+  "rounds": 1,
+  "kit": {
+   "status": "completed",
+   "completed": 3,
+   "failed": 0,
+   "summary": [
+    "  1.08s  L2  #33  == L2 session 12 completed after 33 transitions",
+    "  2.28s  L1  #33  == L1 session 11 completed after 33 transitions",
+    "  3.49s  L3  #33  == L3 session 13 completed after 33 transitions"
+   ]
+  },
+  "preference": {
+   "tool_hold_s": 249.0,
+   "makespan_s": 250.0,
+   "unit": "s (nominal durations, E9)"
+  }
+ },
+ "trace": [
+  {
+   "round": 0,
+   "interpretation": {
+    "name": "SharedToolTightening",
+    "scope": {
+     "line": 2,
+     "tool": "NR7"
+    },
+    "requested_capabilities": [],
+    "omit_services": []
+   },
+   "recipe": {
+    "name": "shared-tool-tightening",
+    "first_action": "provision",
+    "actions": [
+     {
+      "name": "provision",
+      "next": "use",
+      "steps": [
+       {
+        "name": "reserve",
+        "service": "reserve-tool",
+        "next": [
+         "move"
+        ],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "program",
+        "service": "get-program",
+        "next": [
+         "configure"
+        ],
+        "dep": [],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "move",
+        "service": "transport-tool",
+        "next": [
+         "configure"
+        ],
+        "dep": [
+         "reserve"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "station"
+        }
+       },
+       {
+        "name": "configure",
+        "service": "configure-tool",
+        "next": [],
+        "dep": [
+         "program",
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "use",
+      "next": "return",
+      "steps": [
+       {
+        "name": "tighten",
+        "service": "tighten-fasteners",
+        "next": [
+         "evaluate",
+         "record"
+        ],
+        "dep": [
+         "configure",
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "evaluate",
+        "service": "evaluate-tightening",
+        "next": [],
+        "dep": [
+         "tighten",
+         "program"
+        ],
+        "executor": null,
+        "params": {}
+       },
+       {
+        "name": "record",
+        "service": "record-tightening",
+        "next": [],
+        "dep": [
+         "tighten"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     },
+     {
+      "name": "return",
+      "next": null,
+      "steps": [
+       {
+        "name": "back",
+        "service": "transport-tool",
+        "next": [
+         "release"
+        ],
+        "dep": [
+         "reserve"
+        ],
+        "executor": "agvexecutor",
+        "params": {
+         "to": "crib"
+        }
+       },
+       {
+        "name": "release",
+        "service": "release-tool",
+        "next": [],
+        "dep": [
+         "reserve"
+        ],
+        "executor": null,
+        "params": {}
+       }
+      ]
+     }
+    ]
+   },
+   "source": "template",
+   "usage": null,
+   "verdict": "accept",
+   "failed": [],
+   "findings": [
+    {
+     "check": "I1",
+     "ok": true,
+     "message": "all requested capabilities are grounded in sigma_i"
+    },
+    {
+     "check": "I2",
+     "ok": true,
+     "message": "no conflict with mandatory policies",
+     "fact": "E5"
+    },
+    {
+     "check": "V1",
+     "ok": true,
+     "message": "well-formed Plan, Actions and Steps; dep only on preceding Steps"
+    },
+    {
+     "check": "V2",
+     "ok": true,
+     "message": "all 9 Steps use services of sigma_i"
+    },
+    {
+     "check": "V3",
+     "ok": true,
+     "message": "dry-run orchestration succeeds for every Step",
+     "fact": "E2"
+    },
+    {
+     "check": "V4",
+     "ok": true,
+     "message": "tool reaches the station before it is configured or used",
+     "fact": "E3"
+    },
+    {
+     "check": "V5",
+     "ok": true,
+     "message": "program parameters come only from get-program",
+     "fact": "E4"
+    },
+    {
+     "check": "V6",
+     "ok": true,
+     "message": "tightening, evaluation and recording covered in order",
+     "fact": "E5"
+    },
+    {
+     "check": "V7",
+     "ok": true,
+     "message": "every tool use lies between reserve and release; tool returned",
+     "fact": "E1"
+    },
+    {
+     "check": "V8",
+     "ok": true,
+     "message": "lease declared; every tool-using Step depends on the reservation",
+     "fact": "E6"
+    },
+    {
+     "check": "V9",
+     "ok": true,
+     "message": "every Step depends on the Steps whose results its input needs",
+     "fact": "interface"
+    },
+    {
+     "check": "V10",
+     "ok": true,
+     "message": "lease of 120 s exceeds every tool-using Step (longest 90 s)",
+     "fact": "E9"
+    }
+   ]
+  }
+ ]
+}

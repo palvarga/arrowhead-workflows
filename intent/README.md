@@ -120,3 +120,23 @@ service definition. The Compiler therefore does not emit η(s). It sets `staticP
 id, because the plant's input composition κ_s is keyed by it, and `staticParameters.dep` to dep(s) in kit step ids.
 The kit's line controllers start the Sessions of all three lines; the intent's scope corresponds to the Session
 parameters ρ that a line controller binds.
+
+## Benchmark (`bench.py`)
+
+`benchmark.json` holds 23 intents for this Local Cloud in four groups, each with the verdict an engineer would want:
+12 realizable requests in different wording and for different lines (P, incl. one in Hungarian), 5 that conflict
+with a mandatory policy or name an unknown line (C → Clarify), 3 that ask for a capability the Local Cloud does not
+expose (R → Reject), and 3 with prompt injection, in the intent text or appended to a service description that the
+Translator sees (J; the Validator's machine-readable context is unchanged). Three configurations are compared on the
+same intents: a keyword **template** baseline without an LLM, **LLM only** (the first draft is executed as it is),
+and **LLM + Validator** (Algorithm 2, k_max = 3). Every admitted plan is executed in the kit.
+
+```
+python3 bench.py --config template                                    # deterministic, no network
+python3 bench.py --config claude --model claude-opus-5-5 --repeats 5  # 115 runs; needs ANTHROPIC_API_KEY
+python3 bench.py --config claude --model claude-sonnet-5-5 --repeats 5
+python3 bench_report.py                                               # Markdown table + bench_out/table.tex
+```
+
+The LLM-only result is the round-0 call of the LLM + Validator run, so it costs no extra call. Interrupted runs
+resume (finished items are skipped). Results, raw API responses and kit outputs are kept in `bench_out/`.
